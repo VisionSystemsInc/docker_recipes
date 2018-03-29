@@ -45,7 +45,16 @@ Sudo written with docker automation in mind (no passwords ever)
 |Build Args|EP_VERSION - Release name downloaded|
 |Output files|/usr/local/bin/ep|
 
-Sudo written with docker automation in mind (no passwords ever)
+ep is a simple way to apply bourne shell style variable name substitution on any generic configuration file for applications that do not support environment variable name substitution
+
+## ninja
+
+|Name|ninja|
+|--|--|
+|Build Args|NINJA_VERSION - Release name downloaded|
+|Output files|/usr/local/bin/ninja|
+
+Ninja is generally a better/faster alternative to GNU Make.
 
 ## Amanda debian packages
 
