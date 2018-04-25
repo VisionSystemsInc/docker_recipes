@@ -46,3 +46,9 @@ services:
       context: .
       dockerfile: recipe_ninja.Dockerfile
     image: vsiri/recipe:ninja
+
+  cmake:
+    build:
+      context: .
+      dockerfile: recipe_cmake.Dockerfile
+    image: vsiri/recipe:cmake
