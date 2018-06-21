@@ -60,6 +60,9 @@ Sudo written with docker automation in mind (no passwords ever)
 
 ```Dockerfile
 FROM vsiri/recipe:gosu as gosu
+# Optionally add sticky bit so unprivileged can run as root
+RUN chmod u+s /usr/local/bin/gosu
+
 FROM debian:9
 RUN apt-get update; apt-get install vim
 COPY --from=gosu /usr/local/bin/gosu /usr/local/bin/gosu
