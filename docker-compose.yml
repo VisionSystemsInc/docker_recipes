@@ -57,3 +57,4 @@ services:
     build:
       context: .
       dockerfile: recipe_pipenv.Dockerfile
+    image: vsiri/recipe:pipenv
