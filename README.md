@@ -129,6 +129,25 @@ RUN apt-get update; apt-get install vim
 COPY --from=cmake /cmake/* /usr/local/
 ```
 
+## Pipenv
+
+|Name|CMake|
+|--|--|
+|Build Args|PIPENV_VERSION - Version of pipenv source to download|
+|Output files|/usr/local/bin/pipenv|
+
+Pipenv is the new way to manage python requirements+virtualenv on project.
+
+
+### Example
+
+```Dockerfile
+FROM vsiri/recipe:pipenv as pipenv
+FROM debian:9
+RUN apt-get update; apt-get install vim
+COPY --from=pipenv /usr/local/bin/pipenv /usr/local/bin/pipenv
+```
+
 ## Amanda debian packages
 
 |Name|Amanda|

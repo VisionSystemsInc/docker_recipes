@@ -52,3 +52,8 @@ services:
       context: .
       dockerfile: recipe_cmake.Dockerfile
     image: vsiri/recipe:cmake
+
+  pipenv:
+    build:
+      context: .
+      dockerfile: recipe_pipenv.Dockerfile
