@@ -134,9 +134,23 @@ COPY --from=cmake /cmake/* /usr/local/
 |Name|CMake|
 |--|--|
 |Build Args|PIPENV_VERSION - Version of pipenv source to download|
-|Output files|/usr/local/bin/pipenv|
+|Build Args|PIPENV_VIRTUALENV - The location of the pipenv virtualenv|
+|Output dirs|/tmp/pipenv|
 
 Pipenv is the new way to manage python requirements+virtualenv on project.
+
+Since this is setting up a virtualenv, you can't just move `/usr/local/pipenv`
+to anywhere in the destination image, it must created in the correct location.
+If this needs to be changed, adjust the `PIPENV_VIRTUALENV` arg.
+
+The python used to call `getpipenv` will be default python for all other pipenv
+calls.
+
+This recipe is a little different, in that it's just a script to set up the
+virtualenv in the destination docker. Virtualenvs have to be done this way, do
+to their non-portable nature, and especially so since this virtualenv creates
+other virtutalenvs that need to point to the system python.
+
 
 
 ### Example
@@ -145,7 +159,8 @@ Pipenv is the new way to manage python requirements+virtualenv on project.
 FROM vsiri/recipe:pipenv as pipenv
 FROM debian:9
 RUN apt-get update; apt-get install vim
-COPY --from=pipenv /usr/local/bin/pipenv /usr/local/bin/pipenv
+COPY --from=pipenv /tmp/pipenv /tmp/pipenv
+RUN python /tmp/pipenv/getpipenv; rm -r /tmp/pipenv
 ```
 
 ## Amanda debian packages
