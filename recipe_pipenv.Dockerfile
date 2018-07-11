@@ -9,33 +9,33 @@ ONBUILD RUN apk add --no-cache wget; \
             wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/pipenv/get-pip.py; \
             apk del --no-cache wget
 
-ONBUILD RUN echo '#!/usr/bin/env python' > /tmp/pipenv/getpipenv; \
-            echo "import os, sys, subprocess as sp, tempfile, glob" >> /tmp/pipenv/getpipenv; \
-            echo "x=tempfile.TemporaryDirectory()" >> /tmp/pipenv/getpipenv; \
-            echo "sp.Popen([sys.executable, os.path.dirname(os.path.realpath(__file__))+'/get-pip.py', '--no-cache-dir', '-I', '--root', x.name, 'virtualenv']).wait()" >> /tmp/pipenv/getpipenv; \
-            echo "os.environ['PYTHONPATH'] = glob.glob(x.name+'/usr/local/lib/python*/*-packages')[0]" >> /tmp/pipenv/getpipenv; \
-            echo "d='${PIPENV_VIRTUALENV}'" >> /tmp/pipenv/getpipenv; \
-            echo "sp.Popen([sys.executable, x.name+'/usr/local/bin/virtualenv', '--always-copy', '${PIPENV_VIRTUALENV}']).wait()" >> /tmp/pipenv/getpipenv; \
-            echo "os.environ.pop('PYTHONPATH')" >> /tmp/pipenv/getpipenv; \
-            echo "sp.Popen(['${PIPENV_VIRTUALENV}/bin/pip', 'install', '--no-cache-dir', 'pipenv==${PIPENV_VERSION}']).wait()" >> /tmp/pipenv/getpipenv; \
-            echo "os.symlink('${PIPENV_VIRTUALENV}/bin/pipenv', '/usr/local/bin/pipenv')" >> /tmp/pipenv/getpipenv
+ONBUILD RUN echo '#!/usr/bin/env python' > /tmp/pipenv/get-pipenv; \
+            echo "import os, sys, subprocess as sp, tempfile, glob" >> /tmp/pipenv/get-pipenv; \
+            echo "x=tempfile.TemporaryDirectory()" >> /tmp/pipenv/get-pipenv; \
+            echo "sp.Popen([sys.executable, os.path.dirname(os.path.realpath(__file__))+'/get-pip.py', '--no-cache-dir', '-I', '--root', x.name, 'virtualenv']).wait()" >> /tmp/pipenv/get-pipenv; \
+            echo "os.environ['PYTHONPATH'] = glob.glob(x.name+'/usr/local/lib/python*/*-packages')[0]" >> /tmp/pipenv/get-pipenv; \
+            echo "d='${PIPENV_VIRTUALENV}'" >> /tmp/pipenv/get-pipenv; \
+            echo "sp.Popen([sys.executable, x.name+'/usr/local/bin/virtualenv', '--always-copy', '${PIPENV_VIRTUALENV}']).wait()" >> /tmp/pipenv/get-pipenv; \
+            echo "os.environ.pop('PYTHONPATH')" >> /tmp/pipenv/get-pipenv; \
+            echo "sp.Popen(['${PIPENV_VIRTUALENV}/bin/pip', 'install', '--no-cache-dir', 'pipenv==${PIPENV_VERSION}']).wait()" >> /tmp/pipenv/get-pipenv; \
+            echo "os.symlink('${PIPENV_VIRTUALENV}/bin/pipenv', '/usr/local/bin/pipenv')" >> /tmp/pipenv/get-pipenv
 
-# ONBUILD RUN echo '#!/usr/bin/env python' > /usr/local/bin/getpipenv; \
-#             echo "import os, sys, subprocess as sp, tempfile, glob" >> /usr/local/bin/getpipenv; \
-#             echo "try:" >> /usr/local/bin/getpipenv; \
-#             echo "  import urllib2 as u" >> /usr/local/bin/getpipenv; \
-#             echo "except:" >> /usr/local/bin/getpipenv; \
-#             echo "  import urllib.request as u" >> /usr/local/bin/getpipenv; \
-#             echo "x=tempfile.TemporaryDirectory()" >> /usr/local/bin/getpipenv; \
-#             echo "p=sp.Popen([sys.executable, '-', '--no-cache-dir', '-I', '--root', x.name, 'virtualenv'], stdin=sp.PIPE)" >> /usr/local/bin/getpipenv; \
-#             echo "p.communicate(u.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" >> /usr/local/bin/getpipenv; \
-#             echo "p.wait()" >> /usr/local/bin/getpipenv; \
-#             echo "os.environ['PYTHONPATH'] = glob.glob(x.name+'/usr/local/lib/python*/*-packages')[0]" >> /usr/local/bin/getpipenv; \
-#             echo "d='${PIPENV_VIRTUALENV}'" >> /usr/local/bin/getpipenv; \
-#             echo "sp.Popen([sys.executable, x.name+'/usr/local/bin/virtualenv', '--always-copy', '${PIPENV_VIRTUALENV}']).wait()" >> /usr/local/bin/getpipenv; \
-#             echo "os.environ.pop('PYTHONPATH')" >> /usr/local/bin/getpipenv; \
-#             echo "sp.Popen(['${PIPENV_VIRTUALENV}/bin/pip', 'install', '--no-cache-dir', 'pipenv==${PIPENV_VERSION}']).wait()" >> /usr/local/bin/getpipenv; \
-#             echo "os.symlink('${PIPENV_VIRTUALENV}/bin/pipenv', '/usr/local/bin/pipenv')" >> /usr/local/bin/getpipenv
+# ONBUILD RUN echo '#!/usr/bin/env python' > /usr/local/bin/get-pipenv; \
+#             echo "import os, sys, subprocess as sp, tempfile, glob" >> /usr/local/bin/get-pipenv; \
+#             echo "try:" >> /usr/local/bin/get-pipenv; \
+#             echo "  import urllib2 as u" >> /usr/local/bin/get-pipenv; \
+#             echo "except:" >> /usr/local/bin/get-pipenv; \
+#             echo "  import urllib.request as u" >> /usr/local/bin/get-pipenv; \
+#             echo "x=tempfile.TemporaryDirectory()" >> /usr/local/bin/get-pipenv; \
+#             echo "p=sp.Popen([sys.executable, '-', '--no-cache-dir', '-I', '--root', x.name, 'virtualenv'], stdin=sp.PIPE)" >> /usr/local/bin/get-pipenv; \
+#             echo "p.communicate(u.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" >> /usr/local/bin/get-pipenv; \
+#             echo "p.wait()" >> /usr/local/bin/get-pipenv; \
+#             echo "os.environ['PYTHONPATH'] = glob.glob(x.name+'/usr/local/lib/python*/*-packages')[0]" >> /usr/local/bin/get-pipenv; \
+#             echo "d='${PIPENV_VIRTUALENV}'" >> /usr/local/bin/get-pipenv; \
+#             echo "sp.Popen([sys.executable, x.name+'/usr/local/bin/virtualenv', '--always-copy', '${PIPENV_VIRTUALENV}']).wait()" >> /usr/local/bin/get-pipenv; \
+#             echo "os.environ.pop('PYTHONPATH')" >> /usr/local/bin/get-pipenv; \
+#             echo "sp.Popen(['${PIPENV_VIRTUALENV}/bin/pip', 'install', '--no-cache-dir', 'pipenv==${PIPENV_VERSION}']).wait()" >> /usr/local/bin/get-pipenv; \
+#             echo "os.symlink('${PIPENV_VIRTUALENV}/bin/pipenv', '/usr/local/bin/pipenv')" >> /usr/local/bin/get-pipenv
 
 # NONE of these other attempts will work!
 

@@ -145,7 +145,7 @@ Since this is setting up a virtualenv, you can't just move `/usr/local/pipenv`
 to anywhere in the destination image, it must created in the correct location.
 If this needs to be changed, adjust the `PIPENV_VIRTUALENV` arg.
 
-The python used to call `getpipenv` will be default python for all other pipenv
+The python used to call `get-pipenv` will be default python for all other pipenv
 calls.
 
 This recipe is a little different, in that it's just a script to set up the
@@ -162,7 +162,7 @@ FROM vsiri/recipe:pipenv as pipenv
 FROM debian:9
 RUN apt-get update; apt-get install vim
 COPY --from=pipenv /tmp/pipenv /tmp/pipenv
-RUN python /tmp/pipenv/getpipenv; rm -r /tmp/pipenv
+RUN python /tmp/pipenv/get-pipenv; rm -r /tmp/pipenv
 ```
 
 ## Amanda debian packages
