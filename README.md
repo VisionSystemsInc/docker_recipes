@@ -20,12 +20,29 @@ COPY --from=gosu /usr/local/bin/gosu /usr/local/bin/gosu
 
 ## What this is not
 
-A universal way to "INCLUDE" or "IMPORT" one dockerfile into another. It only
-works under a certain set of circumstances
+A universal way to "INCLUDE" or "IMPORT" one dockerfile into another. It only works under a certain set of circumstances
 
 - Your file recipe output can be *easily* added using the Dockerfile `ADD` command
-- You are ok with customizing version number using build args to override the
-default vvalue
+- You are ok with customizing version number using build args to override the default value
+- When your code is relatively portable. A python virtualenv is not, unfortunately. Go is almost always ultra portable.
+    - musl versions have to be done separate. For example: tini (glibc) and tini-alpine (musl)
+
+## VSI Common
+
+|Name|VSI Common|
+|--|--|
+|Output files|/vsi/*|
+
+Some VSI Common functions are needed in the container, this provides a mechanism to copy them in, even if the `just` executable is used.
+
+### Example
+
+```Dockerfile
+FROM vsiri/recipe:vsi as vsi
+FROM debian:9
+RUN apt-get update; apt-get install vim
+COPY --from=vsi /vsi /vsi
+```
 
 ## tini
 
@@ -36,7 +53,7 @@ default vvalue
 
 Tini is a process reaper, and should be used in docker that spawn new processes
 
-There is a similar version for alpine: tini-aline
+There is a similar version for alpine: tini-alpine
 
 ### Example
 
@@ -141,19 +158,11 @@ COPY --from=cmake /cmake/* /usr/local/
 
 Pipenv is the new way to manage python requirements+virtualenv on project.
 
-Since this is setting up a virtualenv, you can't just move `/usr/local/pipenv`
-to anywhere in the destination image, it must created in the correct location.
-If this needs to be changed, adjust the `PIPENV_VIRTUALENV` arg.
+Since this is setting up a virtualenv, you can't just move `/usr/local/pipenv` to anywhere in the destination image, it must created in the correct location. If this needs to be changed, adjust the `PIPENV_VIRTUALENV` arg.
 
-The python used to call `get-pipenv` will be default python for all other pipenv
-calls.
+The python used to call `get-pipenv` will be default python for all other pipenv calls.
 
-This recipe is a little different, in that it's just a script to set up the
-virtualenv in the destination docker. Virtualenvs have to be done this way, do
-to their non-portable nature, and especially so since this virtualenv creates
-other virtutalenvs that need to point to the system python.
-
-
+This recipe is a little different, in that it's just a script to set up the virtualenv in the destination docker. Virtualenvs have to be done this way, do to their non-portable nature, and especially so since this virtualenv creates other virtutalenvs that need to point to the system python.
 
 ### Example
 

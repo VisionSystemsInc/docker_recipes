@@ -60,3 +60,9 @@ services:
       context: .
       dockerfile: recipe_pipenv.Dockerfile
     image: vsiri/recipe:pipenv
+
+  vsi:
+    build:
+      context: ../..
+      dockerfile: docker/recipes/recipe_vsi.Dockerfile
+    image: vsiri/recipe:vsi

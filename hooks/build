@@ -1,3 +1,10 @@
 #!/usr/bin/env bash
 
-docker-compose build ${DOCKER_TAG}
+if [ "${DOCKER_TAG}" = "vsi" ]; then
+  git clone --recursive https://github.com/visionsystemsinc/vsi_common.git
+  cd vsi_common/docker/recipes
+  git checkout master
+  docker-compose build ${DOCKER_TAG}
+else
+  docker-compose build ${DOCKER_TAG}
+fi
