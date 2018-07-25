@@ -71,7 +71,7 @@ COPY --from=tini /usr/local/bin/tini /usr/local/bin/tini
 |Build Args|GOSU_VERSION - Version of gosu to download|
 |Output files|/usr/local/bin/gosu|
 
-Sudo written with docker automation in mind (no passwords ever)
+su/sudo written with docker automation in mind (no passwords ever)
 
 ### Example
 
@@ -83,7 +83,7 @@ FROM vsiri/recipe:gosu as gosu
 FROM debian:9
 RUN apt-get update; apt-get install vim
 COPY --from=gosu /usr/local/bin/gosu /usr/local/bin/gosu
-# Optionally add sticky bit so an unprivileged user can su to root
+# Optionally add SUID bit so an unprivileged user can run as root (like sudo)
 RUN chmod u+s /usr/local/bin/gosu
 ```
 
