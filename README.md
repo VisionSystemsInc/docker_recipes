@@ -2,7 +2,7 @@
 
 A docker recipe is a (usually very small) docker image that is included in a
 multi-stage build so that you don't always have to find and repeat that "prefect
-set of docker file lines to include software XYZ", such as gosu, tini, etc...
+set of Dockerfile lines to include software XYZ", such as gosu, tini, etc...
 They are based heavily on ONBUILD and meant to be used as their own stage.
 
 ## Example
@@ -20,12 +20,12 @@ COPY --from=gosu /usr/local/bin/gosu /usr/local/bin/gosu
 
 ## What this is not
 
-A universal way to "INCLUDE" or "IMPORT" one dockerfile into another. It only works under a certain set of circumstances
+A universal way to "INCLUDE" or "IMPORT" one Dockerfile into another. It only works under a certain set of circumstances
 
 - Your file recipe output can be *easily* added using the Dockerfile `ADD` command
-- You are ok with customizing version number using build args to override the default value
+- You are ok with customizing the version number using build args to override the default value
 - When your code is relatively portable. A python virtualenv is not, unfortunately. Go is almost always ultra portable.
-    - musl versions have to be done separate. For example: tini (glibc) and tini-alpine (musl)
+    - musl versions have to be done separately. For example: tini (glibc) and tini-alpine (musl)
 
 ## VSI Common
 
@@ -48,10 +48,10 @@ COPY --from=vsi /vsi /vsi
 
 |Name|tini|
 |--|--|
-|Build Args|TINI_VERSION - Release name downloaded|
+|Build Args|TINI_VERSION - Version of tini to download|
 |Output files|/usr/local/bin/tini|
 
-Tini is a process reaper, and should be used in docker that spawn new processes
+Tini is a process reaper, and should be used in dockers that spawn new processes
 
 There is a similar version for alpine: tini-alpine
 
@@ -68,7 +68,7 @@ COPY --from=tini /usr/local/bin/tini /usr/local/bin/tini
 
 |Name|gosu|
 |--|--|
-|Build Args|GOSU_VERSION - Release name downloaded|
+|Build Args|GOSU_VERSION - Version of gosu to download|
 |Output files|/usr/local/bin/gosu|
 
 Sudo written with docker automation in mind (no passwords ever)
@@ -83,7 +83,7 @@ FROM vsiri/recipe:gosu as gosu
 FROM debian:9
 RUN apt-get update; apt-get install vim
 COPY --from=gosu /usr/local/bin/gosu /usr/local/bin/gosu
-# Optionally add sticky bit so unprivileged can run as root
+# Optionally add sticky bit so an unprivileged user can su to root
 RUN chmod u+s /usr/local/bin/gosu
 ```
 
@@ -91,19 +91,10 @@ RUN chmod u+s /usr/local/bin/gosu
 
 |Name|ep|
 |--|--|
-|Build Args|EP_VERSION - Release name downloaded|
+|Build Args|EP_VERSION - Version of ep to download|
 |Output files|/usr/local/bin/ep|
 
-ep is a simple way to apply bourne shell style variable name substitution on any generic configuration file for applications that do not support environment variable name substitution
-
-## ninja
-
-|Name|ninja|
-|--|--|
-|Build Args|NINJA_VERSION - Release name downloaded|
-|Output files|/usr/local/bin/ninja|
-
-Ninja is generally a better/faster alternative to GNU Make.
+ep is a simple way to apply bourne shell style variable name substitution to any generic configuration file for applications that do not support environment variable name substitution
 
 ### Example
 
@@ -113,14 +104,16 @@ FROM debian:9
 RUN apt-get update; apt-get install vim
 COPY --from=ep /usr/local/bin/ep /usr/local/bin/ep
 ```
+
 ## ninja
 
 |Name|ninja|
 |--|--|
-|Build Args|NINJA_VERSION - Release name downloaded|
+|Build Args|NINJA_VERSION - Version of Ninja to download|
 |Output files|/usr/local/bin/ninja|
 
-Ninja is yet another build system, typically faster and simpler than make
+Ninja is generally a better/faster alternative to GNU Make.
+
 
 ### Example
 
@@ -129,12 +122,13 @@ FROM vsiri/recipe:ninja as ninja
 FROM debian:9
 RUN apt-get update; apt-get install vim
 COPY --from=ninja /usr/local/bin/ninja /usr/local/bin/ninja
+```
 
 ## CMake
 
 |Name|CMake|
 |--|--|
-|Build Args|CMAKE_VERSION - Version of cmake to download|
+|Build Args|CMAKE_VERSION - Version of CMake to download|
 |Output files|/cmake/*|
 
 CMake is a cross-platform family of tools designed to build, test and package software
@@ -156,13 +150,13 @@ COPY --from=cmake /cmake/* /usr/local/
 |Build Args|PIPENV_VIRTUALENV - The location of the pipenv virtualenv|
 |Output dirs|/tmp/pipenv|
 
-Pipenv is the new way to manage python requirements+virtualenv on project.
+Pipenv is the new way to manage python requirements (within a virtualenv) on project.
 
 Since this is setting up a virtualenv, you can't just move `/usr/local/pipenv` to anywhere in the destination image, it must created in the correct location. If this needs to be changed, adjust the `PIPENV_VIRTUALENV` arg.
 
 The python used to call `get-pipenv` will be default python for all other pipenv calls.
 
-This recipe is a little different, in that it's just a script to set up the virtualenv in the destination docker. Virtualenvs have to be done this way, do to their non-portable nature, and especially so since this virtualenv creates other virtutalenvs that need to point to the system python.
+This recipe is a little different from other recipes in that it's just a script to set up the virtualenv in the destination docker. Virtualenvs have to be done this way do to their non-portable nature; this is especially true because this virtualenv creates other virtutalenvs that need to point to the system python.
 
 ### Example
 
@@ -178,10 +172,10 @@ RUN python /tmp/pipenv/get-pipenv; rm -r /tmp/pipenv
 
 |Name|Amanda|
 |--|--|
-|Build Args|AMANDA_VERSION - Branch name to build off of (can be a sha)|
+|Build Args|AMANDA_VERSION - Branch name to build off of (can be a SHA)|
 |Output files|/amanda-backup-client_${AMANDA_VERSION}-1Debian82_amd64.deb<BR>/amanda-backup-server_${AMANDA_VERSION}-1Debian82_amd64.deb|
 
-Complies debian packages for the tape backup software Amanda
+Complies Debian packages for the tape backup software Amanda
 
 # J.U.S.T.
 
@@ -189,4 +183,4 @@ To define the "build recipes" target, add this to your `Justfile`
 
     source "${VSI_COMMON_DIR}/linux/just_docker_functions.bsh"
 
-And add `(justify build recipes)` to any Justfile target that is responsible for buildling docker images.
+And add `(justify build recipes)` to any Justfile target that is responsible for building docker images.
