@@ -71,7 +71,7 @@ COPY --from=tini /usr/local/bin/tini /usr/local/bin/tini
 |Build Args|GOSU_VERSION - Version of gosu to download|
 |Output files|/usr/local/bin/gosu|
 
-su/sudo written with docker automation in mind (no passwords ever)
+sudo written with docker automation in mind (no passwords ever)
 
 ### Example
 
