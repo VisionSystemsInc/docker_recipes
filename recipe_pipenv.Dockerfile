@@ -12,7 +12,7 @@ ONBUILD RUN apk add --no-cache wget; \
 ONBUILD RUN echo 'TMP_DIR=$(mktemp -d); \
                   python /tmp/pipenv/get-pip.py --no-cache-dir -I --root "${TMP_DIR}" virtualenv; \
                   SITE_PACKAGES="${TMP_DIR}/$(python -c "import sysconfig; print(sysconfig.get_path('"'"'purelib'"'"'))")"; \
-                  PYTHONPATH="${SITE_PACKAGES}" "$(dirname "$(dirname "$(dirname "${SITE_PACKAGES}")")")"/bin/virtualenv '"${PIPENV_VIRTUALENV}"'; \
+                  PYTHONPATH="${SITE_PACKAGES}" "${SITE_PACKAGES}/../../../bin/virtualenv" '"${PIPENV_VIRTUALENV}"'; \
                   '"${PIPENV_VIRTUALENV}"'/bin/pip install --no-cache-dir pipenv=='"${PIPENV_VERSION}"'; \
                   ln -s '"${PIPENV_VIRTUALENV}"'/bin/pipenv /usr/local/bin/pipenv; \
                   rm -rf "${TMP_DIR}"' > /tmp/pipenv/get-pipenv
