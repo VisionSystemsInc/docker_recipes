@@ -11,9 +11,14 @@ ONBUILD RUN apk add --no-cache wget; \
 
 ONBUILD RUN echo '#!/usr/bin/env sh' > /tmp/pipenv/get-pipenv; \
             echo 'TMP_DIR=$(mktemp -d) && \
-                  python /tmp/pipenv/get-pip.py --no-cache-dir -I --root "${TMP_DIR}" virtualenv && \
-                  SITE_PACKAGES="${TMP_DIR}/$(python -c "import sysconfig; print(sysconfig.get_path('"'"'purelib'"'"'))")" && \
-                  SCRIPTS="${TMP_DIR}/$(python -c "import sysconfig; print(sysconfig.get_path('"'"'scripts'"'"'))")" && \
+                  PYTHON="$(command -v python python3 python2 | head -n 1)" && \
+                  [ -n "${PYTHON}" ] && \
+                  "${PYTHON}" /tmp/pipenv/get-pip.py --no-cache-dir -I --root "${TMP_DIR}" virtualenv && \
+                  SITE_PACKAGES="$("${PYTHON}" -c "if True: \
+                          import sys, os, site; \
+                          print('"'"':'"'"'.join([os.path.join(sys.argv[1],x.lstrip(os.path.sep)) \
+                                  for x in site.getsitepackages()]))" "${TMP_DIR}")" && \
+                  SCRIPTS="${TMP_DIR}/$("${PYTHON}" -c "import sysconfig; print(sysconfig.get_path('"'"'scripts'"'"'))")" && \
                   PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}/virtualenv" '"${PIPENV_VIRTUALENV}"' && \
                   '"${PIPENV_VIRTUALENV}"'/bin/pip install --no-cache-dir pipenv=='"${PIPENV_VERSION}"' && \
                   ln -s '"${PIPENV_VIRTUALENV}"'/bin/pipenv /usr/local/bin/pipenv && \
