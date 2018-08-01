@@ -9,11 +9,12 @@ ONBUILD RUN apk add --no-cache wget; \
             wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/pipenv/get-pip.py; \
             apk del --no-cache wget
 
-ONBUILD RUN echo 'TMP_DIR=$(mktemp -d); \
-                  python /tmp/pipenv/get-pip.py --no-cache-dir -I --root "${TMP_DIR}" virtualenv; \
-                  SITE_PACKAGES="${TMP_DIR}/$(python -c "import sysconfig; print(sysconfig.get_path('"'"'purelib'"'"'))")"; \
-                  SCRIPTS="${TMP_DIR}/$(python -c "import sysconfig; print(sysconfig.get_path('"'"'scripts'"'"'))")"; \
-                  PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}/virtualenv" '"${PIPENV_VIRTUALENV}"'; \
-                  '"${PIPENV_VIRTUALENV}"'/bin/pip install --no-cache-dir pipenv=='"${PIPENV_VERSION}"'; \
-                  ln -s '"${PIPENV_VIRTUALENV}"'/bin/pipenv /usr/local/bin/pipenv; \
-                  rm -rf "${TMP_DIR}"' > /tmp/pipenv/get-pipenv
+ONBUILD RUN echo '#!/usr/bin/env sh' > /tmp/pipenv/get-pipenv; \
+            echo 'TMP_DIR=$(mktemp -d) && \
+                  python /tmp/pipenv/get-pip.py --no-cache-dir -I --root "${TMP_DIR}" virtualenv && \
+                  SITE_PACKAGES="${TMP_DIR}/$(python -c "import sysconfig; print(sysconfig.get_path('"'"'purelib'"'"'))")" && \
+                  SCRIPTS="${TMP_DIR}/$(python -c "import sysconfig; print(sysconfig.get_path('"'"'scripts'"'"'))")" && \
+                  PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}/virtualenv" '"${PIPENV_VIRTUALENV}"' && \
+                  '"${PIPENV_VIRTUALENV}"'/bin/pip install --no-cache-dir pipenv=='"${PIPENV_VERSION}"' && \
+                  ln -s '"${PIPENV_VIRTUALENV}"'/bin/pipenv /usr/local/bin/pipenv && \
+                  rm -rf "${TMP_DIR}"' >> /tmp/pipenv/get-pipenv
