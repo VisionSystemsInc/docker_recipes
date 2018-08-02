@@ -16,17 +16,18 @@ ONBUILD RUN echo '#!/usr/bin/env bash' > /tmp/pipenv/get-pipenv; \
                   : ${PYTHON:="$(command -v python python3 python2 | head -n 1)"}; \
                   [ -n "${PYTHON}" ]; \
                   "${PYTHON}" /tmp/pipenv/get-pip.py --no-cache-dir -I --root "${TMP_DIR}" virtualenv; \
-                  # In order to get python to use this other root dir , we need to assign the site-packages
-                  # directory to PYTHONPATH. Unfortunately, when you ask site for the answer, it gives
-                  # you multiple answers. So use them all so you can find pip and ask for the right answer
+                  # In order to get python to use our custom root dir, we must set the PYTHONPATH to its
+                  # site-packages directory. Unfortunately, when we ask site for the answer, it gives
+                  # multiple answers. Just use them all
                   SITE_PACKAGES="$("${PYTHON}" -c "if True: \
                           import os, site; \
                           print('"'"':'"'"'.join([os.path.join('"'"'${TMP_DIR}'"'"',x.lstrip(os.path.sep)) \
                                   for x in site.getsitepackages()]))")"; \
-                  # Ask pip where the scipts dir is.
+                  # With PYTHONPATH set, we can ask pip where the scipts directory is (a find would also work)
                   SCRIPTS="$(PYTHONPATH="${SITE_PACKAGES}" "${PYTHON}" -c "if True: \
                           from pip._internal import locations; \
                           print(locations.distutils_scheme('"''"', root='"'"'${TMP_DIR}'"'"')['"'"'scripts'"'"'])")"; \
+                  # Create a virtualenv and install pipenv into it
                   PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}"/virtualenv '"${PIPENV_VIRTUALENV}"'; \
                   '"${PIPENV_VIRTUALENV}"'/bin/pip install --no-cache-dir pipenv=='"${PIPENV_VERSION}"'; \
                   ln -s '"${PIPENV_VIRTUALENV}"'/bin/pipenv /usr/local/bin/pipenv; \
