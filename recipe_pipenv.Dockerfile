@@ -16,10 +16,14 @@ ONBUILD RUN echo '#!/usr/bin/env bash' > /tmp/pipenv/get-pipenv; \
                   : ${PYTHON:="$(command -v python python3 python2 | head -n 1)"}; \
                   [ -n "${PYTHON}" ]; \
                   "${PYTHON}" /tmp/pipenv/get-pip.py --no-cache-dir -I --root "${TMP_DIR}" virtualenv; \
+                  # In order to get python to use this other root dir , we need to assign the site-packages
+                  # directory to PYTHONPATH. Unfortunately, when you ask site for the answer, it gives
+                  # you multiple answers. So use them all so you can find pip and ask for the right answer
                   SITE_PACKAGES="$("${PYTHON}" -c "if True: \
                           import os, site; \
                           print('"'"':'"'"'.join([os.path.join('"'"'${TMP_DIR}'"'"',x.lstrip(os.path.sep)) \
                                   for x in site.getsitepackages()]))")"; \
+                  # Ask pip where the scipts dir is.
                   SCRIPTS="$(PYTHONPATH="${SITE_PACKAGES}" "${PYTHON}" -c "if True: \
                           from pip._internal import locations; \
                           print(locations.distutils_scheme('"''"', root='"'"'${TMP_DIR}'"'"')['"'"'scripts'"'"'])")"; \
