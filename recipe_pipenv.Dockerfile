@@ -9,9 +9,10 @@ ONBUILD RUN apk add --no-cache wget; \
             wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/pipenv/get-pip.py; \
             apk del --no-cache wget
 
+ONBUILD ARG PYTHON
 ONBUILD RUN echo '#!/usr/bin/env bash' > /tmp/pipenv/get-pipenv; \
             echo 'TMP_DIR="$(mktemp -d)" && \
-                  PYTHON="$(command -v python python3 python2 | head -n 1)" && \
+                  : ${PYTHON:="$(command -v python python3 python2 | head -n 1)"} && \
                   [ -n "${PYTHON}" ] && \
                   "${PYTHON}" /tmp/pipenv/get-pip.py --no-cache-dir -I --root "${TMP_DIR}" virtualenv && \
                   SITE_PACKAGES="$("${PYTHON}" -c "if True: \
