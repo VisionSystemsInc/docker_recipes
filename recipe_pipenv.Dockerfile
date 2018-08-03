@@ -31,4 +31,5 @@ ONBUILD RUN echo '#!/usr/bin/env bash' > /tmp/pipenv/get-pipenv; \
                   PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}"/virtualenv '"${PIPENV_VIRTUALENV}"'; \
                   '"${PIPENV_VIRTUALENV}"'/bin/pip install --no-cache-dir pipenv=='"${PIPENV_VERSION}"'; \
                   ln -s '"${PIPENV_VIRTUALENV}"'/bin/pipenv /usr/local/bin/pipenv; \
-                  rm -rf "${TMP_DIR}"' >> /tmp/pipenv/get-pipenv
+                  rm -rf "${TMP_DIR}"' >> /tmp/pipenv/get-pipenv; \
+            chmod 755 /tmp/pipenv/get-pipenv
