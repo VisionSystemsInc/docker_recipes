@@ -165,7 +165,7 @@ FROM vsiri/recipe:pipenv as pipenv
 FROM debian:9
 RUN apt-get update; apt-get install vim
 COPY --from=pipenv /tmp/pipenv /tmp/pipenv
-RUN python /tmp/pipenv/get-pipenv; rm -r /tmp/pipenv
+RUN bash /tmp/pipenv/get-pipenv; rm -r /tmp/pipenv
 ```
 
 ## Amanda debian packages
