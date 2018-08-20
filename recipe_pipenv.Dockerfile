@@ -13,7 +13,7 @@ ONBUILD ARG PYTHON
 ONBUILD RUN echo '#!/usr/bin/env sh' > /tmp/pipenv/get-pipenv; \
             echo 'set -eu; \
                   TMP_DIR="$(mktemp -d)"; \
-                  : ${PYTHON:="$(command -v python python3 python2 | head -n 1)"}; \
+                  : ${PYTHON:="$( (command -v python3 || command -v python || command -v python2) | head -n 1)"}; \
                   [ -n "${PYTHON}" ]; \
                   "${PYTHON}" /tmp/pipenv/get-pip.py --no-cache-dir -I --root "${TMP_DIR}" virtualenv; \
                   # In order to get python to use our custom root dir, we must set the PYTHONPATH to its
