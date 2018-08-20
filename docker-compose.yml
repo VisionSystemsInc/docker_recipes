@@ -27,13 +27,13 @@ services:
       #   TINI_VERSION: "${TINI_VERSION}"
     image: vsiri/recipe:tini
 
-  tini-alpine:
+  tini-musl:
     build:
       context: .
-      dockerfile: recipe_tini-alpine.Dockerfile
+      dockerfile: recipe_tini-musl.Dockerfile
       # args:
       #   TINI_VERSION: "${TINI_VERSION}"
-    image: vsiri/recipe:tini-alpine
+    image: vsiri/recipe:tini-musl
 
   ep:
     build:
@@ -54,6 +54,18 @@ services:
       context: .
       dockerfile: recipe_cmake.Dockerfile
     image: vsiri/recipe:cmake
+
+  docker-compose:
+    build:
+      context: .
+      dockerfile: recipe_docker-compose.Dockerfile
+    image: vsiri/recipe:docker-compose
+
+  git-lfs:
+    build:
+      context: .
+      dockerfile: recipe_git-lfs.Dockerfile
+    image: vsiri/recipe:git-lfs
 
   pipenv:
     build:

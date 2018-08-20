@@ -15,6 +15,10 @@ COPY --from=tini /usr/local/bin/tini /usr/local/bin/tini
 COPY --from=gosu /usr/local/bin/gosu /usr/local/bin/gosu
 ```
 
+## How to use
+
+When using all the defaults, the recipes can be used directly from dockerhub. However, when one of the recipes needs to customized via a build arg, it is often best to include this repo as a submodule in the greater project, and building from the dockerfiles.
+
 ## What this is not
 
 A universal way to "INCLUDE" or "IMPORT" one Dockerfile into another. It only works under a certain set of circumstances
@@ -197,8 +201,10 @@ FROM vsiri/recipe:pipenv as pipenv
 FROM debian:9
 RUN apt-get update; apt-get install vim
 COPY --from=pipenv /tmp/pipenv /tmp/pipenv
-RUN /tmp/pipenv/get-pipenv; rm -r /tmp/pipenv
+RUN /tmp/pipenv/get-pipenv; rm -rf /tmp/pipenv || :
 ```
+
+*Note*: `rm -f` and `|| :` handles cases like [this](https://github.com/moby/moby/issues/27358)
 
 ## Amanda debian packages
 

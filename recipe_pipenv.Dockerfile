@@ -10,7 +10,7 @@ ONBUILD RUN apk add --no-cache wget; \
             apk del --no-cache wget
 
 ONBUILD ARG PYTHON
-ONBUILD RUN echo '#!/usr/bin/env bash' > /tmp/pipenv/get-pipenv; \
+ONBUILD RUN echo '#!/usr/bin/env sh' > /tmp/pipenv/get-pipenv; \
             echo 'set -eu; \
                   TMP_DIR="$(mktemp -d)"; \
                   : ${PYTHON:="$(command -v python python3 python2 | head -n 1)"}; \
