@@ -43,6 +43,14 @@ services:
       #   EP_VERSION: "${EP_VERSION}"
     image: vsiri/recipe:ep
 
+  jq:
+    build:
+      context: .
+      dockerfile: recipe_jq.Dockerfile
+      # args:
+      #   JQ_VERSION: "${JQ_VERSION}"
+    image: vsiri/recipe:jq
+
   ninja:
     build:
       context: .

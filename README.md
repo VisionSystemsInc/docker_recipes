@@ -106,6 +106,24 @@ RUN apt-get update; apt-get install vim
 COPY --from=ep /usr/local/bin/ep /usr/local/bin/ep
 ```
 
+## jq - JSON Processor
+
+|Name|ep|
+|--|--|
+|Build Args|`JQ_VERSION` - Version of jq to download|
+|Output files|`/usr/local/bin/jq`|
+
+jq is a lightweight and flexible command-line JSON processor
+
+### Example
+
+```Dockerfile
+FROM vsiri/recipe:jq as jq
+FROM debian:9
+RUN apt-get update; apt-get install vim
+COPY --from=jq /usr/local/bin/jq /usr/local/bin/jq
+```
+
 ## ninja
 
 |Name|ninja|
