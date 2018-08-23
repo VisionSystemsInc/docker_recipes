@@ -19,7 +19,7 @@ jobs:
       - run:
           name: Build recipes
           command: |
-            docker-compose bulid
+            docker-compose build
 
       - run:
           name: Run integration tests
