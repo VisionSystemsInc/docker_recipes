@@ -3,7 +3,7 @@ FROM alpine:3.8
 SHELL ["sh", "-euxvc"]
 
 ONBUILD ARG GOSU_VERSION=1.10
-ONBUILD RUN apk add --no-cache --virtual .gosu-deps curl dpkg gnupg openssl; \
+ONBUILD RUN apk add --no-cache --virtual .deps curl dpkg gnupg openssl; \
             # download gosu
             dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
             curl -Lo /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch; \
@@ -22,4 +22,4 @@ ONBUILD RUN apk add --no-cache --virtual .gosu-deps curl dpkg gnupg openssl; \
             # verify that the binary works
             gosu nobody true; \
             # cleanup
-            apk del .gosu-deps
+            apk del .deps

@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+: ${VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"}
+
+. "${VSI_COMMON_DIR}/tests/testlib.sh"
+. "${VSI_COMMON_DIR}/linux/uwecho.bsh"
+: ${DOCKER=docker}
+
+setup()
+{
+  temp_image="$(mktemp -u test_XXXXXXXXXXXXXXXX | tr '[:upper:]' '[:lower:]')"
+}
+
+  command -v "${DOCKER}" >&/dev/null || skip_next_test
+begin_test "Pipenv"
+(
+  setup_test
+
+  uwecho 'FROM vsiri/recipe:pipenv AS pipenv
+
+          FROM python:3
+          SHELL ["/usr/bin/env", "bash", "-euxvc"]
+
+          COPY --from=pipenv /tmp/pipenv /tmp/pipenv
+          RUN ln -s "$(which python3)" /bar; \
+              /tmp/pipenv/get-pipenv; \
+              rm -r /tmp/pipenv' > Dockerfile
+
+  docker build -t ${temp_image} --build-arg=PIPENV_VERSION=2018.5.18 \
+                                --build-arg=PIPENV_VIRTUALENV=/foo \
+                                --build-arg=PIPENV_PYTHON=/bar \
+                                .
+
+  [ "$(docker run --rm ${temp_image} bash -c 'head -n1 /foo/bin/pipenv; /foo/bin/pipenv --version')" = $'#!/foo/bin/bar\npipenv, version 2018.05.18' ]
+
+)
+end_test
+
+teardown()
+{
+  docker rmi ${temp_image} > /dev/null || :
+}
