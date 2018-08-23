@@ -1,0 +1,29 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: vsiri/circleci:bash-compose-lfs
+    environment:
+      VSI_COMMON_DIR=/vsi
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+      - run:
+          name: Checkout vsi_common
+          command: |
+            git clone --recursive https://github.com/VisionSystemsInc/vsi_common.git /vsi
+
+      - setup_remote_docker
+
+      - run:
+          name: Build recipes
+          command: |
+            docker-compose bulid
+
+      - run:
+          name: Run integration tests
+          environment:
+            TESTS_DIR=/repo/docker/recipes/tests
+          command: |
+            "${VSI_COMMON_DIR}/tests/run_tests.bsh"
