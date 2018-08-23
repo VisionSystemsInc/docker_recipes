@@ -25,6 +25,6 @@ jobs:
       - run:
           name: Run integration tests
           environment:
-            TESTS_DIR: /repo/tests
+            TESTS_DIR: /root/repo/tests
           command: |
             "${VSI_COMMON_DIR}/tests/run_tests.bsh"
