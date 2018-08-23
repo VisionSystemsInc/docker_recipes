@@ -4,7 +4,7 @@ jobs:
     docker:
       - image: vsiri/circleci:bash-compose-lfs
     environment:
-      VSI_COMMON_DIR=/vsi
+      VSI_COMMON_DIR: /vsi
     working_directory: ~/repo
 
     steps:
@@ -24,6 +24,6 @@ jobs:
       - run:
           name: Run integration tests
           environment:
-            TESTS_DIR=/repo/tests
+            TESTS_DIR: /repo/tests
           command: |
             "${VSI_COMMON_DIR}/tests/run_tests.bsh"
