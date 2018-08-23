@@ -1,5 +1,7 @@
 # Docker recipes
 
+[![CircleCI](https://circleci.com/gh/VisionSystemsInc/docker_recipes.svg?style=svg)](https://circleci.com/gh/VisionSystemsInc/docker_recipes)
+
 A docker recipe is a (usually very small) docker image that is included in a multi-stage build so that you don't always have to find and repeat that "prefect set of Dockerfile lines to include software XYZ", such as gosu, tini, etc... They are based heavily on ONBUILD and meant to be used as their own stage.
 
 ## Example
