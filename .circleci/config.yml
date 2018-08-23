@@ -19,6 +19,7 @@ jobs:
       - run:
           name: Build recipes
           command: |
+            sed 's|context: ../..|context: ${VSI_COMMON_DIR}|' docker-compose.yml
             docker-compose build
 
       - run:
