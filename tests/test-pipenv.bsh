@@ -11,7 +11,7 @@ setup()
   temp_image="$(mktemp -u test_XXXXXXXXXXXXXXXX | tr '[:upper:]' '[:lower:]')"
 }
 
-  command -v "${DOCKER}" >&/dev/null || skip_next_test
+  command -v "${DOCKER}" &> /dev/null || skip_next_test
 begin_test "Pipenv"
 (
   setup_test
