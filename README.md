@@ -110,7 +110,7 @@ COPY --from=ep /usr/local/bin/ep /usr/local/bin/ep
 
 ## jq - JSON Processor
 
-|Name|ep|
+|Name|jq|
 |--|--|
 |Build Args|`JQ_VERSION` - Version of jq to download|
 |Output files|`/usr/local/bin/jq`|
@@ -147,7 +147,7 @@ COPY --from=ninja /usr/local/bin/ninja /usr/local/bin/ninja
 
 ## Docker compose
 
-|Name|CMake|
+|Name|Docker compose|
 |--|--|
 |Build Args|`DOCKER_COMPOSE_VERSION` - Version of docker-compose to download|
 |Output dirs|`/usr/local/bin/docker-compose`|
@@ -165,7 +165,7 @@ COPY --from=docker-compose /usr/local/bin/docker-compose /usr/local/bin/docker-c
 
 ## git Large File Support
 
-|Name|CMake|
+|Name|git lfs|
 |--|--|
 |Build Args|`GIT_LFS_VERSION` - Version of git-lfs to download|
 |Output dirs|`/usr/local/bin/git-lfs`|
@@ -194,12 +194,12 @@ CMake is a cross-platform family of tools designed to build, test and package so
 FROM vsiri/recipe:cmake as cmake
 FROM debian:9
 RUN apt-get update; apt-get install vim
-COPY --from=cmake /cmake/* /usr/local/
+COPY --from=cmake /cmake /usr/local/
 ```
 
 ## Pipenv
 
-|Name|CMake|
+|Name|Pipenv|
 |--|--|
 |Build Args|`PIPENV_VERSION` - Version of pipenv source to download|
 |Build Args|`PIPENV_VIRTUALENV` - The location of the pipenv virtualenv|
