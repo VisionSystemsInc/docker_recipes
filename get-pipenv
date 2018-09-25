@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 TMP_DIR="$(mktemp -d)"
-: ${PIPENV_PYTHON:="$( (command -v python3 || command -v python || command -v python2) | head -n 1)"}
+: ${PIPENV_PYTHON:="$( (command -v python || command -v python3 || command -v python2) | head -n 1)"}
 [ -n "${PIPENV_PYTHON}" ]
 "${PIPENV_PYTHON}" /tmp/pipenv/get-pip.py --no-cache-dir -I --root "${TMP_DIR}" virtualenv
 # In order to get python to use our custom root dir, we must set the PYTHONPATH to its
