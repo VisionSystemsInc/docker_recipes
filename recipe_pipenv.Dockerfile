@@ -7,7 +7,7 @@ ONBUILD RUN apk add --no-cache --virtual .deps wget ca-certificates; \
             wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/pipenv/get-pip.py; \
             apk del --no-cache .deps
 
-ONBUILD ARG PIPENV_VERSION=2018.10.9
+ONBUILD ARG PIPENV_VERSION=2018.10.13
 ONBUILD ARG PIPENV_VIRTUALENV=/usr/local/pipenv
 ONBUILD ARG PIPENV_PYTHON
 ADD get-pipenv /tmp/pipenv/get-pipenv
