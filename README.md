@@ -241,4 +241,4 @@ To define the "build recipes" target, add this to your `Justfile`
 
     source "${VSI_COMMON_DIR}/linux/just_docker_functions.bsh"
 
-And add `(justify build recipes)` to any Justfile target that is responsible for building docker images.
+And add `justify build recipes` to any Justfile target that is responsible for building docker images.
