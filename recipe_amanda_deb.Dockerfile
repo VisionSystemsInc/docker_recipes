@@ -3,7 +3,7 @@ FROM debian:8
 SHELL ["bash", "-xveuc"]
 
 ONBUILD ARG AMANDA_VERSION=tags/community_3_4_5
-ONBUILD RUN set -euxv; \
+ONBUILD RUN : ${AMANDA_VERSION=tags/community_3_4_5}; \
             useradd amandabackup -u 63998 -g disk; \
             build_deps="curl ca-certificates build-essential automake autoconf libtool \
                         libglib2.0-dev fakeroot debhelper dump flex libssl-dev \
