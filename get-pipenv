@@ -16,12 +16,12 @@ SCRIPTS="$(PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" -c "if True:
         from pip._internal import locations
         print(locations.distutils_scheme('', root='${TMP_DIR}')['scripts'])")"
 # Create a virtualenv and install pipenv into it
-PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}"/virtualenv "${PIPENV_VIRTUALENV}"
-"${PIPENV_VIRTUALENV}"/bin/pip install --no-cache-dir pipenv=="${PIPENV_VERSION}"
-ln -s "${PIPENV_VIRTUALENV}"/bin/pipenv /usr/local/bin/pipenv
+PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}/virtualenv" "${PIPENV_VIRTUALENV}"
+"${PIPENV_VIRTUALENV}/bin/pip" install --no-cache-dir pipenv=="${PIPENV_VERSION}"
+ln -s "${PIPENV_VIRTUALENV}/bin/pipenv" /usr/local/bin/pipenv
 rm -rf "${TMP_DIR}"
 
-cat - > /usr/local/pipenv/bin/fake_package << EOF
+cat - > "${PIPENV_VIRTUALENV}/fake_package" << EOF
 #!/usr/bin/env sh
 
 set -eu
@@ -38,4 +38,4 @@ if [ ! -e "setup.py" ]; then
   echo "setup(name='\${1}', packages=['\${2}'], description='Project')" >> setup.py
 fi
 EOF
-chmod 755 /usr/local/pipenv/bin/fake_package
+chmod 755 "${PIPENV_VIRTUALENV}/bin/fake_package"
