@@ -20,3 +20,22 @@ PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}"/virtualenv "${PIPENV_VIRTUALENV}"
 "${PIPENV_VIRTUALENV}"/bin/pip install --no-cache-dir pipenv=="${PIPENV_VERSION}"
 ln -s "${PIPENV_VIRTUALENV}"/bin/pipenv /usr/local/bin/pipenv
 rm -rf "${TMP_DIR}"
+
+cat - > /usr/local/pipenv/bin/fake_package << EOF
+#!/usr/bin/env sh
+
+set -eu
+
+# Useful for creating a fake editable package for when you plan on mounting it
+# in at runtime
+# \$1 - name
+# \$2 - subdir
+
+mkdir -p "\${2}"
+touch "\${2}/init.py"
+if [ ! -e "setup.py" ]; then
+  echo "from distutils.core import setup" > setup.py
+  echo "setup(name='\${1}', packages=['\${2}'], description='Project')" >> setup.py
+fi
+EOF
+chmod 755 /usr/local/pipenv/bin/fake_package

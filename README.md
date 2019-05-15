@@ -214,6 +214,8 @@ The default python  will be used when `get-pipenv` is called. The default python
 
 This recipe is a little different from other recipes in that it's just a script to set up the virtualenv in the destination image. Virtualenvs have to be done this way due to their non-portable nature; this is especially true because this virtualenv creates other virtutalenvs that need to point to the system python.
 
+A script called `fake_package` is added to the pipenv virtualenv, this script is useful for creating fake editable packages, that will be mounted in at run time.
+
 ### Example
 
 ```Dockerfile
