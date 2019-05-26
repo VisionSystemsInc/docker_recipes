@@ -237,6 +237,24 @@ RUN /tmp/pipenv/get-pipenv; rm -rf /tmp/pipenv || :
 
 Complies Debian packages for the tape backup software Amanda
 
+## One True Awk
+
+|Name|One True Awk|
+|--|--|
+|Build Args|`ONETRUEAWK_VERSION` - Version of one true awk to download|
+|Output files|`/use/local/bin/awk`|
+
+https://github.com/onetrueawk/awk is a severly limited version awk that some primative operating systems use. This recipe will help in testing against that version.
+
+### Example
+
+```Dockerfile
+FROM vsiri/recipe:onetrueawk as onetrueawk
+FROM debian:9
+RUN apt-get update; apt-get install vim
+COPY --from=onetrueawk /usr/local/bin/awk /usr/local/bin/
+```
+
 # J.U.S.T.
 
 To define the "build recipes" target, add this to your `Justfile`

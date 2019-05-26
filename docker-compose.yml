@@ -86,3 +86,11 @@ services:
       context: ../..
       dockerfile: docker/recipes/recipe_vsi.Dockerfile
     image: vsiri/recipe:vsi
+
+  onetrueawk:
+    build:
+      context: .
+      dockerfile: recipe_onetrueawk.Dockerfile
+      # args:
+      #   ONETRUEAWK_VERSION: "${ONETRUEAWK_VERSION}"
+    image: vsiri/recipe:onetrueawk
