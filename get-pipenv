@@ -1,27 +1,79 @@
 #!/usr/bin/env sh
-set -eu
-TMP_DIR="$(mktemp -d)"
-: ${PIPENV_PYTHON:="$( (command -v python3 || command -v python || command -v python2) | head -n 1)"}
-[ -n "${PIPENV_PYTHON}" ]
-"${PIPENV_PYTHON}" /tmp/pipenv/get-pip.py --no-cache-dir -I --root "${TMP_DIR}" virtualenv
-# In order to get python to use our custom root dir, we must set the PYTHONPATH to its
-# site-packages directory. Unfortunately, when we ask site for the answer, it gives
-# multiple answers. Just use them all
-SITE_PACKAGES="$("${PIPENV_PYTHON}" -c "if True:
-        import os, site
-        print(':'.join([os.path.join('${TMP_DIR}',x.lstrip(os.path.sep))
-                for x in site.getsitepackages()]))")"
-# With PYTHONPATH set, we can ask pip where the scipts directory is (a find would also work)
-SCRIPTS="$(PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" -c "if True:
-        from pip._internal import locations
-        print(locations.distutils_scheme('', root='${TMP_DIR}')['scripts'])")"
-# Create a virtualenv and install pipenv into it
-PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}/virtualenv" "${PIPENV_VIRTUALENV}"
-"${PIPENV_VIRTUALENV}/bin/pip" install --no-cache-dir pipenv=="${PIPENV_VERSION}"
-ln -s "${PIPENV_VIRTUALENV}/bin/pipenv" /usr/local/bin/pipenv
-rm -rf "${TMP_DIR}"
 
-cat - > "${PIPENV_VIRTUALENV}/bin/fake_package" << EOF
+#*# docker/recipes/get-pipenv
+set +xv
+#**
+# ================
+# CUDA Information
+# ================
+#
+# .. default-domain:: bash
+#
+# .. file:: get_pipenv
+#
+# Functions to help install pipenv with only python installed and no elevated privileges, no ``pip`` or ``sudo`` required
+#
+# .. function:: install_pipenv
+#
+# Install pipenv into a virtualenv. Does not need to have pip already installed and does not use privileged permissions.
+#
+# :Arguments: [``$1``] - The location of the virtualenv, defaults to ``${PIPENV_VIRTUALENV-${HOME}/pipenv}``
+# :Parameters: * ``PIPENV_PYTHON`` - Optionally specify which python you want to use. Default is to favor python3, trying ``python3``, ``python``, then finally falling back to ``python2``.
+#              * ``PIPENV_VERSION`` - The version of pipenv to install, defaults - ``2018.11.26``
+#              * ``GET_PIP_SCRIPT`` - Name of downloaded get-pip.py, else it will attempt to download it itself.
+#**
+install_pipenv()
+{
+  local TMP_DIR="$(mktemp -d)"
+  local get_pip="${GET_PIP_SCRIPT-/tmp/pipenv/get-pip.py}"
+
+  : ${PIPENV_PYTHON:="$( (command -v python3 || command -v python || command -v python2) | head -n 1)"}
+  [ -n "${PIPENV_PYTHON}" ] # Make sure python was found
+
+  if [ ! -r "${get_pip}" ]; then
+    get_pip="${TMP_DIR}/get-pip.py"
+    if command -v wget > /dev/null 2>&1; then
+      wget -O "${get_pip}" -q "https://bootstrap.pypa.io/get-pip.py"
+    elif command -v curl > /dev/null 2>&1; then
+      curl -L "https://bootstrap.pypa.io/get-pip.py" -o "${get_pip}"
+    else
+      nl='
+'
+      "${PIPENV_PYTHON}" -c "try: import urllib2 as u${nl}except: import urllib.request as u${nl}import sys; fid=open(sys.argv[1], 'wb'); fid.write(u.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" "${get_pip}"
+    fi
+  fi
+
+  "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" virtualenv
+  # In order to get python to use our custom root dir, we must set the PYTHONPATH to its
+  # site-packages directory. Unfortunately, when we ask site for the answer, it gives
+  # multiple answers. Just use them all
+  SITE_PACKAGES="$("${PIPENV_PYTHON}" -c "if True:
+          import os, site
+          print(':'.join([os.path.join('${TMP_DIR}',x.lstrip(os.path.sep))
+                  for x in site.getsitepackages()]))")"
+  # With PYTHONPATH set, we can ask pip where the scipts directory is (a find would also work)
+  SCRIPTS="$(PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" -c "if True:
+          from pip._internal import locations
+          print(locations.distutils_scheme('', root='${TMP_DIR}')['scripts'])")"
+  # Create a virtualenv and install pipenv into it
+  PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}/virtualenv" "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}"
+  "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/pip" install --no-cache-dir pipenv=="${PIPENV_VERSION-2018.11.26}"
+  rm -rf "${get_pip}" "${TMP_DIR}"
+}
+
+#**
+# .. function:: setup_container_pipenv
+#
+# Sets up some additional behavior, useful in a container. Creates a symlink in the path to ``pipenv`` and adds a ``fake_package`` script to the bin directory for faking out local packages in pipenv during container build stages.
+#
+# :Arguments: * [``$1``] - The location of the virtualenv, defaults to ``${HOME}/pipenv``
+#             * [``$2``] - The location of the symlink for pipenv, defaults to ``/usr/local/bin/pipenv``
+#**
+setup_container_pipenv()
+{
+  ln -s "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/pipenv" "${2-/usr/local/bin/pipenv}"
+
+  cat - > "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/fake_package" << EOF
 #!/usr/bin/env sh
 
 set -eu
@@ -38,4 +90,23 @@ if [ ! -e "setup.py" ]; then
   echo "setup(name='\${1}', packages=['\${2}'], description='Project')" >> setup.py
 fi
 EOF
-chmod 755 "${PIPENV_VIRTUALENV}/bin/fake_package"
+  chmod 755 "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/fake_package"
+}
+
+if [ -n "${BASH_SOURCE+set}" ]; then
+  if [ "${BASH_SOURCE[0]}" = "${0}" ] || [ "$(basename "${BASH_SOURCE[0]}")" = "${0}" ]; then
+    set -eu
+    install_pipenv ${@+"${@}"}
+    setup_container_pipenv ${@+"${@}"}
+  fi
+else
+  case "${0}" in
+    *sh) # Sourced for sh/dash/etc...
+      ;;
+    *) # Ran
+      set -eu
+      install_pipenv ${@+"${@}"}
+      setup_container_pipenv ${@+"${@}"}
+      ;;
+  esac
+fi
