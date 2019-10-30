@@ -3,11 +3,11 @@
 #*# docker/recipes/get-pipenv
 set +xv
 #**
-# ================
-# CUDA Information
-# ================
-#
 # .. default-domain:: bash
+#
+# ==========
+# Get Pipenv
+# ==========
 #
 # .. file:: get_pipenv
 #
