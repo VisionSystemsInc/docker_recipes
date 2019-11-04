@@ -38,7 +38,7 @@ A universal way to "INCLUDE" or "IMPORT" one Dockerfile into another. It only wo
 
 * When your code is relatively portable. A python virtualenv is not, unfortunately. Go (when compiled statically) is almost always ultra portable.
 
-    * musl versions have to be done separately. For example: tini (glibc) and tini-musl (musl)
+  * musl versions have to be done separately. For example: tini (glibc) and tini-musl (musl)
 
 Recipes
 =======
