@@ -6,10 +6,10 @@ ONBUILD ARG GOSU_VERSION=1.10
 ONBUILD RUN apk add --no-cache --virtual .deps curl dpkg gnupg openssl; \
             # download gosu
             dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
-            curl -Lo /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch; \
+            curl -fsLo /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch; \
             chmod +x /usr/local/bin/gosu; \
             # verify the signature
-            curl -Lo /dev/shm/gosu.asc https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc; \
+            curl -fsLo /dev/shm/gosu.asc https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc; \
             export GNUPGHOME=/dev/shm; \
             for server in $(shuf -e ha.pool.sks-keyservers.net \
                                     hkp://p80.pool.sks-keyservers.net:80 \

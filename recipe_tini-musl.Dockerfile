@@ -5,10 +5,10 @@ SHELL ["sh", "-euxvc"]
 ONBUILD ARG TINI_VERSION=v0.16.1
 ONBUILD RUN apk add --no-cache --virtual .deps gnupg curl ca-certificates; \
             # download tini
-            curl -Lo /usr/local/bin/tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-muslc-amd64; \
+            curl -fsLo /usr/local/bin/tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-muslc-amd64; \
             chmod +x /usr/local/bin/tini; \
             # verify the signature
-            curl -Lo /dev/shm/tini.asc https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-muslc-amd64.asc; \
+            curl -fsLo /dev/shm/tini.asc https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-muslc-amd64.asc; \
             export GNUPGHOME=/dev/shm; \
             for server in $(shuf -e ha.pool.sks-keyservers.net \
                                     hkp://p80.pool.sks-keyservers.net:80 \

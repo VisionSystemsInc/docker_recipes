@@ -8,9 +8,9 @@ Docker recipes
 
 A docker recipe is a (usually very small) docker image that is included in a multi-stage build so that you don't always have to find and repeat that "prefect set of Dockerfile lines to include software XYZ", such as gosu, tini, etc... They are based heavily on ONBUILD and meant to be used as their own stage.
 
-.. rubric: Example
+.. rubric:: Example
 
-.. code: Dockerfile
+.. code:: Dockerfile
 
    Dockerfile
    FROM vsiri/recipe:tini as tini
@@ -170,13 +170,33 @@ Ninja is generally a better/faster alternative to GNU Make.
    RUN apt-get update; apt-get install vim
    COPY --from=ninja /usr/local/bin/ninja /usr/local/bin/ninja
 
+Docker
+------
+
+=========== ==============
+Name        Docker
+Build Args  ``DOCKER_VERSION`` - Version of docker to download
+Output dirs ``/usr/local/bin/`` including ``docker`` and several other files.
+=========== ==============
+
+Docker is a tool for running container applications
+
+.. rubric:: Example
+
+.. code:: Dockerfile
+
+   FROM vsiri/recipe:docker as docker
+   FROM debian:9
+   RUN apt-get update; apt-get install vim
+   COPY --from=docker /usr/local/bin /usr/local/bin
+
 Docker compose
 --------------
 
 =========== ==============
 Name        Docker compose
 Build Args  ``DOCKER_COMPOSE_VERSION`` - Version of docker-compose to download
-Output dirs ``/usr/local/bin/docker-compose``
+Output file ``/usr/local/bin/docker-compose``
 =========== ==============
 
 Docker-compose is a tool for defining and running multi-container Docker applications
