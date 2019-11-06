@@ -10,7 +10,7 @@ A docker recipe is a (usually very small) docker image that is included in a mul
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    Dockerfile
    FROM vsiri/recipe:tini as tini
@@ -55,7 +55,7 @@ Some VSI Common functions are needed in the container, this provides a mechanism
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:vsi as vsi
    FROM debian:9
@@ -77,7 +77,7 @@ There is a similar version for alpine: tini-musl
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:tini as tini
    FROM debian:9
@@ -97,7 +97,7 @@ sudo written with docker automation in mind (no passwords ever)
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:gosu as gosu
    # The following line will NOT work. docker bug?
@@ -122,7 +122,7 @@ ep is a simple way to apply bourne shell style variable name substitution to any
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:ep as ep
    FROM debian:9
@@ -142,7 +142,7 @@ jq is a lightweight and flexible command-line JSON processor
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:jq as jq
    FROM debian:9
@@ -163,7 +163,7 @@ Ninja is generally a better/faster alternative to GNU Make.
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:ninja as ninja
    FROM debian:9
@@ -183,7 +183,7 @@ Docker is a tool for running container applications
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:docker as docker
    FROM debian:9
@@ -203,7 +203,7 @@ Docker-compose is a tool for defining and running multi-container Docker applica
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:docker-compose as docker-compose
    FROM debian:9
@@ -223,7 +223,7 @@ git-lfs gives git the ability to handle large files gracefully.
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:git-lfs as git-lfs
    FROM debian:9
@@ -243,7 +243,7 @@ CMake is a cross-platform family of tools designed to build, test and package so
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:cmake as cmake
    FROM debian:9
@@ -273,7 +273,7 @@ A script called ``fake_package`` is added to the pipenv virtualenv, this script 
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:pipenv as pipenv
    FROM debian:9
@@ -310,7 +310,7 @@ https://github.com/onetrueawk/awk is a severly limited version awk that some pri
 
 .. rubric:: Example
 
-.. code:: Dockerfile
+.. code-block:: Dockerfile
 
    FROM vsiri/recipe:onetrueawk as onetrueawk
    FROM debian:9
@@ -322,7 +322,7 @@ J.U.S.T.
 
 To define the "build recipes" target, add this to your ``Justfile``
 
-.. code:: bash
+.. code-block:: bash
 
    source "${VSI_COMMON_DIR}/linux/just_docker_functions.bsh"
 
