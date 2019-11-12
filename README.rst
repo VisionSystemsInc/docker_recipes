@@ -210,6 +210,29 @@ Docker-compose is a tool for defining and running multi-container Docker applica
    RUN apt-get update; apt-get install vim
    COPY --from=docker-compose /usr/local/bin/docker-compose /usr/local/bin/docker-compose
 
+Docker compose (musl)
+---------------------
+
+========== ======
+Name       Docker compose
+Build Args ``DOCKER_COMPOSE_VERSION`` - Version of docker-compose source to download
+Build Args ``DOCKER_COMPOSE_VIRTUALENV`` - The location of the docker-compose virtualenv
+Build Args ``ALPINE_VERSION`` - Version of alpine you'll be using, this will affect the version of python used to generate the virtualenv
+Output dir Defaults to ``/usr/local/docker-compose`` unless ``DOCKER_COMPOSE_VIRTUALENV`` is changed.
+========== ======
+
+Useful for musl systems that won't run the docker-compose executable. Until this recipe is completed, you will need to copy the entire virtualenv directory and install python into the destination image.
+
+.. rubric:: Example
+
+.. code-block:: Dockerfile
+
+   FROM vsiri/recipe:docker-compose-musl as docker-compose
+   FROM debian:9
+   RUN apt-get update; apt-get install vim
+   COPY --from=docker-compose /usr/local/docker-compose /usr/local/docker-compose
+   RUN ln -s /usr/local/docker-compose/bin/docker-compose /usr/local/bin/docker-compose
+
 git Large File Support
 ----------------------
 
