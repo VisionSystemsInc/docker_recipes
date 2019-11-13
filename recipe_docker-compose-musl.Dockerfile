@@ -1,19 +1,19 @@
-ARG ALPINE_VERSION=3.8
-FROM alpine:${ALPINE_VERSION}
+# ARG ALPINE_VERSION=3.8
+# FROM alpine:${ALPINE_VERSION}
 
-SHELL ["/usr/bin/env", "sh", "-euxvc"]
+# SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
-ONBUILD ARG DOCKER_COMPOSE_VERSION=1.24.1
-ONBUILD ARG DOCKER_COMPOSE_VIRTUALENV=/usr/local/docker-compose
+# ONBUILD ARG DOCKER_COMPOSE_VERSION=1.24.1
+# ONBUILD ARG DOCKER_COMPOSE_VIRTUALENV=/usr/local/docker-compose
 
-ONBUILD RUN apk add --no-cache \
-                    --virtual .deps python3 python3-dev musl-dev libc-dev gcc \
-                              libffi-dev openssl-dev make \
-                              curl ca-certificates; \
-            pip3 install -U virtualenv; \
-            virtualenv "${DOCKER_COMPOSE_VIRTUALENV}"; \
-            "${DOCKER_COMPOSE_VIRTUALENV}"/bin/pip install docker-compose==1.24.1; \
-            apk del .deps
+# ONBUILD RUN apk add --no-cache \
+#                     --virtual .deps python3 python3-dev musl-dev libc-dev gcc \
+#                               libffi-dev openssl-dev make \
+#                               curl ca-certificates; \
+#             pip3 install -U virtualenv; \
+#             virtualenv "${DOCKER_COMPOSE_VIRTUALENV}"; \
+#             "${DOCKER_COMPOSE_VIRTUALENV}"/bin/pip install docker-compose==1.24.1; \
+#             apk del .deps
 
 
 # Even when this is built against alpine 3.4, it works down to 3.2
@@ -51,3 +51,37 @@ ONBUILD RUN apk add --no-cache \
 #     apk del .deps
 #     #
 #     # /usr/local/bin/docker-compose --version
+
+ARG PYTHON_VERSION=3.7
+ARG BUILD_ALPINE_VERSION=3.8
+FROM python:${PYTHON_VERSION}-alpine${BUILD_ALPINE_VERSION} AS build-alpine
+RUN apk add --no-cache \
+    bash \
+    build-base \
+    ca-certificates \
+    curl \
+    gcc \
+    git \
+    libc-dev \
+    libffi-dev \
+    libgcc \
+    make \
+    musl-dev \
+    openssl \
+    openssl-dev \
+    python2 \
+    python2-dev \
+    zlib-dev
+ENV BUILD_BOOTLOADER=1
+
+ARG DOCKER_COMPOSE_VERSION=1.25.0-rc4
+RUN curl -fsLO "https://github.com/docker/compose/archive/${DOCKER_COMPOSE_VERSION}/docker-compose.tar.gz"; \
+    tar zxf docker-compose.tar.gz; \
+    ln -s compose-* /code; \
+    cd /code; \
+    pip install virtualenv==16.2.0; \
+    pip install tox==2.9.1; \
+    tox -e py37 --notest; \
+    DOCKER_COMPOSE_GITSHA=unknown script/build/linux-entrypoint
+
+RUN docker-compose
