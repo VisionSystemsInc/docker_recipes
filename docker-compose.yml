@@ -63,18 +63,6 @@ services:
       dockerfile: recipe_cmake.Dockerfile
     image: vsiri/recipe:cmake
 
-  docker-compose:
-    build:
-      context: .
-      dockerfile: recipe_docker-compose.Dockerfile
-    image: vsiri/recipe:docker-compose
-
-  docker-compose-musl:
-    build:
-      context: .
-      dockerfile: recipe_docker-compose-musl.Dockerfile
-    image: vsiri/recipe:docker-compose-musl
-
   docker:
     build:
       context: .

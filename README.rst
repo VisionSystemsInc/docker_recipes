@@ -193,45 +193,20 @@ Docker is a tool for running container applications
 Docker compose
 --------------
 
-=========== ==============
-Name        Docker compose
-Build Args  ``DOCKER_COMPOSE_VERSION`` - Version of docker-compose to download
-Output file ``/usr/local/bin/docker-compose``
-=========== ==============
+This isn't actually a recipe, as the docker community already creates the images we need
 
-Docker-compose is a tool for defining and running multi-container Docker applications
-
+For glibc, use ``docker/compose:${DOCKER_COMPOSE_VERSION}-debian``, and for musl (as of docker-compose version 1.25.0) use ``docker/compose:${DOCKER_COMPOSE_VERSION}-alpine``
 .. rubric:: Example
 
 .. code-block:: Dockerfile
 
-   FROM vsiri/recipe:docker-compose as docker-compose
-   FROM debian:9
-   RUN apt-get update; apt-get install vim
+   ARG ${DOCKER_COMPOSE_VERSION}
+   FROM docker/compose:${DOCKER_COMPOSE_VERSION}-alpine as docker-compose
+   FROM alpine:3.9
+   RUN apk add --no-cache git
    COPY --from=docker-compose /usr/local/bin/docker-compose /usr/local/bin/docker-compose
 
-Docker compose (musl)
----------------------
-
-========== ======
-Name       Docker compose
-Build Args ``DOCKER_COMPOSE_VERSION`` - Version of docker-compose source to download
-Build Args ``DOCKER_COMPOSE_VIRTUALENV`` - The location of the docker-compose virtualenv
-Build Args ``ALPINE_VERSION`` - Version of alpine you'll be using, this will affect the version of python used to generate the virtualenv
-Output dir Defaults to ``/usr/local/docker-compose`` unless ``DOCKER_COMPOSE_VIRTUALENV`` is changed.
-========== ======
-
-Useful for musl systems that won't run the docker-compose executable. Until this recipe is completed, you will need to copy the entire virtualenv directory and install python into the destination image.
-
-.. rubric:: Example
-
-.. code-block:: Dockerfile
-
-   FROM vsiri/recipe:docker-compose-musl as docker-compose
-   FROM debian:9
-   RUN apt-get update; apt-get install vim
-   COPY --from=docker-compose /usr/local/docker-compose /usr/local/docker-compose
-   RUN ln -s /usr/local/docker-compose/bin/docker-compose /usr/local/bin/docker-compose
+As long as you don't use alpine 3.8 or older, this will work. In that case, you should probably install the glibc libraries and use the debian ``docker-compose`` in alpine.
 
 git Large File Support
 ----------------------
