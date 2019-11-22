@@ -19,8 +19,8 @@ A docker recipe is a (usually very small) docker image that is included in a mul
 
    RUN echo stuff
 
-   COPY --from=tini /usr/local/bin/tini /usr/local/bin/tini
-   COPY --from=gosu /usr/local/bin/gosu /usr/local/bin/gosu
+   COPY --from=tini /usr/local /usr/local
+   COPY --from=gosu /usr/local /usr/local
 
 How to use
 ==========
@@ -68,7 +68,7 @@ tini
 ============ ====
 Name         tini
 Build Args   ``TINI_VERSION`` - Version of tini to download
-Output files ``/usr/local/bin/tini``
+Output files ``/usr/local/bin/tini`` and ``/usr/local/bin/_tini``
 ============ ====
 
 Tini is a process reaper, and should be used in dockers that spawn new processes
@@ -82,7 +82,7 @@ There is a similar version for alpine: tini-musl
    FROM vsiri/recipe:tini as tini
    FROM debian:9
    RUN apt-get update; apt-get install vim
-   COPY --from=tini /usr/local/bin/tini /usr/local/bin/tini
+   COPY --from=tini COPY /usr/local /usr/local
 
 gosu
 ----
@@ -188,7 +188,7 @@ Docker is a tool for running container applications
    FROM vsiri/recipe:docker as docker
    FROM debian:9
    RUN apt-get update; apt-get install vim
-   COPY --from=docker /usr/local/bin /usr/local/bin
+   COPY --from=docker /usr/local /usr/local
 
 Docker compose
 --------------
