@@ -6,7 +6,7 @@ set -eu
 # and report the issue
 
 # If running in singularity
-if [ -n "${SINGULARITY_NAME+set}" ]; then
+if [ -d "/.singularity.d" ]; then
   while (( $# )); do
     case "${1}" in
       # Signifies the rest is the command, so break
