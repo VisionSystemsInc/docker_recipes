@@ -7,7 +7,7 @@ set -eu
 
 # If running in singularity
 if [ -d "/.singularity.d" ]; then
-  while (( $# )); do
+  while [ $# -gt 0 ]; do
     case "${1}" in
       # Signifies the rest is the command, so break
       --)
