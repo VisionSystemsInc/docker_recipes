@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-: ${VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"}
+if [ -z ${VSI_COMMON_DIR+set} ]; then
+  VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"
+fi
 
 . "${VSI_COMMON_DIR}/tests/testlib.bsh"
 . "${VSI_COMMON_DIR}/linux/uwecho.bsh"
