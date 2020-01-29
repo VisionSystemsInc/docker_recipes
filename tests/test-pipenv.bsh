@@ -13,7 +13,7 @@ setup()
   temp_image="$(mktemp -u test_XXXXXXXXXXXXXXXX | tr '[:upper:]' '[:lower:]')"
 }
 
-  command -v "${DOCKER}" &> /dev/null || skip_next_test
+command -v "${DOCKER}" &> /dev/null || skip_next_test
 begin_test "Pipenv"
 (
   setup_test
@@ -23,10 +23,9 @@ begin_test "Pipenv"
           FROM python:3
           SHELL ["/usr/bin/env", "bash", "-euxvc"]
 
-          COPY --from=pipenv /tmp/pipenv /tmp/pipenv
+          COPY --from=pipenv /usr/local /usr/local
           RUN ln -s "$(which python3)" /bar; \
-              /tmp/pipenv/get-pipenv; \
-              rm -r /tmp/pipenv' > Dockerfile
+              for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done' > Dockerfile
 
   docker build -t ${temp_image} --build-arg=PIPENV_VERSION=2018.5.18 \
                                 --build-arg=PIPENV_VIRTUALENV=/foo \

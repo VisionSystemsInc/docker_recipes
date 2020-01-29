@@ -105,7 +105,7 @@ sudo written with docker automation in mind (no passwords ever)
 
    FROM debian:9
    RUN apt-get update; apt-get install vim
-   COPY --from=gosu /usr/local/bin/gosu /usr/local/bin/gosu
+   COPY --from=gosu /usr/local /usr/local
    # Optionally add SUID bit so an unprivileged user can run as root (like sudo)
    RUN chmod u+s /usr/local/bin/gosu
 
@@ -127,7 +127,7 @@ ep is a simple way to apply bourne shell style variable name substitution to any
    FROM vsiri/recipe:ep as ep
    FROM debian:9
    RUN apt-get update; apt-get install vim
-   COPY --from=ep /usr/local/bin/ep /usr/local/bin/ep
+   COPY --from=ep /usr/local /usr/local
 
 jq - JSON Processor
 -------------------
@@ -147,7 +147,7 @@ jq is a lightweight and flexible command-line JSON processor
    FROM vsiri/recipe:jq as jq
    FROM debian:9
    RUN apt-get update; apt-get install vim
-   COPY --from=jq /usr/local/bin/jq /usr/local/bin/jq
+   COPY --from=jq /usr/local /usr/local
 
 ninja
 -----
@@ -168,7 +168,7 @@ Ninja is generally a better/faster alternative to GNU Make.
    FROM vsiri/recipe:ninja as ninja
    FROM debian:9
    RUN apt-get update; apt-get install vim
-   COPY --from=ninja /usr/local/bin/ninja /usr/local/bin/ninja
+   COPY --from=ninja /usr/local /usr/local
 
 Docker
 ------
@@ -204,7 +204,7 @@ For glibc, use ``docker/compose:${DOCKER_COMPOSE_VERSION}-debian``, and for musl
    FROM docker/compose:${DOCKER_COMPOSE_VERSION}-alpine as docker-compose
    FROM alpine:3.9
    RUN apk add --no-cache git
-   COPY --from=docker-compose /usr/local/bin/docker-compose /usr/local/bin/docker-compose
+   COPY --from=docker-compose /usr/local /usr/local
 
 As long as you don't use alpine 3.8 or older, this will work. In that case, you should probably install the glibc libraries and use the debian ``docker-compose`` in alpine.
 
@@ -226,7 +226,7 @@ git-lfs gives git the ability to handle large files gracefully.
    FROM vsiri/recipe:git-lfs as git-lfs
    FROM debian:9
    RUN apt-get update; apt-get install vim
-   COPY --from=git-lfs /usr/local/bin/git-lfs /usr/local/bin/git-lfs
+   COPY --from=git-lfs /usr/local /usr/local
 
 CMake
 -----
@@ -246,7 +246,7 @@ CMake is a cross-platform family of tools designed to build, test and package so
    FROM vsiri/recipe:cmake as cmake
    FROM debian:9
    RUN apt-get update; apt-get install vim
-   COPY --from=cmake /cmake /usr/local/
+   COPY --from=cmake /cmake /usr/local
 
 Pipenv
 ------
@@ -276,8 +276,10 @@ A script called ``fake_package`` is added to the pipenv virtualenv, this script 
    FROM vsiri/recipe:pipenv as pipenv
    FROM debian:9
    RUN apt-get update; apt-get install vim
-   COPY --from=pipenv /tmp/pipenv /tmp/pipenv
-   RUN /tmp/pipenv/get-pipenv; rm -rf /tmp/pipenv || :
+   COPY --from=pipenv /usr/local /usr/local
+   ...
+   # Only needs to be run once for all recipes
+   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
 
 .. note::
 
@@ -301,7 +303,7 @@ One True Awk
 ============ ============
 Name         One True Awk
 Build Args   ``ONETRUEAWK_VERSION`` - Version of one true awk to download
-Output files ``/use/local/bin/awk``
+Output files ``/usr/local/bin/awk``
 ============ ============
 
 https://github.com/onetrueawk/awk is a severly limited version awk that some primative operating systems use. This recipe will help in testing against that version.
@@ -313,7 +315,7 @@ https://github.com/onetrueawk/awk is a severly limited version awk that some pri
    FROM vsiri/recipe:onetrueawk as onetrueawk
    FROM debian:9
    RUN apt-get update; apt-get install vim
-   COPY --from=onetrueawk /usr/local/bin/awk /usr/local/bin/
+   COPY --from=onetrueawk /usr/local /usr/local
 
 J.U.S.T.
 ========
