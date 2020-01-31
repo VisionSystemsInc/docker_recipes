@@ -1,15 +1,15 @@
-FROM alpine:3.8
+FROM alpine:3.11
 
 SHELL ["sh", "-euxvc"]
 
-ONBUILD ARG GOSU_VERSION=1.10
+ONBUILD ARG GOSU_VERSION=1.11
 ONBUILD RUN apk add --no-cache --virtual .deps curl dpkg gnupg openssl; \
             # download gosu
             dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
-            curl -fsLo /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch; \
+            curl -fsSRLo /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch; \
             chmod +x /usr/local/bin/gosu; \
             # verify the signature
-            curl -fsLo /dev/shm/gosu.asc https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc; \
+            curl -fsSLo /dev/shm/gosu.asc https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc; \
             export GNUPGHOME=/dev/shm; \
             for server in $(shuf -e ha.pool.sks-keyservers.net \
                                     hkp://p80.pool.sks-keyservers.net:80 \

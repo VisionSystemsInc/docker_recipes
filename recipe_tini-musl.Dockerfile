@@ -1,16 +1,16 @@
-FROM alpine:3.8
+FROM alpine:3.11
 
 SHELL ["sh", "-euxvc"]
 
 ADD tini /usr/local/bin/tini
 
-ONBUILD ARG TINI_VERSION=v0.16.1
+ONBUILD ARG TINI_VERSION=v0.18.0
 ONBUILD RUN apk add --no-cache --virtual .deps gnupg curl ca-certificates; \
             # download tini
-            curl -fsLo /usr/local/bin/_tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-muslc-amd64; \
+            curl -fsSRLo /usr/local/bin/_tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-muslc-amd64; \
             chmod +x /usr/local/bin/tini /usr/local/bin/_tini; \
             # verify the signature
-            curl -fsLo /dev/shm/tini.asc https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-muslc-amd64.asc; \
+            curl -fsSLo /dev/shm/tini.asc https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-muslc-amd64.asc; \
             export GNUPGHOME=/dev/shm; \
             for server in $(shuf -e ha.pool.sks-keyservers.net \
                                     hkp://p80.pool.sks-keyservers.net:80 \

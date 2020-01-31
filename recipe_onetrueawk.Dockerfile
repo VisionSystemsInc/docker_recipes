@@ -1,10 +1,10 @@
-FROM alpine:3.8
+FROM alpine:3.11
 
 SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
 ONBUILD RUN apk add --no-cache gcc make curl bison libc-dev
 ONBUILD ARG ONETRUEAWK_VERSION=89354cc23057158fa4feb566e46513ca5c44ac3b
-ONBUILD RUN curl -fsLo awk.tgz https://github.com/onetrueawk/awk/archive/${ONETRUEAWK_VERSION}.tar.gz; \
+ONBUILD RUN curl -fsSLo awk.tgz https://github.com/onetrueawk/awk/archive/${ONETRUEAWK_VERSION}.tar.gz; \
             tar xzf awk.tgz; \
             cd /awk-*; \
             make CFLAGS="-O2 -static"; \

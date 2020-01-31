@@ -13,7 +13,7 @@ ONBUILD RUN set -euxv; \
             apt-get update; \
             DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ${build_deps}; \
             #curl -LO https://github.com/zmanda/amanda/archive/${AMANDA_VERSION}/amanda.tar.gz; \
-            curl -fsLO https://github.com/andyneff/amanda/archive/${AMANDA_VERSION}/amanda.tar.gz; \
+            curl -fsSRLO https://github.com/andyneff/amanda/archive/${AMANDA_VERSION}/amanda.tar.gz; \
             tar zxf amanda.tar.gz; \
             cd amanda-${AMANDA_VERSION//\//-}; \
             ./autogen; \
@@ -22,4 +22,5 @@ ONBUILD RUN set -euxv; \
             mv *.deb ../; \
             DEBIAN_FRONTEND=noninteractive apt-get purge --auto-remove -y ${build_deps}; \
             cd / ; \
+            touch -r /amanda.tar.gz /*.deb; \
             rm -r /amanda.tar.gz /amanda-${AMANDA_VERSION//\//-}

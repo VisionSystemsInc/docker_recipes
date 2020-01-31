@@ -202,7 +202,7 @@ For glibc, use ``docker/compose:${DOCKER_COMPOSE_VERSION}-debian``, and for musl
 
    ARG ${DOCKER_COMPOSE_VERSION}
    FROM docker/compose:${DOCKER_COMPOSE_VERSION}-alpine as docker-compose
-   FROM alpine:3.9
+   FROM alpine:3.11
    RUN apk add --no-cache git
    COPY --from=docker-compose /usr/local /usr/local
 
