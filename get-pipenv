@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 #*# docker/recipes/get-pipenv
-set +xv
+
 #**
 # .. default-domain:: bash
 #
@@ -34,18 +34,12 @@ install_pipenv()
 
   if [ ! -r "${get_pip}" ]; then
     get_pip="${TMP_DIR}/get-pip.py"
-    if command -v wget > /dev/null 2>&1; then
-      wget -O "${get_pip}" -q "https://bootstrap.pypa.io/get-pip.py"
-    elif command -v curl > /dev/null 2>&1; then
-      curl -L "https://bootstrap.pypa.io/get-pip.py" -o "${get_pip}"
-    else
-      nl='
+    nl='
 '
-      "${PIPENV_PYTHON}" -c "try: import urllib2 as u${nl}except: import urllib.request as u${nl}import sys; fid=open(sys.argv[1], 'wb'); fid.write(u.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" "${get_pip}"
-    fi
+    "${PIPENV_PYTHON}" -c "try: import urllib2 as u${nl}except: import urllib.request as u${nl}import sys; fid=open(sys.argv[1], 'wb'); fid.write(u.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" "${get_pip}"
   fi
 
-  "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" virtualenv
+  "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" pip
   # In order to get python to use our custom root dir, we must set the PYTHONPATH to its
   # site-packages directory. Unfortunately, when we ask site for the answer, it gives
   # multiple answers. Just use them all
@@ -57,6 +51,8 @@ install_pipenv()
   SCRIPTS="$(PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" -c "if True:
           from pip._internal import locations
           print(locations.distutils_scheme('', root='${TMP_DIR}')['scripts'])")"
+  # Install virtualenv, which now needs setuptools, so I have to do this here instead of the get_pip above
+  PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" "${SCRIPTS}/pip" install --root "${TMP_DIR}" virtualenv
   # Create a virtualenv and install pipenv into it
   PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}/virtualenv" "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}"
   "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/pip" install --no-cache-dir pipenv=="${PIPENV_VERSION-2018.11.26}"
