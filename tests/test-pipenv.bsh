@@ -32,7 +32,7 @@ begin_test "Pipenv"
                                 --build-arg=PIPENV_PYTHON=/bar \
                                 .
 
-  [ "$(docker run --rm ${temp_image} bash -c 'head -n1 /foo/bin/pipenv; /foo/bin/pipenv --version')" = $'#!/foo/bin/bar\npipenv, version 2018.05.18' ]
+  [ "$(docker run --rm ${temp_image} bash -c 'head -n1 /foo/bin/pipenv; readlink /foo/bin/python; /foo/bin/pipenv --version')" = $'#!/foo/bin/python\n/bar\npipenv, version 2018.05.18' ]
 
 )
 end_test
