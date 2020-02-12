@@ -34,15 +34,9 @@ install_pipenv()
 
   if [ ! -r "${get_pip}" ]; then
     get_pip="${TMP_DIR}/get-pip.py"
-    if command -v wget > /dev/null 2>&1; then
-      wget -O "${get_pip}" -q "https://bootstrap.pypa.io/get-pip.py"
-    elif command -v curl > /dev/null 2>&1; then
-      curl -L "https://bootstrap.pypa.io/get-pip.py" -o "${get_pip}"
-    else
-      nl='
+    nl='
 '
-      "${PIPENV_PYTHON}" -c "try: import urllib2 as u${nl}except: import urllib.request as u${nl}import sys; fid=open(sys.argv[1], 'wb'); fid.write(u.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" "${get_pip}"
-    fi
+    "${PIPENV_PYTHON}" -c "try: import urllib2 as u${nl}except: import urllib.request as u${nl}import sys; fid=open(sys.argv[1], 'wb'); fid.write(u.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" "${get_pip}"
   fi
 
   "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" pip
