@@ -255,7 +255,7 @@ Pipenv
 Name        Pipenv
 Build Args  ``PIPENV_VERSION`` - Version of pipenv source to download
 Build Args  ``PIPENV_VIRTUALENV`` - The location of the pipenv virtualenv
-Build Args  ``PYTHON`` - Optional default python executable to us
+Build Args  ``PIPENV_PYTHON`` - Optional default python executable to use
 Output dirs ``/tmp/pipenv/*``
 =========== ======
 
