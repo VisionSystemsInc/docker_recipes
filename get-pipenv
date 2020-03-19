@@ -29,6 +29,8 @@ install_pipenv()
   local TMP_DIR="$(mktemp -d)"
   local get_pip="${GET_PIP_SCRIPT-/tmp/pipenv/get-pip.py}"
 
+  mkdir -p "$(dirname "${get_pip}")"
+
   : ${PIPENV_PYTHON:="$( (command -v python3 || command -v python || command -v python2) | head -n 1)"}
   [ -n "${PIPENV_PYTHON}" ] # Make sure python was found
 
@@ -39,7 +41,9 @@ install_pipenv()
     "${PIPENV_PYTHON}" -c "try: import urllib2 as u${nl}except: import urllib.request as u${nl}import sys; fid=open(sys.argv[1], 'wb'); fid.write(u.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" "${get_pip}"
   fi
 
-  "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" pip
+  # "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" pip
+  # I can't find out why this didn't work on Feb 11 anymore...
+  "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" virtualenv
   # In order to get python to use our custom root dir, we must set the PYTHONPATH to its
   # site-packages directory. Unfortunately, when we ask site for the answer, it gives
   # multiple answers. Just use them all
@@ -52,7 +56,9 @@ install_pipenv()
           from pip._internal import locations
           print(locations.distutils_scheme('', root='${TMP_DIR}')['scripts'])")"
   # Install virtualenv, which now needs setuptools, so I have to do this here instead of the get_pip above
-  PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" "${SCRIPTS}/pip" install --root "${TMP_DIR}" virtualenv
+  # This next line won't work if virtualenv is installed in the system...
+  # Need to block that somehow
+  # PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" "${SCRIPTS}/pip" install --root "${TMP_DIR}" virtualenv
   # Create a virtualenv and install pipenv into it
   PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}/virtualenv" "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}"
   "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/pip" install --no-cache-dir pipenv=="${PIPENV_VERSION-2018.11.26}"
