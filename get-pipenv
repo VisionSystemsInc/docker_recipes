@@ -41,9 +41,17 @@ install_pipenv()
     "${PIPENV_PYTHON}" -c "try: import urllib2 as u${nl}except: import urllib.request as u${nl}import sys; fid=open(sys.argv[1], 'wb'); fid.write(u.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" "${get_pip}"
   fi
 
-  # "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" pip
-  # I can't find out why this didn't work on Feb 11 anymore...
-  "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" virtualenv
+  # Virtualenv version 20 (the rewrite from scratch) has distlib as a
+  # sub-dependency. And distlib NEEDS to use setuptools to install. The problem
+  # is get-pip is designed only to install pip, not an arbitary packages, which
+  # is how I purposefully misuse it.
+  # The problem is the root dir's site_packages needs to be in the PYTHONPATH
+  # in order to trick this into working. So figure out the site packages dir
+  # add it to the python path, and install virtualenv and it's distlib
+  # dependency, that will now have the freshly installed setuptools in the
+  # PYTHONPATH
+  "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" pip
+
   # In order to get python to use our custom root dir, we must set the PYTHONPATH to its
   # site-packages directory. Unfortunately, when we ask site for the answer, it gives
   # multiple answers. Just use them all
@@ -51,14 +59,20 @@ install_pipenv()
           import os, site
           print(':'.join([os.path.join('${TMP_DIR}',x.lstrip(os.path.sep))
                   for x in site.getsitepackages()]))")"
+
+  # Install virtualenv, which now needs setuptools, so I have to do this here
+  # instead of the get_pip above, now that I put the root dir's site-packages
+  # in the PYTHONPATH
+  PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" virtualenv
+  # This next line won't work if virtualenv is installed in the system's
+  # python... However the previous method works perfectly, so use that.
+  # PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" "${SCRIPTS}/pip" install --root "${TMP_DIR}" virtualenv
+
   # With PYTHONPATH set, we can ask pip where the scipts directory is (a find would also work)
   SCRIPTS="$(PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" -c "if True:
           from pip._internal import locations
           print(locations.distutils_scheme('', root='${TMP_DIR}')['scripts'])")"
-  # Install virtualenv, which now needs setuptools, so I have to do this here instead of the get_pip above
-  # This next line won't work if virtualenv is installed in the system...
-  # Need to block that somehow
-  # PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" "${SCRIPTS}/pip" install --root "${TMP_DIR}" virtualenv
+
   # Create a virtualenv and install pipenv into it
   PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}/virtualenv" "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}"
   "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/pip" install --no-cache-dir pipenv=="${PIPENV_VERSION-2018.11.26}"
