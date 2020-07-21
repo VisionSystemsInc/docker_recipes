@@ -1,0 +1,13 @@
+version: '2.2'
+
+services:
+
+  test_pipenv:
+    build:
+      context: .
+      dockerfile: test_pipenv.Dockerfile
+      args:
+        PIPENV_VERSION: "2018.5.18"
+        PIPENV_VIRTUALENV: "/foo"
+        PIPENV_PYTHON: "/bar"
+    image: vsiri/test_recipe:test_pipenv

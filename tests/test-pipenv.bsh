@@ -5,39 +5,15 @@ if [ -z ${VSI_COMMON_DIR+set} ]; then
 fi
 
 . "${VSI_COMMON_DIR}/tests/testlib.bsh"
-. "${VSI_COMMON_DIR}/linux/uwecho.bsh"
 : ${DOCKER=docker}
-
-setup()
-{
-  temp_image="$(mktemp -u test_XXXXXXXXXXXXXXXX | tr '[:upper:]' '[:lower:]')"
-}
 
 command -v "${DOCKER}" &> /dev/null || skip_next_test
 begin_test "Pipenv"
 (
   setup_test
 
-  uwecho 'FROM vsiri/recipe:pipenv AS pipenv
-
-          FROM python:3
-          SHELL ["/usr/bin/env", "bash", "-euxvc"]
-
-          COPY --from=pipenv /usr/local /usr/local
-          RUN ln -s "$(which python3)" /bar; \
-              for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done' > Dockerfile
-
-  docker build -t ${temp_image} --build-arg=PIPENV_VERSION=2018.5.18 \
-                                --build-arg=PIPENV_VIRTUALENV=/foo \
-                                --build-arg=PIPENV_PYTHON=/bar \
-                                .
-
-  [ "$(docker run --rm ${temp_image} bash -c 'head -n1 /foo/bin/pipenv; readlink /foo/bin/python; /foo/bin/pipenv --version')" = $'#!/foo/bin/python\n/bar\npipenv, version 2018.05.18' ]
+  RESULT=$(docker run --rm vsiri/test_recipe:test_pipenv bash -c 'head -n1 /foo/bin/pipenv; readlink /foo/bin/python; /foo/bin/pipenv --version')
+  [ "$RESULT" = $'#!/foo/bin/python\n/bar\npipenv, version 2018.05.18' ]
 
 )
 end_test
-
-teardown()
-{
-  docker rmi ${temp_image} > /dev/null || :
-}
