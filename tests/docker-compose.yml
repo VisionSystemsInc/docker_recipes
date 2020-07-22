@@ -11,7 +11,6 @@ services:
         PIPENV_VIRTUALENV: "/foo"
         PIPENV_PYTHON: "/bar"
     image: vsiri/test_recipe:test_pipenv
-
   test_gdal:
     build:
       context: .
@@ -19,3 +18,10 @@ services:
       args:
         GDAL_VERSION: "3.1.0"
     image: vsiri/test_recipe:test_gdal
+  test_git-lfs:
+    build:
+      context: .
+      dockerfile: test_git-lfs.Dockerfile
+      args:
+        GIT_LFS_VERSION: "v2.10.0"
+    image: vsiri/test_recipe:test_git-lfs
