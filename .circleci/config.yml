@@ -1,10 +1,51 @@
-version: 2
+version: 2.1
+
+# -----
+# CircleCI custom commands
+# -----
+commands:
+
+  # run "ci_load" command on user-selected docker-compose file
+  # - requires environment variables $VSI_COMMON_DIR and $CACHE_REPO
+  # - each service identified in the docker-compose file will be separately
+  #   built via "${VSI_COMMON_DIR}/linux/ci_load.py"
+  # - As we are building recipes themselves, we ignore the vsiri/recipe
+  #   dockerhub repo by setting "--recipe-repo" to a dummy variable.
+  ci_load:
+    description: Build dockers (ci_load)
+    parameters:
+      step_name:
+        description: Step name
+        type: string
+        default: Build recipes (ci_load)
+      compose_file:
+        description: docker-compose file
+        type: string
+    steps:
+      - run:
+          name: << parameters.step_name >>
+          command: |
+            COMPOSE_FILE="<< parameters.compose_file >>"
+            SERVICES=( $(docker-compose -f "${COMPOSE_FILE}" ps --services) )
+            for SERVICE in "${SERVICES[@]}"; do
+              python3 "${VSI_COMMON_DIR}/linux/ci_load.py" \
+                --recipe-compose "./docker-compose.yml" \
+                --recipe-repo "IGNORE-RECIPE-REPO" \
+                --cache-repo "${CACHE_REPO}" \
+                "${COMPOSE_FILE}" ${SERVICE}
+            done
+
+# -----
+# CircleCI jobs
+# -----
 jobs:
-  build:
+
+  build_and_test:
     docker:
       - image: vsiri/circleci:bash-compose-lfs
     environment:
       VSI_COMMON_DIR: /vsi
+      CACHE_REPO: vsiri/ci_cache_recipes
     shell: /bin/bash -eo pipefail
     working_directory: ~/repo
 
@@ -27,23 +68,18 @@ jobs:
       - setup_remote_docker
 
       - run:
-          name: Build recipes with unit tests (ci_load)
-          command: |
-            docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
-            COMPOSE_FILE=./tests/docker-compose.yml
-            IFS=$'\n'
-            SERVICES=( $(docker-compose -f $COMPOSE_FILE ps --services) )
-            for service in "${SERVICES[@]}"; do
-              python3 "${VSI_COMMON_DIR}/linux/ci_load.py" \
-                --cache-repo "vsiri/ci_cache_recipes" $COMPOSE_FILE $service
-            done
-
-
-      - run:
-          name: Build remaining recipes
+          name: Additional setup
           command: |
             sed -i 's|context: ../..|context: ${VSI_COMMON_DIR}|' docker-compose.yml
-            docker-compose build
+            docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
+
+      - ci_load:
+          step_name: Build recipes (ci_load)
+          compose_file: ./docker-compose.yml
+
+      - ci_load:
+          step_name: Build tests (ci_load)
+          compose_file: ./tests/docker-compose.yml
 
       - run:
           name: Run integration tests
@@ -51,3 +87,11 @@ jobs:
             TESTLIB_DISCOVERY_DIR: /root/repo/tests
           command: |
             "${VSI_COMMON_DIR}/tests/run_tests"
+
+# -----
+# CircleCI workflows
+# -----
+workflows:
+  recipes:
+    jobs:
+      - build_and_test
