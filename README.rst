@@ -22,10 +22,13 @@ A docker recipe is a (usually very small) docker image that is included in a mul
    COPY --from=tini /usr/local /usr/local
    COPY --from=gosu /usr/local /usr/local
 
+   # Universal patch command that all recipes could use
+   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+
 How to use
 ==========
 
-When using all the defaults, the recipes can be used directly from dockerhub. However, when one of the recipes needs to customized via a build arg, it is often best to include this repo as a submodule in the greater project, and building from the dockerfiles.
+The recipes can be used directly from dockerhub. It is also possible to include this repo as a submodule in the greater project, and building directly from the dockerfiles.
 
 What this is not
 ================
@@ -227,6 +230,9 @@ git-lfs gives git the ability to handle large files gracefully.
    FROM debian:9
    RUN apt-get update; apt-get install vim
    COPY --from=git-lfs /usr/local /usr/local
+   ...
+   # Only needs to be run once for all recipes
+   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
 
 CMake
 -----

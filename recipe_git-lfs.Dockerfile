@@ -2,7 +2,9 @@ FROM alpine:3.11
 
 SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
-ONBUILD ARG GIT_LFS_VERSION=v2.10.0
+ONBUILD ARG GIT_LFS_VERSION=v2.11.0
+
+ADD 30_install_git-lfs /usr/local/share/just/container_build_patch/30_install_git-lfs
 
 ONBUILD RUN apk add --no-cache --virtual .deps ca-certificates curl; \
             WORKDIR="/tmp"; \
