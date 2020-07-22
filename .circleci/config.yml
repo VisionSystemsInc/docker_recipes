@@ -5,9 +5,19 @@ jobs:
       - image: vsiri/circleci:bash-compose-lfs
     environment:
       VSI_COMMON_DIR: /vsi
+    shell: /bin/bash -eo pipefail
     working_directory: ~/repo
 
     steps:
+
+      - run:
+          name: Install software
+          command: |
+            apk update
+            apk add python3
+            python3 --version
+            pip3 install pyyaml
+
       - checkout
       - run:
           name: Checkout vsi_common
@@ -17,7 +27,20 @@ jobs:
       - setup_remote_docker
 
       - run:
-          name: Build recipes
+          name: Build recipes with unit tests (ci_load)
+          command: |
+            docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
+            COMPOSE_FILE=./tests/docker-compose.yml
+            IFS=$'\n'
+            SERVICES=( $(docker-compose -f $COMPOSE_FILE ps --services) )
+            for service in "${SERVICES[@]}"; do
+              python3 "${VSI_COMMON_DIR}/linux/ci_load.py" \
+                --cache-repo "vsiri/ci_cache_recipes" $COMPOSE_FILE $service
+            done
+
+
+      - run:
+          name: Build remaining recipes
           command: |
             sed -i 's|context: ../..|context: ${VSI_COMMON_DIR}|' docker-compose.yml
             docker-compose build
