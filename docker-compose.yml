@@ -1,6 +1,4 @@
-version: '2.2'
-#If start using multistage docker images
-#version: '2.3'
+version: '2.3'
 
 services:
   amanda_deb:
@@ -94,3 +92,11 @@ services:
       # args:
       #   ONETRUEAWK_VERSION: "${ONETRUEAWK_VERSION}"
     image: vsiri/recipe:onetrueawk
+
+  gdal:
+    build:
+      context: .
+      dockerfile: recipe_gdal.Dockerfile
+      # args:
+      #   GDAL_VERSION: "${GDAL_VERSION}"
+    image: vsiri/recipe:gdal

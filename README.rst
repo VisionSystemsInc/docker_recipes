@@ -323,6 +323,57 @@ https://github.com/onetrueawk/awk is a severly limited version awk that some pri
    RUN apt-get update; apt-get install vim
    COPY --from=onetrueawk /usr/local /usr/local
 
+GDAL
+----
+
+============ ============
+Name         GDAL
+Build Args   ``GDAL_VERSION`` - Version of GDAL to download
+Output files ``/gdal/usr/local/*``
+============ ============
+
+Compiles GDAL v3, including PROJ v6, ECW J2K 5.5, OPENJPEG 2.3
+
+.. rubric:: Example
+
+.. code-block:: Dockerfile
+
+   FROM python:3.6.9-slim-jessie as python
+   FROM vsiri/recipe:gdal as gdal
+   FROM ubuntu:16.04
+
+   # set shell to bash
+   SHELL ["/usr/bin/env", "/bin/bash", "-euxvc"]
+
+   # install python & gdal
+   COPY --from=python /usr/local /usr/local/
+   COPY --from=gdal /gdal/usr/local /usr/local
+
+   # Only needs to be run once for all recipes
+   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+
+   # additional dependencies
+   RUN apt-get update -y; \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y  --no-install-recommends \
+         expat libffi6 libssl1.0.0 libtiff5 sqlite3 ; \
+      rm -rf /var/lib/apt/lists/* ;
+
+   # install numpy (before pypi GDAL bindings)
+   RUN pip3 install numpy ;
+
+   # pypi GDAL bindings
+   RUN export BUILD_DEPS="g++" ; \
+      apt-get update -y ; \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y  --no-install-recommends \
+         ${BUILD_DEPS} ; \
+      pip3 install GDAL==$(cat /usr/local/gdal_version) ; \
+      apt-get clean ${BUILD_DEPS} ; \
+      rm -rf /var/lib/apt/lists/* ;
+
+   CMD ["gdalinfo", "--version"]
+
+
+
 J.U.S.T.
 ========
 
@@ -333,3 +384,5 @@ To define the "build recipes" target, add this to your ``Justfile``
    source "${VSI_COMMON_DIR}/linux/just_docker_functions.bsh"
 
 And add ``justify build recipes`` to any Justfile target that is responsible for building docker images.
+
+
