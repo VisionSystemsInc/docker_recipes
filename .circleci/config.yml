@@ -27,8 +27,7 @@ commands:
           command: |
             COMPOSE_FILE="<< parameters.compose_file >>"
             SERVICES=( $(docker-compose -f "${COMPOSE_FILE}" ps --services) )
-            for SERVICE in "${SERVICES[@]}"
-            do
+            for SERVICE in "${SERVICES[@]}"; do
               python3 "${VSI_COMMON_DIR}/linux/ci_load.py" \
                 --recipe-compose "./docker-compose.yml" \
                 --recipe-repo "IGNORE-RECIPE-REPO" \
