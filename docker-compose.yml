@@ -1,6 +1,4 @@
-version: '2.2'
-#If start using multistage docker images
-#version: '2.3'
+version: '2.3'
 
 services:
   amanda_deb:
