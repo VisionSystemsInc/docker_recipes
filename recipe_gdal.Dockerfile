@@ -1,7 +1,7 @@
 # CentOS 6 with GDAL 3+
 # - includes PROJ v6, ECW J2K 5.5, OPENJPEG 2.3
-# - compatible with pypi GDAL bindings
-# - this docker is not currently compatible with GDAL 2.
+# - compatible with pypi GDAL bindings (recipe does not build python bindings)
+# - recipe is not currently compatible with GDAL 2.
 #
 # This dockerfile follows procedures from the offical GDAL dockers
 #   https://github.com/OSGeo/gdal/tree/master/gdal/docker
@@ -10,15 +10,54 @@
 # CentOS 6 and already containing many updated build essentials.
 #   https://github.com/pypa/manylinux
 #
-# For the future, the manylinux2010 image may enables a possible portable GDAL
-# that includes internal copies of necessary dependencies and python bindings
-# for a selected python version.
+# In the future, the manylinux2010 image could enable a portable GDAL that
+# includes internal copies of necessary dependencies and python bindings
+# for a selected python version. This recipe currently does not build any
+# python bindings.
 #
 # As this base image includes build essentials already in /usr/local,
-# libraries are staged in "/gdal/usr/local".  End-users make use of this
-# recipe via the following commands:
-#   FROM vsi/recipe:gdal as gdal
-#   COPY --from=gdal /gdal/usr/local /usr/local
+# libraries are staged in "/gdal/usr/local".
+#
+#
+# -----------------------------------------------------------------------------
+# EXAMPLE USAGE
+# -----------------------------------------------------------------------------
+# FROM python:3.6.9-slim-jessie as python
+# FROM vsiri/recipe:gdal as gdal
+# FROM ubuntu:16.04
+#
+# # set shell to bash
+# SHELL ["/usr/bin/env", "/bin/bash", "-euxvc"]
+#
+# # install python & gdal
+# COPY --from=python /usr/local /usr/local/
+# COPY --from=gdal /gdal/usr/local /usr/local
+# RUN ldconfig
+#
+# # additional dependencies
+# RUN apt-get update -y; \
+#     DEBIAN_FRONTEND=noninteractive apt-get install -y  --no-install-recommends \
+#         expat libffi6 libssl1.0.0 libtiff5 sqlite3 ; \
+#     rm -rf /var/lib/apt/lists/* ;
+#
+# # install numpy (before pypi GDAL bindings)
+# RUN pip3 install numpy ;
+#
+# # pypi GDAL bindings
+# RUN export BUILD_DEPS="g++" ; \
+#     apt-get update -y ; \
+#     DEBIAN_FRONTEND=noninteractive apt-get install -y  --no-install-recommends \
+#         ${BUILD_DEPS} ; \
+#     pip3 install GDAL==$(cat /usr/local/gdal_version) ; \
+#     apt-get clean ${BUILD_DEPS} ; \
+#     rm -rf /var/lib/apt/lists/* ;
+#
+# CMD ["gdalinfo", "--version"]
+#
+
+# -----------------------------------------------------------------------------
+# BASE IMAGE
+# -----------------------------------------------------------------------------
 
 # base image
 FROM quay.io/pypa/manylinux2010_x86_64:2020-07-18-8228e74 as base_image
