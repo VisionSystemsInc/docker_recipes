@@ -11,3 +11,11 @@ services:
         PIPENV_VIRTUALENV: "/foo"
         PIPENV_PYTHON: "/bar"
     image: vsiri/test_recipe:test_pipenv
+
+  test_gdal:
+    build:
+      context: .
+      dockerfile: test_gdal.Dockerfile
+      args:
+        GDAL_VERSION: "3.1.0"
+    image: vsiri/test_recipe:test_gdal
