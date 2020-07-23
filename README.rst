@@ -23,7 +23,7 @@ A docker recipe is a (usually very small) docker image that is included in a mul
    COPY --from=gosu /usr/local /usr/local
 
    # Universal patch command that all recipes could use
-   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+   RUN shopt -s nullglob; for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
 
 How to use
 ==========
