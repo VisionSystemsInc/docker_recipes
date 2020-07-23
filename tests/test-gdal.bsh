@@ -4,7 +4,8 @@ if [ -z ${VSI_COMMON_DIR+set} ]; then
   VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"
 fi
 
-. "${VSI_COMMON_DIR}/tests/testlib.bsh"
+source "${VSI_COMMON_DIR}/tests/testlib.bsh"
+
 : ${DOCKER=docker}
 
 command -v "${DOCKER}" &> /dev/null || skip_next_test
