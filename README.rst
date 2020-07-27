@@ -230,7 +230,7 @@ If you need a recipe that you can use if the base image is allowed to switch bet
    COPY --from=docker-compose_glib /usr/local/bin/docker-compose /usr/local/bin/docker-compose_glib
    COPY --from=docker-compose /usr/local /usr/local
 
-A script attempts to auto detect musl vs glibc. If this script is unable to come to the correct decision, set ``VSI_MUSL`` to ``1`` to force musl or ``0`` for glibc
+A script attempts to auto-detect musl vs glibc. If this script is unable to come to the correct decision, set ``VSI_MUSL`` to ``1`` to force musl or ``0`` for glibc
 
 git Large File Support
 ----------------------
