@@ -15,6 +15,6 @@ begin_test "Git LFS"
   setup_test
 
   # Check that git-lfs is "installed"
-  check_str "$(docker run --rm vsiri/test_recipe:test_git-lfs bash -c 'git config --system filter.lfs.process')" "git-lfs filter-process"
+  assert_str_eq "$(docker run --rm vsiri/test_recipe:test_git-lfs bash -c 'git config --system filter.lfs.process')" "git-lfs filter-process"
 )
 end_test

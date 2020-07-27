@@ -67,6 +67,12 @@ services:
       dockerfile: recipe_docker.Dockerfile
     image: vsiri/recipe:docker
 
+  docker-compose:
+    build:
+      context: .
+      dockerfile: recipe_docker-compose.Dockerfile
+    image: vsiri/recipe:docker-compose
+
   git-lfs:
     build:
       context: .
