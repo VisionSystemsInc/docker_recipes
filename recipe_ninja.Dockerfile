@@ -1,6 +1,6 @@
 FROM alpine:3.11
 
-SHELL ["sh", "-euxvc"]
+SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
 ONBUILD ARG NINJA_VERSION=v1.10.0
 #No signature :(

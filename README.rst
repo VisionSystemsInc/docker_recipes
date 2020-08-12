@@ -51,7 +51,7 @@ VSI Common
 
 ============ ==========
 Name         VSI Common
-Output files ``/vsi/*``
+Output dir   ``/vsi``
 ============ ==========
 
 Some VSI Common functions are needed in the container, this provides a mechanism to copy them in, even if the :file:`just` executable is used.
@@ -71,7 +71,7 @@ tini
 ============ ====
 Name         tini
 Build Args   ``TINI_VERSION`` - Version of tini to download
-Output files ``/usr/local/bin/tini`` and ``/usr/local/bin/_tini``
+Output dir   ``/usr/local``
 ============ ====
 
 Tini is a process reaper, and should be used in dockers that spawn new processes
@@ -93,7 +93,7 @@ gosu
 ============ ====
 Name         gosu
 Build Args   ``GOSU_VERSION`` - Version of gosu to download
-Output files ``/usr/local/bin/gosu``
+Output dir   ``/usr/local``
 ============ ====
 
 sudo written with docker automation in mind (no passwords ever)
@@ -118,7 +118,7 @@ ep - envplate
 ============ ==
 Name         ep
 Build Args   ``EP_VERSION`` - Version of ep to download
-Output files ``/usr/local/bin/ep``
+Output dir   ``/usr/local``
 ============ ==
 
 ep is a simple way to apply bourne shell style variable name substitution to any generic configuration file for applications that do not support environment variable name substitution
@@ -138,7 +138,7 @@ jq - JSON Processor
 ============ ==
 Name         jq
 Build Args   ``JQ_VERSION`` - Version of jq to download
-Output files ``/usr/local/bin/jq``
+Output dir   ``/usr/local``
 ============ ==
 
 jq is a lightweight and flexible command-line JSON processor
@@ -158,7 +158,7 @@ ninja
 ============ =====
 Name         ninja
 Build Args   ``NINJA_VERSION`` - Version of Ninja to download
-Output files ``/usr/local/bin/ninja``
+Output dir   ``/usr/local``
 ============ =====
 
 Ninja is generally a better/faster alternative to GNU Make.
@@ -179,7 +179,7 @@ Docker
 =========== ==============
 Name        Docker
 Build Args  ``DOCKER_VERSION`` - Version of docker to download
-Output dirs ``/usr/local/bin/`` including ``docker`` and several other files.
+Output dir  ``/usr/local`` including ``docker`` and several other files.
 =========== ==============
 
 Docker is a tool for running container applications
@@ -238,7 +238,7 @@ git Large File Support
 =========== =======
 Name        git lfs
 Build Args  ``GIT_LFS_VERSION`` - Version of git-lfs to download
-Output dirs ``/usr/local/bin/git-lfs``
+Output dir  ``/usr/local/bin/git-lfs``
 =========== =======
 
 git-lfs gives git the ability to handle large files gracefully.
@@ -261,7 +261,7 @@ CMake
 ============ =====
 Name         CMake
 Build Args   ``CMAKE_VERSION`` - Version of CMake to download
-Output files ``/cmake/*``
+Output dir   ``/usr/local``
 ============ =====
 
 CMake is a cross-platform family of tools designed to build, test and package software
@@ -273,7 +273,7 @@ CMake is a cross-platform family of tools designed to build, test and package so
    FROM vsiri/recipe:cmake as cmake
    FROM debian:9
    RUN apt-get update; apt-get install vim  # This line is just an example
-   COPY --from=cmake /cmake /usr/local
+   COPY --from=cmake /usr/local /usr/local
 
 Pipenv
 ------
@@ -283,7 +283,7 @@ Name        Pipenv
 Build Args  ``PIPENV_VERSION`` - Version of pipenv source to download
 Build Args  ``PIPENV_VIRTUALENV`` - The location of the pipenv virtualenv
 Build Args  ``PIPENV_PYTHON`` - Optional default python executable to use
-Output dirs ``/tmp/pipenv/*``
+Output dir  ``/usr/local``
 =========== ======
 
 Pipenv is the new way to manage python requirements (within a virtualenv) on project.
@@ -330,7 +330,7 @@ One True Awk
 ============ ============
 Name         One True Awk
 Build Args   ``ONETRUEAWK_VERSION`` - Version of one true awk to download
-Output files ``/usr/local/bin/awk``
+Output dir   ``/usr/local``
 ============ ============
 
 https://github.com/onetrueawk/awk is a severly limited version awk that some primative operating systems use. This recipe will help in testing against that version.
@@ -350,7 +350,7 @@ GDAL
 ============ ============
 Name         GDAL
 Build Args   ``GDAL_VERSION`` - Version of GDAL to download
-Output files ``/gdal/usr/local/*``
+Output dir   ``/gdal/usr/local``
 ============ ============
 
 Compiles GDAL v3, including PROJ v6, ECW J2K 5.5, OPENJPEG 2.3
@@ -393,6 +393,25 @@ Compiles GDAL v3, including PROJ v6, ECW J2K 5.5, OPENJPEG 2.3
 
    CMD ["gdalinfo", "--version"]
 
+Conda's python
+--------------
+
+============ ============
+Name         Python
+Build Args   ``PYTHON_VERSION`` - Version of python to download
+Output files ``/usr/local/bin/awk``
+============ ============
+
+https://github.com/onetrueawk/awk is a severly limited version awk that some primative operating systems use. This recipe will help in testing against that version.
+
+.. rubric:: Example
+
+.. code-block:: Dockerfile
+
+   FROM vsiri/recipe:onetrueawk as onetrueawk
+   FROM debian:9
+   RUN apt-get update; apt-get install vim  # This line is just an example
+   COPY --from=onetrueawk /usr/local /usr/local
 
 
 J.U.S.T.

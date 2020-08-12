@@ -1,6 +1,6 @@
 FROM debian:8
 
-SHELL ["bash", "-xveuc"]
+SHELL ["/usr/bin/env", "bash", "-xveuc"]
 
 ONBUILD ARG AMANDA_VERSION=tags/community_3_4_5
 ONBUILD RUN set -euxv; \

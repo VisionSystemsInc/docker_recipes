@@ -1,6 +1,6 @@
 FROM alpine:3.11
 
-SHELL ["sh", "-euxvc"]
+SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
 ONBUILD ARG GOSU_VERSION=1.11
 ONBUILD RUN apk add --no-cache --virtual .deps curl dpkg gnupg openssl; \
