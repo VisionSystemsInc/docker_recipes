@@ -399,19 +399,21 @@ Conda's python
 ============ ============
 Name         Python
 Build Args   ``PYTHON_VERSION`` - Version of python to download
-Output files ``/usr/local/bin/awk``
+Output dir   ``/usr/local``
 ============ ============
 
-https://github.com/onetrueawk/awk is a severly limited version awk that some primative operating systems use. This recipe will help in testing against that version.
+This is not a recipe for installing anaconda or miniconda, rather it internally uses miniconda to install a "not" conda python. This python will still bare the markings of Anaconda, but does not have all the conda modifications, and works as a normal and extremely portable version of python for glibc linux.
+
+This is the easiest way to install an arbitrary version of python on an arbitrary linux distro.
 
 .. rubric:: Example
 
 .. code-block:: Dockerfile
 
-   FROM vsiri/recipe:onetrueawk as onetrueawk
-   FROM debian:9
+   FROM vsiri/recipe:conda-python as python
+   FROM ubuntu:16.04
    RUN apt-get update; apt-get install vim  # This line is just an example
-   COPY --from=onetrueawk /usr/local /usr/local
+   COPY --from=python /usr/local /usr/local
 
 
 J.U.S.T.
