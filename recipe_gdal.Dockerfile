@@ -83,7 +83,7 @@ RUN TEMP_DIR=/tmp/openjpeg ; \
     #
     # download & unzip
     TAR_FILE=v${OPENJPEG_VERSION}.tar.gz ; \
-    curl -fLO https://github.com/uclouvain/openjpeg/archive/${TAR_FILE} ; \
+    curl -fsSLO https://github.com/uclouvain/openjpeg/archive/${TAR_FILE} ; \
     tar -xvf ${TAR_FILE} --strip-components=1 ; \
     #
     # configure, build, & install
@@ -127,7 +127,7 @@ RUN TEMP_DIR=/tmp/ecw ; \
     fi ; \
     #
     # download & unzip
-    curl -fLO "https://go.hexagongeospatial.com/${ZIP_FILE}" ; \
+    curl -fsSLO "https://go.hexagongeospatial.com/${ZIP_FILE}" ; \
     unzip ${ZIP_FILE} ; \
     #
     # unpack & cleanup
@@ -177,7 +177,7 @@ RUN TEMP_DIR=/tmp/proj ; \
     #
     # download & unzip
     TAR_FILE=${PROJ_VERSION}.tar.gz ; \
-    curl -fLO https://github.com/OSGeo/PROJ/archive/${TAR_FILE} ; \
+    curl -fsSLO https://github.com/OSGeo/PROJ/archive/${TAR_FILE} ; \
     tar -xvf ${TAR_FILE} --strip-components=1 ; \
     #
     # configure, build, & install
@@ -258,7 +258,7 @@ RUN TEMP_DIR=/tmp/gdal ; \
     #
     # download & unzip
     TAR_FILE=gdal-${GDAL_VERSION}.tar.gz ; \
-    curl -fLO http://download.osgeo.org/gdal/${GDAL_VERSION}/${TAR_FILE} ; \
+    curl -fsSLO http://download.osgeo.org/gdal/${GDAL_VERSION}/${TAR_FILE} ; \
     tar -xvf ${TAR_FILE} --strip-components=1 ; \
     #
     # configure, build, & install

@@ -1,6 +1,6 @@
 FROM alpine:3.11
 
-SHELL ["sh", "-euxvc"]
+SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
 ONBUILD ARG JQ_VERSION=1.6
 #No signature :(

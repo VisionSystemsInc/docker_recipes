@@ -1,6 +1,6 @@
 FROM alpine:3.11
 
-SHELL ["sh", "-euxvc"]
+SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
 ONBUILD ARG DOCKER_VERSION=19.03.5
 

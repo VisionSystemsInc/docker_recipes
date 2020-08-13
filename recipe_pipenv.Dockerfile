@@ -1,6 +1,6 @@
 FROM alpine:3.11
 
-SHELL ["sh", "-euxvc"]
+SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
 ONBUILD ARG PIPENV_VERSION=2018.11.26
 ONBUILD ARG PIPENV_VIRTUALENV=/usr/local/pipenv

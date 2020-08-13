@@ -1,6 +1,6 @@
 FROM alpine:3.11
 
-SHELL ["sh", "-euxvc"]
+SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
 ONBUILD ARG EP_VERSION=1.0.0-RC1
 #No signature :(
