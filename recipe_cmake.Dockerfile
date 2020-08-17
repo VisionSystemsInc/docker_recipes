@@ -8,7 +8,8 @@ ONBUILD RUN apk add --no-cache --virtual .deps unzip curl ca-certificates; \
             curl -fsSLo cmake.txt https://cmake.org/files/v${CMAKE_VERSION%.*}/cmake-${CMAKE_VERSION}-SHA-256.txt; \
             grep 'Linux-x86_64\.tar\.gz' cmake.txt | sha256sum -c - > /dev/null; \
             tar xf /cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz; \
-            mv /cmake-${CMAKE_VERSION}-Linux-x86_64/* /usr/local/; \
+            rm -r /usr/local/*; \
+	          mv /cmake-${CMAKE_VERSION}-Linux-x86_64/* /usr/local/; \
             rmdir /cmake-${CMAKE_VERSION}-Linux-x86_64; \
             rm /cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz; \
             apk del .deps

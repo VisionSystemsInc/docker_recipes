@@ -25,3 +25,10 @@ services:
       args:
         GIT_LFS_VERSION: "v2.10.0"
     image: vsiri/test_recipe:test_git-lfs
+  test_cmake:
+    build:
+      context: .
+      dockerfile: test_cmake.Dockerfile
+      args:
+        CMAKE_VERSION: "3.16.1"
+    image: vsiri/test_recipe:test_cmake
