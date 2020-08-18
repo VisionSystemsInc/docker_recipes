@@ -220,6 +220,10 @@ As of version 1.25.2, for glibc, use ``docker/compose:debian-${DOCKER_COMPOSE_VE
    RUN apk add --no-cache git  # This line is just an example
    COPY --from=docker-compose /usr/local /usr/local
 
+.. note::
+
+   This recipe does have you use the ``ARG`` command in your ``Dockerfile``
+
 As long as you don't use alpine 3.8 or older, this will work. If you are using alpine 3.8 or older, you should probably install the glibc libraries and use the debian ``docker-compose`` in alpine.
 
 .. rubric:: Recipe
