@@ -30,6 +30,16 @@ How to use
 
 The recipes can be used directly from dockerhub. It is also possible to include this repo as a submodule in the greater project, and building directly from the dockerfiles.
 
+Many recipes have build arguments. This allows you to control what versions (usually) the recipe will use. This means the build arg needs to be set when the docker build command is issued, unless you want to use the default value.
+
+* When using ``docker``, this is done by ``docker build --build-arg key=val ...``.
+
+* With ``docker-compose`` this can be done by ``docker-compose build --build-arg key=val ...``.
+
+  * But it is usually better to add it to the ``docker-compose.yml`` file.
+
+* What you cannot do is add a build ``ARG`` to the global section of the ``Dockerfile`` and expect that default value to affect the recipe, that is not how they work.
+
 What this is not
 ================
 
