@@ -364,7 +364,7 @@ GDAL
 ============ ============
 Name         GDAL
 Build Args   ``GDAL_VERSION`` - Version of GDAL to download
-Output dir   ``/gdal/usr/local``
+Output dir   ``/usr/local``
 ============ ============
 
 Compiles GDAL v3, including PROJ v6, ECW J2K 5.5, OPENJPEG 2.3
@@ -382,7 +382,7 @@ Compiles GDAL v3, including PROJ v6, ECW J2K 5.5, OPENJPEG 2.3
 
    # install python & gdal
    COPY --from=python /usr/local /usr/local/
-   COPY --from=gdal /gdal/usr/local /usr/local
+   COPY --from=gdal /usr/local /usr/local
 
    # Only needs to be run once for all recipes
    RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
