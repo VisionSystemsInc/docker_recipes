@@ -16,7 +16,9 @@
 # python bindings.
 #
 # As this base image includes build essentials already in /usr/local,
-# libraries are staged in "/gdal/usr/local".
+# libraries are staged in "/gdal/usr/local".  The last build step clears
+# /usr/local of other packages, then migrates the staging directory to
+# /usr/local for consistency with other recipes.
 #
 #
 # -----------------------------------------------------------------------------
@@ -31,7 +33,7 @@
 #
 # # install python & gdal
 # COPY --from=python /usr/local /usr/local/
-# COPY --from=gdal /gdal/usr/local /usr/local
+# COPY --from=gdal /usr/local /usr/local
 #
 # Only needs to be run once for all recipes
 # RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
@@ -250,7 +252,7 @@ ADD 30_gdal ${GDAL_PATCH_FILE}
 RUN chmod +x ${GDAL_PATCH_FILE}
 
 # install
-ONBUILD ARG GDAL_VERSION=3.1.0
+ONBUILD ARG GDAL_VERSION=3.1.2
 
 ONBUILD \
 RUN TEMP_DIR=/tmp/gdal ; \
@@ -282,3 +284,7 @@ RUN TEMP_DIR=/tmp/gdal ; \
     #
     # cleanup
     rm -r ${TEMP_DIR} ;
+
+# migrate staging directory to /usr/local
+ONBUILD RUN rm -rf /usr/local ; \
+            mv ${GDAL_STAGING_DIR}/usr/local /usr/local ;
