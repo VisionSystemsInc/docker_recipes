@@ -120,7 +120,7 @@ if [ -n "${BASH_SOURCE+set}" ]; then
     setup_container_pipenv ${@+"${@}"}
     # Self delete this file, so that pipenv doesn't try to get installed twice if
     # /usr/local/share/just/container_build_patch/* is called twice
-    exec bash -c "rm '${0}'"
+    exec bash -c "rm '${BASH_SOURCE[0]}'"
   fi
 else
   case "${0}" in
@@ -128,6 +128,8 @@ else
       set -eu
       install_pipenv ${@+"${@}"}
       setup_container_pipenv ${@+"${@}"}
+      # sh doesn't have BASH_SOURCE or exact equivalent, this is closest, unless
+      # they are sourcing it, then bad things can happen, hence the guards
       exec bash -c "rm '${0}'"
       ;;
     *sh) # Sourced for sh/dash/etc...
