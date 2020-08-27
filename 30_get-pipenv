@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+# This script should not be sourced, but called, or else bad things could happen.
+
 #*# docker/recipes/get-pipenv
 
 #**
@@ -91,21 +93,21 @@ setup_container_pipenv()
 {
   ln -s "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/pipenv" "${2-/usr/local/bin/pipenv}"
 
-  cat - > "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/fake_package" << EOF
+  cat - > "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/fake_package" << "EOF"
 #!/usr/bin/env sh
 
 set -eu
 
 # Useful for creating a fake editable package for when you plan on mounting it
 # in at runtime
-# \$1 - name
-# \$2 - subdir
+# $1 - name
+# $2 - subdir
 
-mkdir -p "\${2}"
-touch "\${2}/init.py"
+mkdir -p "${2-${1}}"
+touch "${2-${1}}/init.py"
 if [ ! -e "setup.py" ]; then
   echo "from distutils.core import setup" > setup.py
-  echo "setup(name='\${1}', packages=['\${2}'], description='Project')" >> setup.py
+  echo "setup(name='${1}', packages=['${2-${1}}'], description='Project')" >> setup.py
 fi
 EOF
   chmod 755 "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/fake_package"
@@ -116,15 +118,19 @@ if [ -n "${BASH_SOURCE+set}" ]; then
     set -eu
     install_pipenv ${@+"${@}"}
     setup_container_pipenv ${@+"${@}"}
+    # Self delete this file, so that pipenv doesn't try to get installed twice if
+    # /usr/local/share/just/container_build_patch/* is called twice
+    exec bash -c "rm '${0}'"
   fi
 else
   case "${0}" in
-    *sh) # Sourced for sh/dash/etc...
-      ;;
-    *) # Ran
+    *30_get-pipenv) # Ran
       set -eu
       install_pipenv ${@+"${@}"}
       setup_container_pipenv ${@+"${@}"}
+      exec bash -c "rm '${0}'"
+      ;;
+    *sh) # Sourced for sh/dash/etc...
       ;;
   esac
 fi
