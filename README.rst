@@ -296,7 +296,7 @@ Pipenv
 Name        Pipenv
 Build Args  ``PIPENV_VERSION`` - Version of pipenv source to download
 Build Args  ``PIPENV_VIRTUALENV`` - The location of the pipenv virtualenv
-Build Args  ``PIPENV_PYTHON`` - Optional default python executable to use
+Build Args  ``PIPENV_PYTHON`` - Optional default python executable to use. This is useful when combined with the "Conda's Python" recipe
 Output dir  ``/usr/local``
 =========== ======
 
