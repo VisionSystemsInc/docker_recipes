@@ -6,7 +6,14 @@ version: 2.1
 commands:
 
   # run "ci_load" command on user-selected docker-compose file
-  # - requires environment variables $VSI_COMMON_DIR and $CACHE_REPO
+  # - cache is updated only from master branch of main repo (not forks)
+  # - assumes python3 with pyyaml is already available
+  # - assumes docker login was successful
+  # - required environment variables:
+  #     $VSI_COMMON_DIR - location of vsi_common repo
+  # - optional enviromment variables
+  #     $CI_RECIPE_REPO - dockerhub repo for recipe cache (default "vsiri/ci_cache_recipes")
+  #     $CI_RECIPE_VERSION - version string for recipe cache (default "")
   # - each service identified in the docker-compose file will be separately
   #   built via "${VSI_COMMON_DIR}/linux/ci_load.py"
   # - As we are building recipes themselves, we ignore the vsiri/recipe
@@ -25,14 +32,32 @@ commands:
       - run:
           name: << parameters.step_name >>
           command: |
+
+            set -x
+
+            # push only from master branch of main repo
+            if [ "${CIRCLE_PROJECT_USERNAME,,}" == "visionsystemsinc" ] && \
+               [ "${CIRCLE_BRANCH}" == "master" ]
+            then
+              CI_LOAD_OPTIONS=""
+            else
+              CI_LOAD_OPTIONS="--no-push"
+            fi
+
+            # environment
+            : ${CI_RECIPE_REPO="vsiri/ci_cache_recipes"}
+            : ${CI_RECIPE_VERSION=}
             COMPOSE_FILE="<< parameters.compose_file >>"
             SERVICES=( $(docker-compose -f "${COMPOSE_FILE}" ps --services) )
+
+            # ci_load for each service
             for SERVICE in "${SERVICES[@]}"; do
               python3 "${VSI_COMMON_DIR}/linux/ci_load.py" \
-                --recipe-compose "./docker-compose.yml" \
-                --recipe-repo "IGNORE-RECIPE-REPO" \
-                --cache-repo "${CACHE_REPO}" \
-                "${COMPOSE_FILE}" ${SERVICE}
+                --recipe-repo "IGNORE" \
+                ${CI_RECIPE_REPO:+ --cache-repo "${CI_RECIPE_REPO}"} \
+                ${CI_RECIPE_VERSION:+ --cache-version "${CI_RECIPE_VERSION}"} \
+                ${CI_LOAD_OPTIONS:+ $CI_LOAD_OPTIONS} \
+                "${COMPOSE_FILE}" "${SERVICE}"
             done
 
 # -----
@@ -45,7 +70,6 @@ jobs:
       - image: vsiri/circleci:bash-compose-lfs
     environment:
       VSI_COMMON_DIR: /vsi
-      CACHE_REPO: vsiri/ci_cache_recipes
     shell: /bin/bash -eo pipefail
     working_directory: ~/repo
 
