@@ -52,32 +52,49 @@ install_pipenv()
   # add it to the python path, and install virtualenv and it's distlib
   # dependency, that will now have the freshly installed setuptools in the
   # PYTHONPATH
-  "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" pip
+  "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --prefix "${TMP_DIR}/1" pip
 
   # In order to get python to use our custom root dir, we must set the PYTHONPATH to its
-  # site-packages directory. Unfortunately, when we ask site for the answer, it gives
+  # site-packages directory. Unfortunately, when we to ask site for the answer, it gives
   # multiple answers. Just use them all
-  SITE_PACKAGES="$("${PIPENV_PYTHON}" -c "if True:
-          import os, site
-          print(':'.join([os.path.join('${TMP_DIR}',x.lstrip(os.path.sep))
-                  for x in site.getsitepackages()]))")"
+  # For some off reason this broke. Replacing with prefix instead of root, and
+  # using os.walk (aka find) instead of using site.
+  # SITE_PACKAGES="$("${PIPENV_PYTHON}" -c "if True:
+  #         import os, site
+  #         print(':'.join([os.path.join('${TMP_DIR}',x.lstrip(os.path.sep))
+  #                 for x in site.getsitepackages()]))")"
+
+  # Find the directory containing the pip dir, that's site-packages
+  PIP_SITE_PACKAGES="$("${PIPENV_PYTHON}" -c "if True:
+          import os
+          for root, dirs, files in os.walk('${TMP_DIR}/1'):
+            if 'pip' in dirs:
+              print(root)
+              break")"
 
   # Install virtualenv, which now needs setuptools, so I have to do this here
   # instead of the get_pip above, now that I put the root dir's site-packages
   # in the PYTHONPATH
-  PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --root "${TMP_DIR}" virtualenv
+  PYTHONPATH="${PIP_SITE_PACKAGES}" "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --prefix "${TMP_DIR}/2" virtualenv
   # This next line won't work if virtualenv is installed in the system's
   # python... However the previous method works perfectly, so use that.
   # PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" "${SCRIPTS}/pip" install --root "${TMP_DIR}" virtualenv
 
   # With PYTHONPATH set, we can ask pip where the scipts directory is (a find would also work)
-  SCRIPTS="$(PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" -c "if True:
+  SCRIPTS="$(PYTHONPATH="${PIP_SITE_PACKAGES}" "${PIPENV_PYTHON}" -c "if True:
           from pip._internal import locations
-          print(locations.distutils_scheme('', root='${TMP_DIR}')['scripts'])")"
+          print(locations.distutils_scheme('', prefix='${TMP_DIR}/2')['scripts'])")"
+
+  VIRTUALENV_SITE_PACKAGES="$("${PIPENV_PYTHON}" -c "if True:
+      import os
+      for root, dirs, files in os.walk('${TMP_DIR}/2'):
+        if 'virtualenv' in dirs:
+          print(root)
+          break")"
 
   # Create a virtualenv and install pipenv into it
-  PYTHONPATH="${SITE_PACKAGES}" "${SCRIPTS}/virtualenv" "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}"
-  "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/pip" install --no-cache-dir pipenv=="${PIPENV_VERSION-2018.11.26}"
+  PYTHONPATH="${VIRTUALENV_SITE_PACKAGES}" "${SCRIPTS}/virtualenv" "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}"
+  "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/pip" install --no-cache-dir pipenv=="${PIPENV_VERSION-2020.8.13}"
   rm -rf "${get_pip}" "${TMP_DIR}"
 }
 
