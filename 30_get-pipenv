@@ -54,16 +54,12 @@ install_pipenv()
   # PYTHONPATH
   "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --prefix "${TMP_DIR}/1" pip
 
-  # In order to get python to use our custom root dir, we must set the PYTHONPATH to its
-  # site-packages directory. Unfortunately, when we to ask site for the answer, it gives
-  # multiple answers. Just use them all
-  # For some off reason this broke. Replacing with prefix instead of root, and
-  # using os.walk (aka find) instead of using site.
-  # SITE_PACKAGES="$("${PIPENV_PYTHON}" -c "if True:
-  #         import os, site
-  #         print(':'.join([os.path.join('${TMP_DIR}',x.lstrip(os.path.sep))
-  #                 for x in site.getsitepackages()]))")"
+  # Unfortunately, when we ask site.getsitepackages() for the answer, none of
+  # them are right anymore. For some reason this broke. Replacing with --prefix
+  # instead of --root, and using os.walk (aka find) instead of using site.
 
+  # In order to get python to use our custom root dir, we must set the PYTHONPATH to its
+  # site-packages directory.
   # Find the directory containing the pip dir, that's site-packages
   PIP_SITE_PACKAGES="$("${PIPENV_PYTHON}" -c "if True:
           import os
@@ -71,6 +67,11 @@ install_pipenv()
             if 'pip' in dirs:
               print(root)
               break")"
+
+  if [ "${PIP_SITE_PACKAGES}" = "" ]; then
+    echo "Could not find the site-packages directory, something went wrong with PIP_SITE_PACKAGES" >&2
+    exit 1
+  fi
 
   # Install virtualenv, which now needs setuptools, so I have to do this here
   # instead of the get_pip above, now that I put the root dir's site-packages
@@ -91,6 +92,11 @@ install_pipenv()
         if 'virtualenv' in dirs:
           print(root)
           break")"
+
+  if [ "${VIRTUALENV_SITE_PACKAGES}" = "" ]; then
+    echo "Could not find the site-packages directory, something went wrong with VIRTUALENV_SITE_PACKAGES" >&2
+    exit 1
+  fi
 
   # Create a virtualenv and install pipenv into it
   PYTHONPATH="${VIRTUALENV_SITE_PACKAGES}" "${SCRIPTS}/virtualenv" "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}"
