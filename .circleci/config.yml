@@ -166,4 +166,4 @@ workflows:
   recipes:
     jobs:
       - build_and_test
-      # - windows_test
+      - windows_test
