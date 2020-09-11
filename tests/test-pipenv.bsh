@@ -8,6 +8,7 @@ source "${VSI_COMMON_DIR}/tests/testlib.bsh"
 
 : ${DOCKER=docker}
 
+# test pipenv version in docker
 command -v "${DOCKER}" &> /dev/null || skip_next_test
 begin_test "Pipenv"
 (
@@ -16,5 +17,41 @@ begin_test "Pipenv"
   RESULT=$(docker run --rm vsiri/test_recipe:test_pipenv bash -c 'head -n1 /foo/bin/pipenv; readlink /foo/bin/python; /foo/bin/pipenv --version')
   [ "$RESULT" = $'#!/foo/bin/python\n/bar\npipenv, version 2018.05.18' ]
 
+)
+end_test
+
+# test 30_get-pipenv script without a container
+# Note this test assumes a system-wide python is available
+begin_test "30_get-pipenv"
+(
+  setup_test
+
+  # environment
+  export PIPENV_VERSION="2020.8.13"
+  export LC_ALL=C.UTF-8
+  export LANG=C.UTF-8
+
+  # output directory
+  OUTPUT_DIR="$(mktemp -d)"
+
+  # install virtualenv with pipenv to TEMP_DIR
+  source "${VSI_COMMON_DIR}/docker/recipes/30_get-pipenv"
+  install_pipenv "${OUTPUT_DIR}"
+
+  # expected pipenv executable
+  if [ "${OS-}" = "Windows_NT" ]; then
+    PIPENV="${OUTPUT_DIR}/Scripts/pipenv.exe"
+  else
+    PIPENV="${OUTPUT_DIR}/bin/pipenv"
+  fi
+
+  # pipenv result
+  RESULT="$("${PIPENV}" --version | sed 's|\r||g')"
+
+  # cleanup
+  rm -rf "${OUTPUT_DIR}"
+
+  # test
+  [ "$RESULT" = 'pipenv, version 2020.8.13' ]
 )
 end_test
