@@ -1,9 +1,30 @@
 version: 2.1
 
 # -----
+# CircleCI orbs
+# -----
+orbs:
+  win: circleci/windows@2.4.0
+
+# -----
 # CircleCI custom commands
 # -----
 commands:
+
+  # checkout docker_recipes within vsi_common:
+  # -- checkout vsi_common master, then navigate to docker_recipes submodule
+  #    and checkout current docker_recipes SHA
+  # -- requires $VSI_COMMON to be defined
+  # -- allows use of "just" targets as needed (such as "just test recipe")
+  checkout_in_vsi_common:
+    description: Checkout code in vsi_common
+    steps:
+      - run:
+          name: Checkout code in vsi_common
+          command: |
+            git clone --recursive https://github.com/VisionSystemsInc/vsi_common.git "${VSI_COMMON_DIR}"
+            cd "${VSI_COMMON_DIR}/docker/recipes"
+            git checkout "${CIRCLE_SHA1}"
 
   # run "ci_load" command on user-selected docker-compose file
   # - cache is updated only from master branch of main repo (not forks)
@@ -65,13 +86,15 @@ commands:
 # -----
 jobs:
 
+  # linux docker environment
   build_and_test:
     docker:
       - image: vsiri/circleci:bash-compose-lfs
-    environment:
-      VSI_COMMON_DIR: /vsi
     shell: /bin/bash -eo pipefail
-    working_directory: ~/repo
+    working_directory: ~/vsi
+    environment:
+      VSI_COMMON_DIR: /root/vsi
+      RECIPE_DIR: /root/vsi/docker/recipes
 
     steps:
 
@@ -83,34 +106,74 @@ jobs:
             python3 --version
             pip3 install pyyaml
 
-      - checkout
-      - run:
-          name: Checkout vsi_common
-          command: |
-            git clone --recursive https://github.com/VisionSystemsInc/vsi_common.git /vsi
-
+      - checkout_in_vsi_common
       - setup_remote_docker
 
       - run:
           name: Additional setup
           command: |
-            sed -i 's|context: ../..|context: ${VSI_COMMON_DIR}|' docker-compose.yml
             docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
 
       - ci_load:
           step_name: Build recipes (ci_load)
-          compose_file: ./docker-compose.yml
+          compose_file: ${RECIPE_DIR}/docker-compose.yml
 
       - ci_load:
           step_name: Build tests (ci_load)
-          compose_file: ./tests/docker-compose.yml
+          compose_file: ${RECIPE_DIR}/tests/docker-compose.yml
 
       - run:
           name: Run integration tests
-          environment:
-            TESTLIB_DISCOVERY_DIR: /root/repo/tests
           command: |
-            "${VSI_COMMON_DIR}/tests/run_tests"
+            source setup.env
+            just test recipe
+
+
+  # test selected scripts for windows compatability
+  windows_test:
+    executor:
+      name: win/default
+      shell: bash.exe
+    working_directory: "C:/Users/circleci/vsi"
+    environment:
+      VSI_COMMON_DIR: "C:/Users/circleci/vsi"
+      RECIPE_DIR: "C:/Users/circleci/vsi/docker/recipes"
+
+    steps:
+      - run: systeminfo
+      # - run: printenv
+
+      - run:
+          name: Update bash environment
+          command: |
+
+            # Give preference to bash utilities via PATH.
+            # For example, prefer "C:/Program Files/Git/usr/bin/find" over
+            # the windows executable "C:/Windows/system32/find"
+            echo 'export PATH="/c/Program Files/Git/usr/bin":${PATH}' >> "${BASH_ENV}"
+
+            # setting an alias for find did not work command did not seem to work
+            # echo 'alias find="/c/Program Files/Git/usr/bin/find.exe"' >> "${BASH_ENV}"
+
+      - checkout_in_vsi_common
+
+      - run:
+          name: Run integration tests
+          command: |
+
+            # activate "just" from vsi_common
+            # cd "${VSI_COMMON_DIR}"
+            source setup.env
+
+            # helper function to run a single test
+            # $1 = test file id (e.g., "pipenv" for test-pipenv.bsh)
+            # $2 = test description (e.g., "30_get-pipenv" in test-pipenv.bsh)
+            run_single_test() {
+              TESTLIB_RUN_SINGLE_TEST="$2" just test recipe "$1"
+            }
+
+            # run selected tests
+            run_single_test pipenv 30_get-pipenv
 
 # -----
 # CircleCI workflows
@@ -119,3 +182,4 @@ workflows:
   recipes:
     jobs:
       - build_and_test
+      # - windows_test
