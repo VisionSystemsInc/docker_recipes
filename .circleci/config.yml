@@ -14,7 +14,7 @@ commands:
   # checkout docker_recipes within vsi_common:
   # -- checkout vsi_common master, then navigate to docker_recipes submodule
   #    and checkout current docker_recipes SHA
-  # -- requires $VSI_COMMON to be defined
+  # -- requires $VSI_COMMON_DIR to be defined
   # -- allows use of "just" targets as needed (such as "just test recipe")
   checkout_in_vsi_common:
     description: Checkout code in vsi_common
@@ -130,10 +130,11 @@ jobs:
 
 
   # test selected scripts for windows compatability
+  # note 'bash.exe -l' ensures correct operation of utilities like 'find'
   windows_test:
     executor:
       name: win/default
-      shell: bash.exe
+      shell: bash.exe -l
     working_directory: "C:/Users/circleci/vsi"
     environment:
       VSI_COMMON_DIR: "C:/Users/circleci/vsi"
@@ -141,29 +142,11 @@ jobs:
 
     steps:
       - run: systeminfo
-      # - run: printenv
-
-      - run:
-          name: Update bash environment
-          command: |
-
-            # Give preference to bash utilities via PATH.
-            # For example, prefer "C:/Program Files/Git/usr/bin/find" over
-            # the windows executable "C:/Windows/system32/find"
-            echo 'export PATH="/c/Program Files/Git/usr/bin":${PATH}' >> "${BASH_ENV}"
-
-            # setting an alias for find did not work command did not seem to work
-            # echo 'alias find="/c/Program Files/Git/usr/bin/find.exe"' >> "${BASH_ENV}"
-
       - checkout_in_vsi_common
 
       - run:
           name: Run integration tests
           command: |
-
-            # activate "just" from vsi_common
-            # cd "${VSI_COMMON_DIR}"
-            source setup.env
 
             # helper function to run a single test
             # $1 = test file id (e.g., "pipenv" for test-pipenv.bsh)
@@ -173,6 +156,7 @@ jobs:
             }
 
             # run selected tests
+            source setup.env
             run_single_test pipenv 30_get-pipenv
 
 # -----
