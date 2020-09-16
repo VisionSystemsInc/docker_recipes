@@ -19,89 +19,79 @@
 #
 # .. function:: install_pipenv
 #
-# Install pipenv into a virtualenv. Does not need to have pip already installed and does not use privileged permissions.
+# Install pipenv into a virtualenv. Does not need to have pip already installed and does not use privileged permissions. Makes use of the virtualenv zipapp, as per https://virtualenv.pypa.io/en/latest/installation.html#via-zipapp
 #
 # :Arguments: [``$1``] - The location of the virtualenv, defaults to ``${PIPENV_VIRTUALENV-${HOME}/pipenv}``
 # :Parameters: * ``PIPENV_PYTHON`` - Optionally specify which python you want to use. Default is to favor python3, trying ``python3``, ``python``, then finally falling back to ``python2``.
 #              * ``PIPENV_VERSION`` - The version of pipenv to install, defaults - ``2018.11.26``
-#              * ``GET_PIP_SCRIPT`` - Name of downloaded get-pip.py, else it will attempt to download it itself.
+#              * ``VIRTUALENV_PYZ`` - Name of downloaded ``virtualenv.pyz``, else it will attempt to download it itself.
 #**
 install_pipenv()
 {
-  local TMP_DIR="$(mktemp -d)"
-  local get_pip="${GET_PIP_SCRIPT-/tmp/pipenv/get-pip.py}"
-
-  mkdir -p "$(dirname "${get_pip}")"
-
+  # python executable
   : ${PIPENV_PYTHON:="$( (command -v python3 || command -v python || command -v python2) | head -n 1)"}
   [ -n "${PIPENV_PYTHON}" ] # Make sure python was found
 
-  if [ ! -r "${get_pip}" ]; then
-    get_pip="${TMP_DIR}/get-pip.py"
-    nl='
-'
-    "${PIPENV_PYTHON}" -c "try: import urllib2 as u${nl}except: import urllib.request as u${nl}import sys; fid=open(sys.argv[1], 'wb'); fid.write(u.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" "${get_pip}"
+  # setup
+  local output_dir="${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}"
+  local pipenv_ver="${PIPENV_VERSION:-2018.11.26}"
+  local virtualenv_pyz=${VIRTUALENV_PYZ-}
+
+  # use existing virtualenv
+  virtualenv_ver="$("${PIPENV_PYTHON}" -m virtualenv --version 2>/dev/null || :)"
+  if [ -n "${virtualenv_ver}" ]; then
+    echo "Found virtualenv (${virtualenv_ver})"
+    "${PIPENV_PYTHON}" -m virtualenv "${output_dir}"
+
+  # use virtualenv zipapp
+  # https://virtualenv.pypa.io/en/latest/installation.html#via-zipapp
+  else
+    echo "Using virtualenv zipapp"
+
+    # temporary directory
+    local tmp_dir="$(mktemp -d)"
+
+    # download virtualenv_pyz
+    if [ ! -r "${virtualenv_pyz}" ]; then
+      virtualenv_pyz="${tmp_dir}/virtualenv.pyz"
+
+      "${PIPENV_PYTHON}" -c "if True:
+          import sys, traceback
+          virtualenv_pyz = sys.argv[1]
+          ver = sys.version_info
+          url = ('https://bootstrap.pypa.io/virtualenv/{}.{}/virtualenv.pyz'
+                .format(ver[0],ver[1]))
+
+          try:
+            import requests
+            content = requests.get(url).content
+          except:
+            try:
+              from urllib2 import urlopen
+            except:
+              from urllib.request import urlopen
+            content = urlopen(url).read()
+
+          with open(virtualenv_pyz, 'wb') as fid:
+            fid.write(content)
+          " "${virtualenv_pyz}"
+    fi
+
+    # create output virtualenv
+    "${PIPENV_PYTHON}" "${virtualenv_pyz}" "${output_dir}"
+
+    # cleanup
+    rm -rf "${tmp_dir}"
   fi
 
-  # Virtualenv version 20 (the rewrite from scratch) has distlib as a
-  # sub-dependency. And distlib NEEDS to use setuptools to install. The problem
-  # is get-pip is designed only to install pip, not an arbitary packages, which
-  # is how I purposefully misuse it.
-  # The problem is the root dir's site_packages needs to be in the PYTHONPATH
-  # in order to trick this into working. So figure out the site packages dir
-  # add it to the python path, and install virtualenv and it's distlib
-  # dependency, that will now have the freshly installed setuptools in the
-  # PYTHONPATH
-  "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --prefix "${TMP_DIR}/1" pip
-
-  # Unfortunately, when we ask site.getsitepackages() for the answer, none of
-  # them are right anymore. For some reason this broke. Replacing with --prefix
-  # instead of --root, and using os.walk (aka find) instead of using site.
-
-  # In order to get python to use our custom root dir, we must set the PYTHONPATH to its
-  # site-packages directory.
-  # Find the directory containing the pip dir, that's site-packages
-  PIP_SITE_PACKAGES="$("${PIPENV_PYTHON}" -c "if True:
-          import os
-          for root, dirs, files in os.walk('${TMP_DIR}/1'):
-            if 'pip' in dirs:
-              print(root)
-              break")"
-
-  if [ "${PIP_SITE_PACKAGES}" = "" ]; then
-    echo "Could not find the site-packages directory, something went wrong with PIP_SITE_PACKAGES" >&2
-    exit 1
+  # add pipenv to output virtualenv
+  local output_pip
+  if [ "${OS-}" = "Windows_NT" ]; then
+    output_pip="${output_dir}/Scripts/pip"
+  else
+    output_pip="${output_dir}/bin/pip"
   fi
-
-  # Install virtualenv, which now needs setuptools, so I have to do this here
-  # instead of the get_pip above, now that I put the root dir's site-packages
-  # in the PYTHONPATH
-  PYTHONPATH="${PIP_SITE_PACKAGES}" "${PIPENV_PYTHON}" "${get_pip}" --no-cache-dir -I --prefix "${TMP_DIR}/2" virtualenv
-  # This next line won't work if virtualenv is installed in the system's
-  # python... However the previous method works perfectly, so use that.
-  # PYTHONPATH="${SITE_PACKAGES}" "${PIPENV_PYTHON}" "${SCRIPTS}/pip" install --root "${TMP_DIR}" virtualenv
-
-  # With PYTHONPATH set, we can ask pip where the scipts directory is (a find would also work)
-  SCRIPTS="$(PYTHONPATH="${PIP_SITE_PACKAGES}" "${PIPENV_PYTHON}" -c "if True:
-          from pip._internal import locations
-          print(locations.distutils_scheme('', prefix='${TMP_DIR}/2')['scripts'])")"
-
-  VIRTUALENV_SITE_PACKAGES="$("${PIPENV_PYTHON}" -c "if True:
-      import os
-      for root, dirs, files in os.walk('${TMP_DIR}/2'):
-        if 'virtualenv' in dirs:
-          print(root)
-          break")"
-
-  if [ "${VIRTUALENV_SITE_PACKAGES}" = "" ]; then
-    echo "Could not find the site-packages directory, something went wrong with VIRTUALENV_SITE_PACKAGES" >&2
-    exit 1
-  fi
-
-  # Create a virtualenv and install pipenv into it
-  PYTHONPATH="${VIRTUALENV_SITE_PACKAGES}" "${SCRIPTS}/virtualenv" "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}"
-  "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/pip" install --no-cache-dir pipenv=="${PIPENV_VERSION-2020.8.13}"
-  rm -rf "${get_pip}" "${TMP_DIR}"
+  "${output_pip}" install --no-cache-dir pipenv=="${pipenv_ver}"
 }
 
 #**
