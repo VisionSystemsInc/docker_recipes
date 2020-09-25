@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # This script should not be sourced, but called, or else bad things could happen.
 
