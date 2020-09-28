@@ -1,8 +1,64 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # This script should not be sourced, but called, or else bad things could happen.
 
 #*# docker/recipes/get-pipenv
+
+# Temp fix for https://github.com/pypa/virtualenv/issues/1949
+if [ -f "${VSI_COMMON_DIR-}/linux/real_path" ]; then
+  source "${VSI_COMMON_DIR}/linux/real_path"
+else
+  if command -v realpath > /dev/null 2>&1; then
+    function real_path()
+    {
+      realpath ${@+"${@}"}
+    }
+  elif readlink -f / > /dev/null 2>&1; then
+    function real_path()
+    {
+      readlink -f ${@+"${@}"}
+    }
+  else
+    function real_path()
+    {
+      for x in "${@}"; do
+        real_path_manual "${x}"
+      done
+    }
+  fi
+
+  function real_path_manual()
+  {
+    pushd "$(dirname "${1}")" &> /dev/null
+      local target="$(basename "${1}")"
+
+      while [ -L "$target" ]
+      do
+        target="$(readlink "$target")"
+        cd "$(dirname "${target}")"
+        target="$(basename "${target}")"
+      done
+
+      local physical_dir="$(pwd -P)"
+
+      if [ "${target}" = "." ]; then
+        target=""
+      else
+        target="/${target}"
+      fi
+    popd &> /dev/null
+
+    if [ "${physical_dir}" = "/" ]; then
+      if [ "${target}" = "//" ] || [ "${target}" = "" ]; then
+        echo /
+      else
+        echo "$target"
+      fi
+    else
+      echo "${physical_dir}$target"
+    fi
+  }
+fi
 
 #**
 # .. default-domain:: bash
@@ -76,6 +132,9 @@ install_pipenv()
             fid.write(content)
           " "${virtualenv_pyz}"
     fi
+
+    # Temp fix for https://github.com/pypa/virtualenv/issues/1949
+    virtualenv_pyz="$(real_path "${virtualenv_pyz}")"
 
     # create output virtualenv
     "${PIPENV_PYTHON}" "${virtualenv_pyz}" "${output_dir}"
