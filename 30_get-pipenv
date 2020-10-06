@@ -77,8 +77,8 @@ fi
 # 4. ``ruby`` using the ``open-uri`` library
 # 5. ``perl`` using the ``LWP::Simple`` library
 #**
-if [ -f "${VSI_COMMON_DIR-}/linux/webtools.bsh" ]; then
-  source "${VSI_COMMON_DIR}/linux/webtools.bsh"
+if [ -f "${VSI_COMMON_DIR-}/linux/web_tools.bsh" ]; then
+  source "${VSI_COMMON_DIR}/linux/web_tools.bsh"
 else
   function download_to_stdout()
   {
