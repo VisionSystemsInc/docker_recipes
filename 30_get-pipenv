@@ -60,6 +60,51 @@ else
   }
 fi
 
+
+#**
+# .. function:: download_to_stdout
+#
+# Download a file from the internet and output stream to stdout.  Adapted from ``${VSI_COMMON_DIR}/linux/web_tools.bsh```
+#
+# :Arguments: ``$1`` - URL to download
+# :Output: ``stdout`` - Binary stream of the url
+#
+# Tries to download a file via various methods, in order:
+#
+# 1. ``wget`` using ``wget -qO -``
+# 2. ``curl`` using ``curl -fsSL``
+# 3. ``${PIPENV_PYTHON}`` using the ``requests``, ```urllib2``, or ``urllib`` library
+#**
+function download_to_stdout()
+{
+  local success=1
+  if command -v wget &> /dev/null; then
+    wget "${1}" -qO - && success=0 || success=$?
+  fi
+  if [ "${success}" != "0" ] && command -v curl &> /dev/null; then
+    curl -fsSL "${1}" && success=0 || success=$?
+  fi
+  if [ "${success}" != "0" ]; then
+    "${PIPENV_PYTHON}" -c 'if True:
+        try:
+          import requests
+          os.write(1, requests.get("'"${1}"'").content)
+        except:
+          try:
+            import urllib2 as u
+          except:
+            import urllib.request as u
+          import os
+          os.write(1,u.urlopen("'"${1}"'").read())
+        ' && success=0 || success=$?
+  fi
+  if [ "${success}" != "0" ]; then
+    echo "Cannot download a file" >&2
+    return 2
+  fi
+}
+
+
 #**
 # .. default-domain:: bash
 #
@@ -109,28 +154,18 @@ install_pipenv()
 
     # download virtualenv_pyz
     if [ ! -r "${virtualenv_pyz}" ]; then
-      virtualenv_pyz="${tmp_dir}/virtualenv.pyz"
 
-      "${PIPENV_PYTHON}" -c "if True:
-          import sys, traceback
-          virtualenv_pyz = sys.argv[1]
+      # source url
+      local url="$("${PIPENV_PYTHON}" -c "if True:
+          import sys
           ver = sys.version_info
-          url = ('https://bootstrap.pypa.io/virtualenv/{}.{}/virtualenv.pyz'
-                .format(ver[0],ver[1]))
+          print('https://bootstrap.pypa.io/virtualenv/{}.{}/virtualenv.pyz'
+                .format(ver[0],ver[1]) )
+          ")"
 
-          try:
-            import requests
-            content = requests.get(url).content
-          except:
-            try:
-              from urllib2 import urlopen
-            except:
-              from urllib.request import urlopen
-            content = urlopen(url).read()
-
-          with open(virtualenv_pyz, 'wb') as fid:
-            fid.write(content)
-          " "${virtualenv_pyz}"
+      # download to file
+      virtualenv_pyz="${tmp_dir}/virtualenv.pyz"
+      download_to_stdout "${url}" > "${virtualenv_pyz}"    
     fi
 
     # Temp fix for https://github.com/pypa/virtualenv/issues/1949
