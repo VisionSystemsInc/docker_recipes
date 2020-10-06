@@ -89,7 +89,7 @@ else
     if [ "${success}" != "0" ] && command -v curl &> /dev/null; then
       curl -fsSL "${1}"  && success=0 || success=$?
     fi
-    if [ "${success}" != "0" ] && command -v python &> /dev/null; then
+    if [ "${success}" != "0" ] && command -v "${PYTHON-python}" &> /dev/null; then
       "${PYTHON-python}" -c  'if True:
                     try:
                       import requests
