@@ -60,6 +60,85 @@ else
   }
 fi
 
+
+# download to file: ${VSI_COMMON_DIR}/linux/web_tools.bsh be available, use that.  Otherwise, necessary functions for download_to_file (for wget, curl, & python options) are copied from web_tools.bsh.
+if [ -f "${VSI_COMMON_DIR-}/linux/web_tools.bsh" ]; then
+  source "${VSI_COMMON_DIR}/linux/web_tools.bsh"
+else
+
+  # download to stdout using wget
+  function download_to_stdout_wget()
+  {
+    if command -v "${WGET-wget}" &> /dev/null; then
+      "${WGET-wget}" ${WGET_ARGS[@]+"${WGET_ARGS[@]}"} "${1}" -qO - && return || return
+    fi
+    return 100
+  }
+
+  # download to stdout using curl
+  function download_to_stdout_curl()
+  {
+    if command -v "${CURL-curl}" &> /dev/null; then
+      "${CURL-curl}" ${CURL_ARGS[@]+"${CURL_ARGS[@]}"} -fsSL "${1}" && return || return
+    fi
+    return 100
+  }
+
+  # download to stdout using python
+  function download_to_stdout_python()
+  {
+    if command -v "${PYTHON-python}" &> /dev/null; then
+      "${PYTHON-python}" -c  'if True:
+          try:
+            import requests
+            os.write(1, requests.get("'"${1}"'").content)
+          except:
+            try:
+              import urllib2 as u
+            except:
+              import urllib.request as u
+            import os
+            os.write(1,u.urlopen("'"${1}"'").read())' && return || return
+    fi
+    return 100
+  }
+
+  # download to file using python
+  function download_to_file_python()
+  {
+    local python
+    local success=100
+    for python in "${PYTHON-}" python3 python python2; do
+      if command -v "${python}" &> /dev/null; then
+        PYTHON="${python}" download_to_stdout_python "${1}" > "${2}" && return || success=$?
+      fi
+    done
+    return ${success}
+  }
+
+  # download to file (try wget, then curl, then python)
+  function download_to_file()
+  {
+    local found=100
+    local rv
+    download_to_stdout_wget "${1}" > "${2}" && return || rv=$?
+    if [ "${rv}" != "100" ]; then
+      found="${rv}"
+    fi
+    download_to_stdout_curl "${1}" > "${2}" && return || rv=$?
+    if [ "${rv}" != "100" ]; then
+      found="${rv}"
+    fi
+    download_to_file_python "${1}" "${2}" && return || rv=$?
+    if [ "${rv}" != "100" ]; then
+      found="${rv}"
+    fi
+    return "${found}"
+  }
+
+fi
+
+
 #**
 # .. default-domain:: bash
 #
@@ -96,41 +175,32 @@ install_pipenv()
   # use existing virtualenv
   virtualenv_ver="$("${PIPENV_PYTHON}" -m virtualenv --version 2>/dev/null || :)"
   if [ -n "${virtualenv_ver}" ]; then
-    echo "Found virtualenv (${virtualenv_ver})"
+    echo "Found virtualenv (${virtualenv_ver})" >&2
     "${PIPENV_PYTHON}" -m virtualenv "${output_dir}"
 
   # use virtualenv zipapp
   # https://virtualenv.pypa.io/en/latest/installation.html#via-zipapp
   else
-    echo "Using virtualenv zipapp"
+    echo "Using virtualenv zipapp" >&2
 
     # temporary directory
     local tmp_dir="$(mktemp -d)"
 
     # download virtualenv_pyz
     if [ ! -r "${virtualenv_pyz}" ]; then
-      virtualenv_pyz="${tmp_dir}/virtualenv.pyz"
 
-      "${PIPENV_PYTHON}" -c "if True:
-          import sys, traceback
-          virtualenv_pyz = sys.argv[1]
+      # source url
+      local url="$("${PIPENV_PYTHON}" -c "if True:
+          import sys
           ver = sys.version_info
-          url = ('https://bootstrap.pypa.io/virtualenv/{}.{}/virtualenv.pyz'
-                .format(ver[0],ver[1]))
+          print('https://bootstrap.pypa.io/virtualenv/{}.{}/virtualenv.pyz'
+                .format(ver[0],ver[1]) )
+          ")"
+      echo "Download virtualenv zipapp from <${url}>" >&2
 
-          try:
-            import requests
-            content = requests.get(url).content
-          except:
-            try:
-              from urllib2 import urlopen
-            except:
-              from urllib.request import urlopen
-            content = urlopen(url).read()
-
-          with open(virtualenv_pyz, 'wb') as fid:
-            fid.write(content)
-          " "${virtualenv_pyz}"
+      # download to file
+      virtualenv_pyz="${tmp_dir}/virtualenv.pyz"
+      PYTHON="${PIPENV_PYTHON}" download_to_file "${url}" "${virtualenv_pyz}"    
     fi
 
     # Temp fix for https://github.com/pypa/virtualenv/issues/1949
