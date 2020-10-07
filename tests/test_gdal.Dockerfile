@@ -1,6 +1,6 @@
 FROM vsiri/recipe:gdal as gdal
 
-FROM python:3
+FROM python:3.8
 SHELL ["/usr/bin/env", "bash", "-euxvc"]
 
 COPY --from=gdal /usr/local /usr/local
