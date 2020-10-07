@@ -175,13 +175,13 @@ install_pipenv()
   # use existing virtualenv
   virtualenv_ver="$("${PIPENV_PYTHON}" -m virtualenv --version 2>/dev/null || :)"
   if [ -n "${virtualenv_ver}" ]; then
-    echo "Found virtualenv (${virtualenv_ver})"
+    echo "Found virtualenv (${virtualenv_ver})" >&2
     "${PIPENV_PYTHON}" -m virtualenv "${output_dir}"
 
   # use virtualenv zipapp
   # https://virtualenv.pypa.io/en/latest/installation.html#via-zipapp
   else
-    echo "Using virtualenv zipapp"
+    echo "Using virtualenv zipapp" >&2
 
     # temporary directory
     local tmp_dir="$(mktemp -d)"
@@ -196,6 +196,7 @@ install_pipenv()
           print('https://bootstrap.pypa.io/virtualenv/{}.{}/virtualenv.pyz'
                 .format(ver[0],ver[1]) )
           ")"
+      echo "Download virtualenv zipapp from <${url}>" >&2
 
       # download to file
       virtualenv_pyz="${tmp_dir}/virtualenv.pyz"
