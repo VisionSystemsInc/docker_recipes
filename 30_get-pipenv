@@ -61,59 +61,81 @@ else
 fi
 
 
-#**
-# .. function:: download_to_stdout
-#
-# Download a file from the internet and output stream to stdout
-#
-# :Arguments: ``$1`` - URL to download
-# :Output: ``stdout`` - Binary stream of the url
-#
-# Tries to download a file via various methods, in order:
-#
-# 1. ``wget`` using ``wget -qO -``
-# 2. ``curl`` using ``curl -fsSL``
-# 3. `python`` using the ``requests``, ```urllib2``, or ``urllib`` library
-# 4. ``ruby`` using the ``open-uri`` library
-# 5. ``perl`` using the ``LWP::Simple`` library
-#**
+# download to file: ${VSI_COMMON_DIR}/linux/web_tools.bsh be available, use that.  Otherwise, necessary functions for download_to_file (for wget, curl, & python options) are copied from web_tools.bsh.
 if [ -f "${VSI_COMMON_DIR-}/linux/web_tools.bsh" ]; then
   source "${VSI_COMMON_DIR}/linux/web_tools.bsh"
 else
-  function download_to_stdout()
+
+  # download to stdout using wget
+  function download_to_stdout_wget()
   {
-    local success=1
-    if command -v wget &> /dev/null; then
-      wget "${1}" -qO - && success=0 || success=$?
+    if command -v "${WGET-wget}" &> /dev/null; then
+      "${WGET-wget}" ${WGET_ARGS[@]+"${WGET_ARGS[@]}"} "${1}" -qO - && return || return
     fi
-    if [ "${success}" != "0" ] && command -v curl &> /dev/null; then
-      curl -fsSL "${1}"  && success=0 || success=$?
-    fi
-    if [ "${success}" != "0" ] && command -v "${PYTHON-python}" &> /dev/null; then
-      "${PYTHON-python}" -c  'if True:
-                    try:
-                      import requests
-                      os.write(1, requests.get("'"${1}"'").content)
-                    except:
-                      try:
-                        import urllib2 as u
-                      except:
-                        import urllib.request as u
-                      import os
-                      os.write(1,u.urlopen("'"${1}"'").read())' && success=0 || success=$?
-    fi
-    if [ "${success}" != "0" ] && command -v ruby &> /dev/null; then
-      ruby -e "require 'open-uri'; URI.open('${1}', 'rb') do |read_file|; \$stdout.write(read_file.read); end" && success=0 || success=$?
-    fi
-    if [ "${success}" != "0" ] && command -v perl &> /dev/null; then
-      # Not all Perls have LWP installed
-      perl -MLWP::Simple -e "getprint '${1}'" && success=0 || success=$?
-    fi
-    if [ "${success}" != "0" ]; then
-      echo "Cannot download a file" >&2
-      return 2
-    fi
+    return 100
   }
+
+  # download to stdout using curl
+  function download_to_stdout_curl()
+  {
+    if command -v "${CURL-curl}" &> /dev/null; then
+      "${CURL-curl}" ${CURL_ARGS[@]+"${CURL_ARGS[@]}"} -fsSL "${1}" && return || return
+    fi
+    return 100
+  }
+
+  # download to stdout using python
+  function download_to_stdout_python()
+  {
+    if command -v "${PYTHON-python}" &> /dev/null; then
+      "${PYTHON-python}" -c  'if True:
+          try:
+            import requests
+            os.write(1, requests.get("'"${1}"'").content)
+          except:
+            try:
+              import urllib2 as u
+            except:
+              import urllib.request as u
+            import os
+            os.write(1,u.urlopen("'"${1}"'").read())' && return || return
+    fi
+    return 100
+  }
+
+  # download to file using python
+  function download_to_file_python()
+  {
+    local python
+    local success=100
+    for python in "${PYTHON-}" python3 python python2; do
+      if command -v "${python}" &> /dev/null; then
+        PYTHON="${python}" download_to_stdout_python "${1}" > "${2}" && return || success=$?
+      fi
+    done
+    return ${success}
+  }
+
+  # download to file (try wget, then curl, then python)
+  function download_to_file()
+  {
+    local found=100
+    local rv
+    download_to_stdout_wget "${1}" > "${2}" && return || rv=$?
+    if [ "${rv}" != "100" ]; then
+      found="${rv}"
+    fi
+    download_to_stdout_curl "${1}" > "${2}" && return || rv=$?
+    if [ "${rv}" != "100" ]; then
+      found="${rv}"
+    fi
+    download_to_file_python "${1}" "${2}" && return || rv=$?
+    if [ "${rv}" != "100" ]; then
+      found="${rv}"
+    fi
+    return "${found}"
+  }
+
 fi
 
 
@@ -177,7 +199,7 @@ install_pipenv()
 
       # download to file
       virtualenv_pyz="${tmp_dir}/virtualenv.pyz"
-      PYTHON="${PIPENV_PYTHON}" download_to_stdout "${url}" > "${virtualenv_pyz}"    
+      PYTHON="${PIPENV_PYTHON}" download_to_file "${url}" "${virtualenv_pyz}"    
     fi
 
     # Temp fix for https://github.com/pypa/virtualenv/issues/1949
