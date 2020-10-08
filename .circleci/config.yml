@@ -129,7 +129,7 @@ jobs:
             just test recipe
 
 
-  # test selected scripts for windows compatability
+  # test selected scripts for windows compatibility
   # note 'bash.exe -l' ensures correct operation of utilities like 'find'
   windows_test:
     executor:
