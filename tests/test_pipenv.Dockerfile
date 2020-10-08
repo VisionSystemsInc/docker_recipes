@@ -1,6 +1,6 @@
 FROM vsiri/recipe:pipenv AS pipenv
 
-FROM python:3
+FROM python:3.8
 SHELL ["/usr/bin/env", "bash", "-euxvc"]
 
 COPY --from=pipenv /usr/local /usr/local
