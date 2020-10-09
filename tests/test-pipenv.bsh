@@ -67,3 +67,39 @@ begin_test "30_get-pipenv"
   [ "$RESULT" = 'pipenv, version 2020.8.13' ]
 )
 end_test
+
+[ "${BASH_VERSINFO[0]}${BASH_VERSINFO[1]}" -le 42 ] && skip_next_test
+begin_test "Get pipenv non-DRY functions"
+(
+  setup_test
+  declare -A function_prototypes
+
+  functions=(download_to_stdout_wget
+             download_to_stdout_curl
+             download_to_stdout_python
+             download_to_file_python
+             download_to_file
+             #  download_to_stdout_ruby
+             #  download_to_stdout_perl
+            )
+
+  source "${VSI_COMMON_DIR}/docker/recipes/30_get-pipenv"
+
+  # Store copies of functions loaded from VSI_COMMON_DIR
+  for function_name in "${functions[@]}" download_to_stdout_ruby download_to_stdout_perl; do
+    function_prototypes[${function_name}]="$(declare -pf "${function_name}")"
+    unset "${function_name}"
+  done
+
+  VSI_COMMON_DIR=/dev/null source "${VSI_COMMON_DIR}/docker/recipes/30_get-pipenv"
+
+  for function_name in "${functions[@]}"; do
+    [ "$(declare -pf "${function_name}")" = "${function_prototypes[${function_name}]}" ]
+  done
+
+  # These aren't includes, because python is installed, and they aren't needed
+  # unless there's a reason to include these, then change this test
+  [ "$(declare -pf "download_to_stdout_ruby")" != "${function_prototypes[download_to_stdout_ruby]}" ]
+  [ "$(declare -pf "download_to_stdout_perl")" != "${function_prototypes[download_to_stdout_perl]}" ]
+)
+end_test

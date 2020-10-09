@@ -89,16 +89,16 @@ else
   {
     if command -v "${PYTHON-python}" &> /dev/null; then
       "${PYTHON-python}" -c  'if True:
+        try:
+          import requests
+          os.write(1, requests.get("'"${1}"'").content)
+        except:
           try:
-            import requests
-            os.write(1, requests.get("'"${1}"'").content)
+            import urllib2 as u
           except:
-            try:
-              import urllib2 as u
-            except:
-              import urllib.request as u
-            import os
-            os.write(1,u.urlopen("'"${1}"'").read())' && return || return
+            import urllib.request as u
+          import os
+          os.write(1,u.urlopen("'"${1}"'").read())' && return || return
     fi
     return 100
   }
@@ -116,6 +116,9 @@ else
     return ${success}
   }
 
+  function download_to_stdout_ruby() { return 100; }
+  function download_to_stdout_perl() { return 100; }
+
   # download to file (try wget, then curl, then python)
   function download_to_file()
   {
@@ -130,6 +133,14 @@ else
       found="${rv}"
     fi
     download_to_file_python "${1}" "${2}" && return || rv=$?
+    if [ "${rv}" != "100" ]; then
+      found="${rv}"
+    fi
+    download_to_stdout_ruby "${1}" > "${2}" && return || rv=$?
+    if [ "${rv}" != "100" ]; then
+      found="${rv}"
+    fi
+    download_to_stdout_perl "${1}" > "${2}" && return || rv=$?
     if [ "${rv}" != "100" ]; then
       found="${rv}"
     fi
@@ -200,7 +211,7 @@ install_pipenv()
 
       # download to file
       virtualenv_pyz="${tmp_dir}/virtualenv.pyz"
-      PYTHON="${PIPENV_PYTHON}" download_to_file "${url}" "${virtualenv_pyz}"    
+      PYTHON="${PIPENV_PYTHON}" download_to_file "${url}" "${virtualenv_pyz}"
     fi
 
     # Temp fix for https://github.com/pypa/virtualenv/issues/1949
