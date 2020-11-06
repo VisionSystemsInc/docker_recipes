@@ -5,8 +5,7 @@ if [ -z ${VSI_COMMON_DIR+set} ]; then
 fi
 
 source "${VSI_COMMON_DIR}/tests/testlib.bsh"
-
-: ${DOCKER=docker}
+source "${VSI_COMMON_DIR}/linux/aliases.bsh"
 
 # test pipenv version in docker
 command -v "${DOCKER}" &> /dev/null || skip_next_test
@@ -14,7 +13,7 @@ begin_test "Pipenv"
 (
   setup_test
 
-  RESULT=$(docker run --rm vsiri/test_recipe:test_pipenv bash -c 'head -n1 /foo/bin/pipenv; readlink /foo/bin/python; /foo/bin/pipenv --version')
+  RESULT=$("${DOCKER}" run --rm vsiri/test_recipe:test_pipenv bash -c 'head -n1 /foo/bin/pipenv; readlink /foo/bin/python; /foo/bin/pipenv --version')
   [ "$RESULT" = $'#!/foo/bin/python\n/bar\npipenv, version 2018.05.18' ]
 
 )

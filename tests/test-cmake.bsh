@@ -5,16 +5,14 @@ if [ -z ${VSI_COMMON_DIR+set} ]; then
 fi
 
 source "${VSI_COMMON_DIR}/tests/testlib.bsh"
-
-: ${DOCKER=docker}
+source "${VSI_COMMON_DIR}/linux/aliases.bsh"
 
 command -v "${DOCKER}" &> /dev/null || skip_next_test
 begin_test "Cmake"
 (
   setup_test
 
-  RESULT=$(${DOCKER} run --rm vsiri/test_recipe:test_cmake bash -c '/usr/local/bin/cmake --version | head -n1')
-  [ "$RESULT" = "cmake version 3.16.1" ]
-
+  RESULT=$("${DOCKER}" run --rm vsiri/test_recipe:test_cmake bash -c '/usr/local/bin/cmake --version | head -n1')
+  [ "${RESULT}" = "cmake version 3.16.1" ]
 )
 end_test

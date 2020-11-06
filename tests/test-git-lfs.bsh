@@ -6,8 +6,7 @@ fi
 
 source "${VSI_COMMON_DIR}/tests/testlib.bsh"
 source "${VSI_COMMON_DIR}/tests/test_utils.bsh"
-
-: ${GIT=git}
+source "${VSI_COMMON_DIR}/linux/aliases.bsh"
 
 command -v "${GIT}" &> /dev/null || skip_next_test
 begin_test "Git LFS"
