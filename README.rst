@@ -294,9 +294,9 @@ Pipenv
 
 =========== ======
 Name        Pipenv
-Build Args  ``PIPENV_VERSION`` - Version of pipenv source to download
-Build Args  ``PIPENV_VIRTUALENV`` - The location of the pipenv virtualenv
-Build Args  ``PIPENV_PYTHON`` - Optional default python executable to use. This is useful when combined with the "Conda's Python" recipe
+Env Var     ``PIPENV_VERSION`` - Version of pipenv source to download
+Env Var     ``PIPENV_VIRTUALENV`` - The location of the pipenv virtualenv
+Env Var     ``PIPENV_PYTHON`` - Optional default python executable to use. This is useful when combined with the "Conda's Python" recipe
 Output dir  ``/usr/local``
 =========== ======
 
@@ -304,7 +304,7 @@ Pipenv is the new way to manage python requirements (within a virtualenv) on pro
 
 Since this is setting up a virtualenv, you can't just move ``/usr/local/pipenv`` to anywhere in the destination image, it must created in the correct location. If this needs to be changed, adjust the ``PIPENV_VIRTUALENV`` arg.
 
-The default python  will be used when :ref:`get_pipenv` is called. The default python is used for all other pipenv calls. In order to customize the default python interpreter used, set the ``PYTHON`` build arg, or else you will need to use the ``--python/--two/--three`` flags when calling ``pipenv``
+The default python will be used when :ref:`get_pipenv` is called. The default python is used for all other pipenv calls. In order to customize the default python interpreter used, set the ``PYTHON`` build arg, or else you will need to use the ``--python/--two/--three`` flags when calling ``pipenv``.
 
 This recipe is a little different from other recipes in that it's just a script to set up the virtualenv in the destination image. Virtualenvs have to be done this way due to their non-portable nature; this is especially true because this virtualenv creates other virtutalenvs that need to point to the system python.
 
@@ -321,10 +321,6 @@ A script called ``fake_package`` is added to the pipenv virtualenv, this script 
    ...
    # Only needs to be run once for all recipes
    RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
-
-.. note::
-
-   ``rm -f`` and ``|| :`` handles cases like `this <https://github.com/moby/moby/issues/27358>`_
 
 Amanda debian packages
 ----------------------
