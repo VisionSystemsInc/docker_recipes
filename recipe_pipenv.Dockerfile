@@ -11,5 +11,6 @@ ADD 30_get-pipenv /usr/local/share/just/container_build_patch/30_get-pipenv
 ONBUILD RUN sed -i -e "3a: \${PIPENV_PYTHON:=${PIPENV_PYTHON-}}" \
                    -e "3a: \${PIPENV_VERSION:=${PIPENV_VERSION}}" \
                    -e "3a: \${PIPENV_VIRTUALENV:=${PIPENV_VIRTUALENV}}" \
+                   -e "3a: \${VIRTUALENV_VERSION:=${VIRTUALENV_VERSION}}" \
                    /usr/local/share/just/container_build_patch/30_get-pipenv; \
             chmod 755 /usr/local/share/just/container_build_patch/30_get-pipenv
