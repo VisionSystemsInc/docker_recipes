@@ -225,7 +225,8 @@ install_pipenv()
     "${PIPENV_PYTHON}" "${virtualenv_pyz}" "${output_dir}"
 
     # cleanup
-    rm -rf "${tmp_dir}"
+    rm -rf "${tmp_dir}" || :
+    # "rm -f" and "|| :" handles cases like `this <https://github.com/moby/moby/issues/27358>`_
   fi
 
   # add pipenv to output virtualenv
