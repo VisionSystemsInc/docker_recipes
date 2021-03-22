@@ -64,7 +64,10 @@
 # -----------------------------------------------------------------------------
 
 # base image
-FROM quay.io/pypa/manylinux2010_x86_64:2020-12-15-ba3529a as base_image
+# Note: until further notice, do not advance past 2021-01-24-4117e7c
+# manylinux removed sqlite3 header files resulting in a build failure.
+# https://github.com/pypa/manylinux/pull/972/files#diff-9c383720bcb0d73540daa84edfb6357f31620ff274e48183c95936cc834252c2R35-R36
+FROM quay.io/pypa/manylinux2010_x86_64:2021-01-24-4117e7c as base_image
 
 # Set shell to bash
 SHELL ["/usr/bin/env", "/bin/bash", "-euxvc"]
@@ -180,7 +183,7 @@ RUN TEMP_DIR=/tmp/proj ; \
     # download & unzip
     TAR_FILE=${PROJ_VERSION}.tar.gz ; \
     curl -fsSLO https://github.com/OSGeo/PROJ/archive/${TAR_FILE} ; \
-    tar -xvf ${TAR_FILE} --strip-components=1 ; \
+    tar -xf ${TAR_FILE} --strip-components=1 ; \
     #
     # configure, build, & install
     ./autogen.sh ; \
@@ -261,7 +264,7 @@ RUN TEMP_DIR=/tmp/gdal ; \
     # download & unzip
     TAR_FILE=gdal-${GDAL_VERSION}.tar.gz ; \
     curl -fsSLO http://download.osgeo.org/gdal/${GDAL_VERSION}/${TAR_FILE} ; \
-    tar -xvf ${TAR_FILE} --strip-components=1 ; \
+    tar -xf ${TAR_FILE} --strip-components=1 ; \
     #
     # configure, build, & install
     # https://raw.githubusercontent.com/OSGeo/gdal/master/gdal/configure
