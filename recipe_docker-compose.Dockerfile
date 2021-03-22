@@ -2,7 +2,7 @@
 # FROM docker/compose:alpine-${DOCKER_COMPOSE_VERSION} as docker-compose_musl
 # FROM docker/compose:debian-${DOCKER_COMPOSE_VERSION} as docker-compose_glib
 
-FROM alpine:3.11
+FROM alpine:3.11.8
 ADD docker-compose /usr/local/bin/docker-compose
 RUN chmod 755 /usr/local/bin/docker-compose
 
