@@ -64,10 +64,7 @@
 # -----------------------------------------------------------------------------
 
 # base image
-# Note: until further notice, do not advance past 2021-01-24-4117e7c
-# manylinux removed sqlite3 header files resulting in a build failure.
-# https://github.com/pypa/manylinux/pull/972/files#diff-9c383720bcb0d73540daa84edfb6357f31620ff274e48183c95936cc834252c2R35-R36
-FROM quay.io/pypa/manylinux2010_x86_64:2021-01-24-4117e7c as base_image
+FROM quay.io/pypa/manylinux2010_x86_64:2021-04-05-b4fd19d as base_image
 
 # Set shell to bash
 SHELL ["/usr/bin/env", "/bin/bash", "-euxvc"]
