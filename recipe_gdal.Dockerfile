@@ -64,7 +64,7 @@
 # -----------------------------------------------------------------------------
 
 # base image
-FROM quay.io/pypa/manylinux2010_x86_64:2020-12-15-ba3529a as base_image
+FROM quay.io/pypa/manylinux2010_x86_64:2021-04-05-b4fd19d as base_image
 
 # Set shell to bash
 SHELL ["/usr/bin/env", "/bin/bash", "-euxvc"]
@@ -180,7 +180,7 @@ RUN TEMP_DIR=/tmp/proj ; \
     # download & unzip
     TAR_FILE=${PROJ_VERSION}.tar.gz ; \
     curl -fsSLO https://github.com/OSGeo/PROJ/archive/${TAR_FILE} ; \
-    tar -xvf ${TAR_FILE} --strip-components=1 ; \
+    tar -xf ${TAR_FILE} --strip-components=1 ; \
     #
     # configure, build, & install
     ./autogen.sh ; \
@@ -261,7 +261,7 @@ RUN TEMP_DIR=/tmp/gdal ; \
     # download & unzip
     TAR_FILE=gdal-${GDAL_VERSION}.tar.gz ; \
     curl -fsSLO http://download.osgeo.org/gdal/${GDAL_VERSION}/${TAR_FILE} ; \
-    tar -xvf ${TAR_FILE} --strip-components=1 ; \
+    tar -xf ${TAR_FILE} --strip-components=1 ; \
     #
     # configure, build, & install
     # https://raw.githubusercontent.com/OSGeo/gdal/master/gdal/configure

@@ -1,4 +1,4 @@
-FROM debian:8
+FROM debian:jessie-20210311
 
 SHELL ["/usr/bin/env", "bash", "-xveuc"]
 
