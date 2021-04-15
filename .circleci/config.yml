@@ -89,21 +89,18 @@ jobs:
   # linux docker environment
   build_and_test:
     docker:
-      - image: vsiri/circleci:bash-compose-lfs
+      - image: cimg/python:3.8
     shell: /bin/bash -eo pipefail
     working_directory: ~/vsi
     environment:
-      VSI_COMMON_DIR: /root/vsi
-      RECIPE_DIR: /root/vsi/docker/recipes
+      VSI_COMMON_DIR: /home/circleci/vsi
+      RECIPE_DIR: /home/circleci/vsi/docker/recipes
 
     steps:
 
       - run:
           name: Install software
           command: |
-            apk update
-            apk add python3
-            python3 --version
             pip3 install pyyaml
 
       - checkout_in_vsi_common
