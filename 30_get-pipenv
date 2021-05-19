@@ -254,9 +254,10 @@ install_pipenv()
 #**
 setup_container_pipenv()
 {
-  ln -s "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/pipenv" "${2-/usr/local/bin/pipenv}"
+  local virtualenv_dir="${1-${RECIPE_PIPENV_VIRTUALENV-${PIPENV_VIRTUALENV-${HOME}/pipenv}}}"
+  ln -s "${virtualenv_dir}/bin/pipenv" "${2-/usr/local/bin/pipenv}"
 
-  cat - > "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/fake_package" << "EOF"
+  cat - > "${virtualenv_dir}/bin/fake_package" << "EOF"
 #!/usr/bin/env sh
 
 set -eu
@@ -273,7 +274,7 @@ if [ ! -e "setup.py" ]; then
   echo "setup(name='${1}', packages=['${2-${1}}'], description='Project')" >> setup.py
 fi
 EOF
-  chmod 755 "${1-${PIPENV_VIRTUALENV-${HOME}/pipenv}}/bin/fake_package"
+  chmod 755 "${virtualenv_dir}/bin/fake_package"
 }
 
 if [ -n "${BASH_SOURCE+set}" ]; then
