@@ -57,7 +57,15 @@ begin_test "30_get-pipenv"
     PIPENV="${OUTPUT_DIR}/bin/pipenv"
   fi
 
-  # pipenv result
+  # test for conflict with PIPENV_{FLAG_NAME} environment variables
+  # https://github.com/pypa/pipenv/blob/master/CHANGELOG.rst#features--improvements-4
+  # For example, if we define the variable
+  #   PIPENV_VERSION=2020.8.13
+  # pipenv calls will fail with the error
+  #   Error: Invalid value for '--version': 2020.8.13 is not a valid boolean
+  RESULT="$("${PIPENV}")"
+
+  # pipenv version
   RESULT="$("${PIPENV}" --version | sed 's|\r||g')"
 
   # cleanup
