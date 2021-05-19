@@ -15,7 +15,7 @@ begin_test "Pipenv"
   setup_test
 
   RESULT=$(docker run --rm vsiri/test_recipe:test_pipenv bash -c 'head -n1 /foo/bin/pipenv; readlink /foo/bin/python; /foo/bin/pipenv --version')
-  [ "$RESULT" = $'#!/foo/bin/python\n/bar\npipenv, version 2018.05.18' ]
+  [ "$RESULT" = $'#!/foo/bin/python\n/bar\npipenv, version 2020.8.13' ]
 
 )
 end_test
@@ -27,7 +27,7 @@ begin_test "30_get-pipenv"
   setup_test
 
   # test version
-  export PIPENV_VERSION="2020.8.13"
+  export RECIPE_PIPENV_VERSION="2020.8.13"
 
   # locale
   EN_US_UTF8="$( (locale -a | grep -iE "en_us\.utf-?8") 2>/dev/null || :)"
@@ -57,7 +57,15 @@ begin_test "30_get-pipenv"
     PIPENV="${OUTPUT_DIR}/bin/pipenv"
   fi
 
-  # pipenv result
+  # test for conflict with PIPENV_{FLAG_NAME} environment variables
+  # https://github.com/pypa/pipenv/blob/master/CHANGELOG.rst#features--improvements-4
+  # For example, if we define the variable
+  #   PIPENV_VERSION=2020.8.13
+  # pipenv calls will fail with the error
+  #   Error: Invalid value for '--version': 2020.8.13 is not a valid boolean
+  RESULT="$("${PIPENV}")"
+
+  # pipenv version
   RESULT="$("${PIPENV}" --version | sed 's|\r||g')"
 
   # cleanup
