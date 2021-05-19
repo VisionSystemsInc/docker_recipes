@@ -184,7 +184,7 @@ install_pipenv()
   local python_exe="${RECIPE_PIPENV_PYTHON:-${PIPENV_PYTHON:-"$( (command -v python3 || command -v python || command -v python2) | head -n 1)"}}"
 
   # Make sure python was found
-  if [ -n "${python_exe}" ]; then
+  if [ -z "${python_exe}" ]; then
     echo "install_pipenv cannot find python executable. Try setting RECIPE_PIPENV_PYTHON to point to python" >&2
     return 1
   fi
