@@ -169,7 +169,9 @@ fi
 #
 # While virtualenv documentation recommends download of the virtualenv zipapp file from https://bootstrap.pypa.io/virtualenv, this script instead downloads from https://github.com/pypa/get-virtualenv/ which offered versioned zipapp files.  This avoids possible breaking changes introduced at the pypa bootstrap site.
 #
-# Prefer use of ``RECIPE_*``` environment variables (e.g., prefer ``RECIPE_PIPENV_VERSION`` over ``PIPENV_VERSION``). Pipenv uses ``PIPENV_{FLAG_NAME}`` to control command line execution via environment variables, as per https://github.com/pypa/pipenv/blob/master/CHANGELOG.rst#features--improvements-4. Use of ``PIPENV_VERSION`` to control the installed pipenv version may cause subsequent calls to pipenv to fail with the error ``Error: Invalid value for '--version': 2020.11.15 is not a valid boolean``.
+# Prefer use of ``RECIPE_*`` environment variables (e.g., prefer ``RECIPE_PIPENV_VERSION`` over ``PIPENV_VERSION``). Pipenv uses ``PIPENV_{FLAG_NAME}`` to control command line execution via environment variables, as per https://github.com/pypa/pipenv/blob/master/CHANGELOG.rst#features--improvements-4. Use of ``PIPENV_VERSION`` to control the installed pipenv version may cause subsequent calls to pipenv to fail with the error ``Error: Invalid value for '--version': 2020.11.15 is not a valid boolean``.
+#
+# Environment variables not starting with ``RECIPE_*`` may be deprecated in the future.
 #
 # :Arguments: [``$1``] - The location of the virtualenv, defaults to ``${RECIPE_PIPENV_VIRTUALENV-${PIPENV_VIRTUALENV-${HOME}/pipenv}}``
 # :Parameters: * ``RECIPE_PIPENV_PYTHON`` or ``PIPENV_PYTHON`` - Optionally specify which python you want to use. Default is to favor python3, trying ``python3``, ``python``, then finally falling back to ``python2``.
