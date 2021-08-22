@@ -201,11 +201,14 @@ FROM base_image as proj
 # additional build dependencies
 RUN yum install -y \
       libcurl-devel \
-      libtiff-devel \
+      libjpeg-turbo-devel \
       zlib-devel; \
     yum clean all
 
-# varibales
+# local dependencies to staging directory
+COPY --from=tiff /tiff/usr/local /usr/local
+
+# variables
 ENV PROJ_STAGING_DIR=/proj
 ENV PROJ_VERSION=6.3.2
 
@@ -215,12 +218,11 @@ RUN TEMP_DIR=/tmp/proj; \
     cd "${TEMP_DIR}"; \
     #
     # download & unzip
-    TAR_FILE="${PROJ_VERSION}.tar.gz"; \
-    curl -fsSLO "https://github.com/OSGeo/PROJ/archive/${TAR_FILE}"; \
-    tar -xf "${TAR_FILE}" --strip-components=1; \
+    TAR_FILE="proj-${PROJ_VERSION}.tar.gz"; \
+    curl -fsSLO http://download.osgeo.org/proj/${TAR_FILE}; \
+    tar -xf ${TAR_FILE} --strip-components=1; \
     #
     # configure, build, & install
-    ./autogen.sh; \
     ./configure \
         CFLAGS='-DPROJ_RENAME_SYMBOLS -O2' \
         CXXFLAGS='-DPROJ_RENAME_SYMBOLS -DPROJ_INTERNAL_CPP_NAMESPACE -O2' \
