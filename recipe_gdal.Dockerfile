@@ -253,6 +253,51 @@ RUN cd "${PROJ_STAGING_DIR}/usr/local/lib"; \
 
 
 # -----------------------------------------------------------------------------
+# GEOTIFF
+# -----------------------------------------------------------------------------
+# https://github.com/OSGeo/libgeotiff
+FROM base_image as geotiff
+
+# additional build dependencies
+RUN yum install -y \
+      libcurl-devel \
+      libjpeg-turbo-devel \
+      zlib-devel; \
+    yum clean all
+
+# local dependencies to staging directory
+COPY --from=tiff /tiff/usr/local /usr/local
+COPY --from=proj /proj/usr/local /usr/local
+
+# variables
+ENV GEOTIFF_STAGING_DIR=/geotiff
+ENV GEOTIFF_VERSION=1.7.0
+
+# install
+RUN TEMP_DIR="/tmp/geotiff"; \
+    mkdir -p "${TEMP_DIR}"; \
+    cd "${TEMP_DIR}"; \
+    mkdir -p "./source" "./build"; \
+    #
+    # download & unzip
+    TAR_FILE="libgeotiff-${GEOTIFF_VERSION}.tar.gz"; \
+    curl -fsSLO "http://download.osgeo.org/geotiff/libgeotiff/${TAR_FILE}"; \
+    tar -xf "${TAR_FILE}" --strip-components=1; \
+    #
+    # configure, build, & install
+    ./configure \
+        --with-jpeg \
+        --with-proj=/usr/local \
+        --with-zlib; \
+    make -j"$(nproc)"; \
+    make install DESTDIR="${GEOTIFF_STAGING_DIR}"; \
+    echo "$GEOTIFF_VERSION" > "${GEOTIFF_STAGING_DIR}/usr/local/geotiff_version"; \
+    #
+    # cleanup
+    rm -r "${TEMP_DIR}";
+
+
+# -----------------------------------------------------------------------------
 # GDAL (final image)
 # -----------------------------------------------------------------------------
 FROM base_image
