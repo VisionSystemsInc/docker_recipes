@@ -303,7 +303,9 @@ ENV GDAL_STAGING_DIR=/gdal
 # so we isolate packages in a staging directory
 COPY --from=openjpeg /openjpeg ${GDAL_STAGING_DIR}
 COPY --from=ecw /ecw ${GDAL_STAGING_DIR}
+COPY --from=tiff /tiff ${GDAL_STAGING_DIR}
 COPY --from=proj /proj ${GDAL_STAGING_DIR}
+COPY --from=geotiff /geotiff ${GDAL_STAGING_DIR}
 
 # local dependencies to /usr/local
 # This is necessary only for those dependencies expected to be in a "normal"
@@ -336,8 +338,8 @@ RUN TEMP_DIR=/tmp/gdal; \
         --with-hide-internal-symbols \
         --with-jpeg=internal \
         --with-png=internal \
-        --with-libtiff=internal --with-rename-internal-libtiff-symbols \
-        --with-geotiff=internal --with-rename-internal-libgeotiff-symbols \
+        --with-libtiff=${GDAL_STAGING_DIR}/usr/local \
+        --with-geotiff=${GDAL_STAGING_DIR}/usr/local \
         --with-openjpeg \
         --with-proj="${GDAL_STAGING_DIR}/usr/local" \
         --with-ecw="${GDAL_STAGING_DIR}/usr/local/ecw" \
