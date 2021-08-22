@@ -157,6 +157,42 @@ RUN mkdir -p "${ECW_STAGING_DIR}/usr/local/lib"; \
 
 
 # -----------------------------------------------------------------------------
+# LIBTIFF
+# -----------------------------------------------------------------------------
+# https://gitlab.com/libtiff/libtiff
+FROM base_image as tiff
+
+# additional build dependencies
+RUN yum install -y \
+      libjpeg-turbo-devel \
+      zlib-devel; \
+    yum clean all
+
+# variables
+ENV TIFF_STAGING_DIR=/tiff
+ENV TIFF_VERSION=4.3.0
+
+# install
+RUN TEMP_DIR=/tmp/tiff; \
+    mkdir -p "${TEMP_DIR}"; \
+    cd "${TEMP_DIR}"; \
+    #
+    # download & unzip
+    TAR_FILE="tiff-${TIFF_VERSION}.tar.gz"; \
+    curl -fsSLO "http://download.osgeo.org/libtiff/${TAR_FILE}"; \
+    tar -xf "${TAR_FILE}" --strip-components=1; \
+    #
+    # configure, build, & install
+    ./configure; \
+    make -j"$(nproc)"; \
+    make install DESTDIR="${TIFF_STAGING_DIR}"; \
+    echo "$TIFF_VERSION" > "${TIFF_STAGING_DIR}/usr/local/tiff_version"; \
+    #
+    # cleanup
+    rm -r "${TEMP_DIR}";
+
+
+# -----------------------------------------------------------------------------
 # PROJ v6
 # -----------------------------------------------------------------------------
 # install instructions: https://proj.org/install.html
