@@ -234,23 +234,6 @@ RUN TEMP_DIR=/tmp/proj; \
     # cleanup
     rm -r "${TEMP_DIR}";
 
-# reconfigure *.so files
-# This ensures GDAL always links against this exact PROJ version,
-# even if the system contains another PROJ version
-# https://github.com/OSGeo/gdal/blob/master/gdal/docker/ubuntu-small/Dockerfile#L96
-# https://trac.osgeo.org/gdal/wiki/BuildingOnUnixGDAL25dev
-RUN cd "${PROJ_STAGING_DIR}/usr/local/lib"; \
-    PROJ_SO="$(readlink libproj.so | sed "s/libproj\.so\.//")"; \
-    PROJ_SO_FIRST="$(echo "${PROJ_SO}" | awk 'BEGIN {FS="."} {print $1}')"; \
-    NEW_LIBPROJ="libinternalproj.so.${PROJ_SO}"; \
-    # rename & clean
-    mv "libproj.so.${PROJ_SO}" "${NEW_LIBPROJ}"; \
-    rm libproj.*; \
-    # relink
-    ln -s "${NEW_LIBPROJ}" "libinternalproj.so.${PROJ_SO_FIRST}"; \
-    ln -s "${NEW_LIBPROJ}" libinternalproj.so; \
-    ln -s "${NEW_LIBPROJ}" "libproj.so.${PROJ_SO_FIRST}";
-
 
 # -----------------------------------------------------------------------------
 # GEOTIFF
