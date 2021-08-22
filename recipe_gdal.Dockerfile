@@ -77,7 +77,7 @@ FROM base_image as openjpeg
 
 # variables
 ENV OPENJPEG_STAGING_DIR=/openjpeg
-ENV OPENJPEG_VERSION=2.3.1
+ENV OPENJPEG_VERSION=2.4.0
 
 # install
 RUN TEMP_DIR=/tmp/openjpeg; \
