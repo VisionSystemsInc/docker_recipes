@@ -210,7 +210,7 @@ COPY --from=tiff /tiff/usr/local /usr/local
 
 # variables
 ENV PROJ_STAGING_DIR=/proj
-ENV PROJ_VERSION=6.3.2
+ENV PROJ_VERSION=8.1.1
 
 # install
 RUN TEMP_DIR=/tmp/proj; \
@@ -313,13 +313,16 @@ COPY --from=geotiff /geotiff ${GDAL_STAGING_DIR}
 # ECW and PROJ.
 COPY --from=openjpeg /openjpeg/usr/local /usr/local
 
+# add staged libraries
+ENV LD_LIBRARY_PATH="${GDAL_STAGING_DIR}/usr/local/lib"
+
 # Patch file for downstream image
 ENV GDAL_PATCH_FILE=${GDAL_STAGING_DIR}/usr/local/share/just/container_build_patch/30_gdal
 ADD 30_gdal ${GDAL_PATCH_FILE}
 RUN chmod +x ${GDAL_PATCH_FILE}
 
 # install
-ONBUILD ARG GDAL_VERSION=3.1.2
+ONBUILD ARG GDAL_VERSION=3.2.3
 
 ONBUILD \
 RUN TEMP_DIR=/tmp/gdal; \
