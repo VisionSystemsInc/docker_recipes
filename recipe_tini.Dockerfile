@@ -17,7 +17,7 @@ ONBUILD RUN apk add --no-cache --virtual .deps gnupg curl ca-certificates; \
                                     keyserver.ubuntu.com \
                                     hkp://keyserver.ubuntu.com:80 \
                                     pgp.mit.edu) ; do \
-                gpg --batch --keyserver "$server" --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 && break || : ; \
+                gpg --batch --keyserver "${server}" --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 && break || : ; \
             done; \
             gpg --batch --verify /dev/shm/tini.asc /usr/local/bin/_tini; \
             # cleanup to keep intermediate image samell

@@ -15,7 +15,7 @@ begin_test "Pipenv"
   setup_test
 
   RESULT=$(docker run --rm vsiri/test_recipe:test_pipenv bash -c 'head -n1 /foo/bin/pipenv; readlink /foo/bin/python; /foo/bin/pipenv --version')
-  [ "$RESULT" = $'#!/foo/bin/python\n/bar\npipenv, version 2020.8.13' ]
+  [ "${RESULT}" = $'#!/foo/bin/python\n/bar\npipenv, version 2020.8.13' ]
 
 )
 end_test
@@ -39,7 +39,7 @@ begin_test "30_get-pipenv"
     export LANG=C.UTF-8
   fi
 
-  # ensure mktemp commands are redirected to $TESTDIR
+  # ensure mktemp commands are redirected to ${TESTDIR}
   # (including mktemp inside 30_get-pipenv)
   export TMPDIR="${TESTDIR}"
 
@@ -72,7 +72,7 @@ begin_test "30_get-pipenv"
   rm -rf "${OUTPUT_DIR}"
 
   # test
-  [ "$RESULT" = 'pipenv, version 2020.8.13' ]
+  [ "${RESULT}" = 'pipenv, version 2020.8.13' ]
 )
 end_test
 
