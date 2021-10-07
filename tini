@@ -7,8 +7,8 @@ set -eu
 
 # If running in singularity
 if [ -d "/.singularity.d" ]; then
-  while [ $# -gt 0 ]; do
-    case "${1}" in
+  while [ "${#}" -gt "0" ]; do
+    case ${1} in
       # Signifies the rest is the command, so break
       --)
         shift 1
@@ -32,6 +32,6 @@ else
   if [ -e /usr/local/bin/_tini ]; then
     exec /usr/local/bin/_tini ${@+"${@}"}
   else
-    exec "$(dirname "$0")/_tini" ${@+"${@}"}
+    exec "$(dirname "${0}")/_tini" ${@+"${@}"}
   fi
 fi
