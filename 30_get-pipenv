@@ -110,7 +110,7 @@ else
     local success=100
     for python in "${PYTHON-}" python3 python python2; do
       if command -v "${python}" &> /dev/null; then
-        PYTHON="${python}" download_to_stdout_python "${1}" > "${2}" && return || success=${?}
+        PYTHON="${python}" download_to_stdout_python "${1}" > "${2}" && return || success="${?}"
       fi
     done
     return ${success}
@@ -124,23 +124,23 @@ else
   {
     local found=100
     local rv
-    download_to_stdout_wget "${1}" > "${2}" && return || rv=${?}
+    download_to_stdout_wget "${1}" > "${2}" && return || rv="${?}"
     if [ "${rv}" != "100" ]; then
       found="${rv}"
     fi
-    download_to_stdout_curl "${1}" > "${2}" && return || rv=${?}
+    download_to_stdout_curl "${1}" > "${2}" && return || rv="${?}"
     if [ "${rv}" != "100" ]; then
       found="${rv}"
     fi
-    download_to_file_python "${1}" "${2}" && return || rv=${?}
+    download_to_file_python "${1}" "${2}" && return || rv="${?}"
     if [ "${rv}" != "100" ]; then
       found="${rv}"
     fi
-    download_to_stdout_ruby "${1}" > "${2}" && return || rv=${?}
+    download_to_stdout_ruby "${1}" > "${2}" && return || rv="${?}"
     if [ "${rv}" != "100" ]; then
       found="${rv}"
     fi
-    download_to_stdout_perl "${1}" > "${2}" && return || rv=${?}
+    download_to_stdout_perl "${1}" > "${2}" && return || rv="${?}"
     if [ "${rv}" != "100" ]; then
       found="${rv}"
     fi
