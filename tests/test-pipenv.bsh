@@ -9,7 +9,9 @@ source "${VSI_COMMON_DIR}/tests/testlib.bsh"
 : ${DOCKER=docker}
 
 # test pipenv version in docker
-command -v "${DOCKER}" &> /dev/null || skip_next_test
+if ! command -v "${DOCKER}" &> /dev/null; then
+  skip_next_test
+fi
 begin_test "Pipenv"
 (
   setup_test
@@ -21,7 +23,9 @@ begin_test "Pipenv"
 end_test
 
 # test 30_get-pipenv script without a container
-command -v "${PIPENV_PYTHON-python}" &>/dev/null || command -v python3 &>/dev/null || skip_next_test
+if ! ( command -v "${PIPENV_PYTHON-python}" &>/dev/null || command -v python3 &>/dev/null ); then
+  skip_next_test
+fi
 begin_test "30_get-pipenv"
 (
   setup_test
@@ -76,7 +80,9 @@ begin_test "30_get-pipenv"
 )
 end_test
 
-[ "${BASH_VERSINFO[0]}${BASH_VERSINFO[1]}" -le 42 ] && skip_next_test
+if [ "${BASH_VERSINFO[0]}${BASH_VERSINFO[1]}" -le "42" ]; then
+  skip_next_test
+fi
 begin_test "Get pipenv non-DRY functions"
 (
   setup_test

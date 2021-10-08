@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -z ${VSI_COMMON_DIR+set} ]; then
+if [ -z "${VSI_COMMON_DIR+set}" ]; then
   VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"
 fi
 
@@ -8,7 +8,9 @@ source "${VSI_COMMON_DIR}/tests/testlib.bsh"
 
 : ${DOCKER=docker}
 
-command -v "${DOCKER}" &> /dev/null || skip_next_test
+if ! command -v "${DOCKER}" &> /dev/null; then
+  skip_next_test
+fi
 begin_test "Cmake"
 (
   setup_test

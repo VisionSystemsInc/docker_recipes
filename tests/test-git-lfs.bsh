@@ -9,7 +9,9 @@ source "${VSI_COMMON_DIR}/tests/test_utils.bsh"
 
 : ${GIT=git}
 
-command -v "${GIT}" &> /dev/null || skip_next_test
+if ! command -v "${GIT}" &> /dev/null; then
+  skip_next_test
+fi
 begin_test "Git LFS"
 (
   setup_test
