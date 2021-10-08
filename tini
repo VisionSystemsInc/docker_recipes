@@ -29,7 +29,7 @@ if [ -d "/.singularity.d" ]; then
   done
   exec ${@+"${@}"}
 else
-  if [ -e /usr/local/bin/_tini ]; then
+  if [ -e "/usr/local/bin/_tini" ]; then
     exec /usr/local/bin/_tini ${@+"${@}"}
   else
     exec "$(dirname "${0}")/_tini" ${@+"${@}"}
