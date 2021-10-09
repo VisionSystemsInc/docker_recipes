@@ -69,7 +69,7 @@ commands:
             : ${CI_RECIPE_REPO="vsiri/ci_cache_recipes"}
             : ${CI_RECIPE_VERSION=}
             COMPOSE_FILE="<< parameters.compose_file >>"
-            SERVICES=( $(docker-compose -f "${COMPOSE_FILE}" ps --services) )
+            SERVICES=( $(docker-compose -f "${COMPOSE_FILE}" ps --services) ) # nq
 
             # ci_load for each service
             for SERVICE in "${SERVICES[@]}"; do

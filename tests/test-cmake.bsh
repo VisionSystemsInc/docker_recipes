@@ -15,7 +15,7 @@ begin_test "Cmake"
 (
   setup_test
 
-  RESULT=$(${DOCKER} run --rm vsiri/test_recipe:test_cmake bash -c '/usr/local/bin/cmake --version | head -n1')
+  RESULT="$(${DOCKER} run --rm vsiri/test_recipe:test_cmake bash -c '/usr/local/bin/cmake --version | head -n1')"
   [ "${RESULT}" = "cmake version 3.16.1" ]
 
 )
