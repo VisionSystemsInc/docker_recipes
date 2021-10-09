@@ -4,10 +4,10 @@
 
 if test "${VSI_MUSL}" -eq -1; then
   if command -v ldd 2>&1 > /dev/null; then
-    if ! VSI_MUSL=`ldd --version 2>&1`; then
+    if ! VSI_MUSL="$(ldd --version 2>&1)" ; then
       # Some versions of ldd fail when using the --version flag, but succeed on
       # no flag
-      VSI_MUSL=`ldd 2>&1 || :`
+      VSI_MUSL="$(ldd 2>&1 || :)"
     fi
     # Was musl not found in first line
     if command -v awk 2>&1 > /dev/null; then
