@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -z ${VSI_COMMON_DIR+set} ]; then
+if [ -z "${VSI_COMMON_DIR+set}" ]; then
   VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"
 fi
 
@@ -9,19 +9,23 @@ source "${VSI_COMMON_DIR}/tests/testlib.bsh"
 : ${DOCKER=docker}
 
 # test pipenv version in docker
-command -v "${DOCKER}" &> /dev/null || skip_next_test
+if ! command -v "${DOCKER}" &> /dev/null; then
+  skip_next_test
+fi
 begin_test "Pipenv"
 (
   setup_test
 
-  RESULT=$(docker run --rm vsiri/test_recipe:test_pipenv bash -c 'head -n1 /foo/bin/pipenv; readlink /foo/bin/python; /foo/bin/pipenv --version')
-  [ "$RESULT" = $'#!/foo/bin/python\n/bar\npipenv, version 2020.8.13' ]
+  RESULT="$(docker run --rm vsiri/test_recipe:test_pipenv bash -c 'head -n1 /foo/bin/pipenv; readlink /foo/bin/python; /foo/bin/pipenv --version')"
+  [ "${RESULT}" = $'#!/foo/bin/python\n/bar\npipenv, version 2020.8.13' ]
 
 )
 end_test
 
 # test 30_get-pipenv script without a container
-command -v "${PIPENV_PYTHON-python}" &>/dev/null || command -v python3 &>/dev/null || skip_next_test
+if ! ( command -v "${PIPENV_PYTHON-python}" &>/dev/null || command -v python3 &>/dev/null ); then
+  skip_next_test
+fi
 begin_test "30_get-pipenv"
 (
   setup_test
@@ -39,7 +43,7 @@ begin_test "30_get-pipenv"
     export LANG=C.UTF-8
   fi
 
-  # ensure mktemp commands are redirected to $TESTDIR
+  # ensure mktemp commands are redirected to ${TESTDIR}
   # (including mktemp inside 30_get-pipenv)
   export TMPDIR="${TESTDIR}"
 
@@ -72,11 +76,13 @@ begin_test "30_get-pipenv"
   rm -rf "${OUTPUT_DIR}"
 
   # test
-  [ "$RESULT" = 'pipenv, version 2020.8.13' ]
+  [ "${RESULT}" = 'pipenv, version 2020.8.13' ]
 )
 end_test
 
-[ "${BASH_VERSINFO[0]}${BASH_VERSINFO[1]}" -le 42 ] && skip_next_test
+if [ "${BASH_VERSINFO[0]}${BASH_VERSINFO[1]}" -le "42" ]; then
+  skip_next_test
+fi
 begin_test "Get pipenv non-DRY functions"
 (
   setup_test

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -z ${VSI_COMMON_DIR+set} ]; then
+if [ -z "${VSI_COMMON_DIR+set}" ]; then
   VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"
 fi
 
@@ -8,7 +8,9 @@ source "${VSI_COMMON_DIR}/tests/testlib.bsh"
 
 : ${DOCKER=docker}
 
-command -v "${DOCKER}" &> /dev/null || skip_next_test
+if ! command -v "${DOCKER}" &> /dev/null; then
+  skip_next_test
+fi
 begin_test "GDAL"
 (
   setup_test
@@ -16,11 +18,11 @@ begin_test "GDAL"
   DOCKER_IMAGE="vsiri/test_recipe:test_gdal"
 
   # command line GDAL version
-  RESULT=$(docker run --rm ${DOCKER_IMAGE} bash -c 'gdalinfo --version')
+  RESULT="$(docker run --rm ${DOCKER_IMAGE} bash -c 'gdalinfo --version')"
   [ "${RESULT}" = 'GDAL 3.1.2, released 2020/07/07' ]
 
   # python GDAL version
-  RESULT=$(docker run --rm ${DOCKER_IMAGE} python -c 'from osgeo import gdal; print(gdal.__version__)')
+  RESULT="$(docker run --rm ${DOCKER_IMAGE} python -c 'from osgeo import gdal; print(gdal.__version__)')"
   [ "${RESULT}" = '3.1.2' ]
 
 )

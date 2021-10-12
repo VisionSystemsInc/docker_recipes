@@ -69,7 +69,7 @@ commands:
             : ${CI_RECIPE_REPO="vsiri/ci_cache_recipes"}
             : ${CI_RECIPE_VERSION=}
             COMPOSE_FILE="<< parameters.compose_file >>"
-            SERVICES=( $(docker-compose -f "${COMPOSE_FILE}" ps --services) )
+            SERVICES=( $(docker-compose -f "${COMPOSE_FILE}" ps --services) ) # noquotes
 
             # ci_load for each service
             for SERVICE in "${SERVICES[@]}"; do
@@ -77,7 +77,7 @@ commands:
                 --recipe-repo "IGNORE" \
                 ${CI_RECIPE_REPO:+ --cache-repo "${CI_RECIPE_REPO}"} \
                 ${CI_RECIPE_VERSION:+ --cache-version "${CI_RECIPE_VERSION}"} \
-                ${CI_LOAD_OPTIONS:+ $CI_LOAD_OPTIONS} \
+                ${CI_LOAD_OPTIONS:+ ${CI_LOAD_OPTIONS}} \
                 "${COMPOSE_FILE}" "${SERVICE}"
             done
 
@@ -149,7 +149,7 @@ jobs:
             # $1 = test file id (e.g., "pipenv" for test-pipenv.bsh)
             # $2 = test description (e.g., "30_get-pipenv" in test-pipenv.bsh)
             run_single_test() {
-              TESTLIB_RUN_SINGLE_TEST="$2" just test recipe "$1"
+              TESTLIB_RUN_SINGLE_TEST="${2}" just test recipe "${1}"
             }
 
             # run selected tests
