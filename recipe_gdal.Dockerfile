@@ -40,7 +40,7 @@
 # -----------------------------------------------------------------------------
 
 # base image
-FROM quay.io/pypa/manylinux2010_x86_64:2021-04-05-b4fd19d as base_image
+FROM quay.io/pypa/manylinux2010_x86_64:2021-10-26-cf1e11e as base_image
 
 # Set shell to bash
 SHELL ["/usr/bin/env", "/bin/bash", "-euxvc"]
