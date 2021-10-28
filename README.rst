@@ -363,45 +363,22 @@ Build Args   ``GDAL_VERSION`` - Version of GDAL to download
 Output dir   ``/usr/local``
 ============ ============
 
-Compiles GDAL v3, including PROJ v6, ECW J2K 5.5, OPENJPEG 2.3
+Compiles GDAL v3, including OPENJPEG 2.4, ECW J2K 5.5, libtiff4.3, libgeotiff 1.7, PROJ v8
 
 .. rubric:: Example
 
 .. code-block:: Dockerfile
 
-   FROM python:3.6.9-slim-jessie as python
    FROM vsiri/recipe:gdal as gdal
-   FROM ubuntu:16.04
-
-   # set shell to bash
-   SHELL ["/usr/bin/env", "/bin/bash", "-euxvc"]
-
-   # install python & gdal
-   COPY --from=python /usr/local /usr/local/
+   FROM python:3.8
    COPY --from=gdal /usr/local /usr/local
+
+   # numpy must be installed before GDAL python bindings
+   RUN pip install numpy; \
+       pip install GDAL==$(cat /usr/local/gdal_version);
 
    # Only needs to be run once for all recipes
    RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
-
-   # additional dependencies
-   RUN apt-get update -y; \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y  --no-install-recommends \
-         expat libffi6 libssl1.0.0 libtiff5 sqlite3 ; \
-      rm -rf /var/lib/apt/lists/* ;
-
-   # install numpy (before pypi GDAL bindings)
-   RUN pip3 install numpy ;
-
-   # pypi GDAL bindings
-   RUN export BUILD_DEPS="g++" ; \
-      apt-get update -y ; \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y  --no-install-recommends \
-         ${BUILD_DEPS} ; \
-      pip3 install GDAL==$(cat /usr/local/gdal_version) ; \
-      apt-get clean ${BUILD_DEPS} ; \
-      rm -rf /var/lib/apt/lists/* ;
-
-   CMD ["gdalinfo", "--version"]
 
 Conda's python
 --------------
