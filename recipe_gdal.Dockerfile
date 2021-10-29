@@ -138,15 +138,15 @@ RUN mkdir -p "${ECW_STAGING_DIR}/usr/local/lib"; \
 # https://gitlab.com/libtiff/libtiff
 FROM base_image as tiff
 
+# variables
+ENV TIFF_STAGING_DIR=/tiff
+ENV TIFF_VERSION=4.3.0
+
 # additional build dependencies
 RUN yum install -y \
       libjpeg-turbo-devel \
       zlib-devel; \
     yum clean all
-
-# variables
-ENV TIFF_STAGING_DIR=/tiff
-ENV TIFF_VERSION=4.3.0
 
 # install
 RUN TEMP_DIR=/tmp/tiff; \
@@ -174,6 +174,10 @@ RUN TEMP_DIR=/tmp/tiff; \
 # install instructions: https://proj.org/install.html
 FROM base_image as proj
 
+# variables
+ENV PROJ_STAGING_DIR=/proj
+ENV PROJ_VERSION=8.1.1
+
 # additional build dependencies
 RUN yum install -y \
       libcurl-devel \
@@ -183,10 +187,6 @@ RUN yum install -y \
 
 # local dependencies to staging directory
 COPY --from=tiff /tiff/usr/local /usr/local
-
-# variables
-ENV PROJ_STAGING_DIR=/proj
-ENV PROJ_VERSION=8.1.1
 
 # install
 RUN TEMP_DIR=/tmp/proj; \
@@ -217,6 +217,10 @@ RUN TEMP_DIR=/tmp/proj; \
 # https://github.com/OSGeo/libgeotiff
 FROM base_image as geotiff
 
+# variables
+ENV GEOTIFF_STAGING_DIR=/geotiff
+ENV GEOTIFF_VERSION=1.7.0
+
 # additional build dependencies
 RUN yum install -y \
       libcurl-devel \
@@ -227,10 +231,6 @@ RUN yum install -y \
 # local dependencies to staging directory
 COPY --from=tiff /tiff/usr/local /usr/local
 COPY --from=proj /proj/usr/local /usr/local
-
-# variables
-ENV GEOTIFF_STAGING_DIR=/geotiff
-ENV GEOTIFF_VERSION=1.7.0
 
 # install
 RUN TEMP_DIR="/tmp/geotiff"; \
@@ -260,16 +260,6 @@ RUN TEMP_DIR="/tmp/geotiff"; \
 # GDAL (final image)
 # -----------------------------------------------------------------------------
 FROM base_image
-
-# # additional build dependencies
-# RUN yum install -y \
-#       libtiff-devel \
-#       zlib-devel \
-#       libjpeg-turbo-devel \
-#       libpng-devel \
-#       libwebp-devel \
-#       python-devel; \
-#     yum clean all
 
 # variables
 ENV GDAL_STAGING_DIR=/gdal

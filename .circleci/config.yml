@@ -35,6 +35,7 @@ commands:
   # - optional enviromment variables
   #     $CI_RECIPE_REPO - dockerhub repo for recipe cache (default "vsiri/ci_cache_recipes")
   #     $CI_RECIPE_VERSION - version string for recipe cache (default "")
+  #     $JUST_CI_BRANCH_PUSH - branch (besides master) for dockerhub push
   # - each service identified in the docker-compose file will be separately
   #   built via "${VSI_COMMON_DIR}/linux/ci_load.py"
   # - As we are building recipes themselves, we ignore the vsiri/recipe
@@ -56,13 +57,12 @@ commands:
 
             set -x
 
-            # push only from master branch of main repo
-            if [ "${CIRCLE_PROJECT_USERNAME,,}" == "visionsystemsinc" ] && \
-               [ "${CIRCLE_BRANCH}" == "master" ]
-            then
-              CI_LOAD_OPTIONS=""
-            else
-              CI_LOAD_OPTIONS="--no-push"
+            # push from main repo, master or ${JUST_CI_BRANCH_PUSH} branches
+            CI_LOAD_OPTIONS="--no-push"
+            if [ "${CIRCLE_PROJECT_USERNAME,,}" == "visionsystemsinc" ]; then
+               if [ "${CIRCLE_BRANCH}" == "master" ] || [ "${CIRCLE_BRANCH}" == "${JUST_CI_BRANCH_PUSH-}" ]; then
+                 CI_LOAD_OPTIONS=""
+               fi
             fi
 
             # environment
