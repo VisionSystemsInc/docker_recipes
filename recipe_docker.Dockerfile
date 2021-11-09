@@ -2,7 +2,7 @@ FROM alpine:3.11.8
 
 SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
-ONBUILD ARG DOCKER_VERSION=19.03.5
+ONBUILD ARG DOCKER_VERSION=20.10.10
 
 ONBUILD RUN apk add --no-cache --virtual .deps ca-certificates curl; \
             curl -fsSLo /tmp/docker.tgz "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz"; \
@@ -17,4 +17,3 @@ ONBUILD RUN apk add --no-cache --virtual .deps ca-certificates curl; \
             fi; \
             rm -rf /tmp/*; \
             apk del --no-cache .deps
-

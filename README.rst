@@ -72,7 +72,7 @@ Some VSI Common functions are needed in the container, this provides a mechanism
 
    FROM vsiri/recipe:vsi as vsi
    FROM debian:9
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=vsi /vsi /vsi
 
 tini
@@ -94,7 +94,7 @@ There is a similar version for alpine: tini-musl
 
    FROM vsiri/recipe:tini as tini
    FROM debian:9
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=tini COPY /usr/local /usr/local
 
 gosu
@@ -117,7 +117,7 @@ sudo written with docker automation in mind (no passwords ever)
    # RUN chmod u+s /usr/local/bin/gosu
 
    FROM debian:9
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=gosu /usr/local /usr/local
    # Optionally add SUID bit so an unprivileged user can run as root (like sudo)
    RUN chmod u+s /usr/local/bin/gosu
@@ -139,7 +139,7 @@ ep is a simple way to apply bourne shell style variable name substitution to any
 
    FROM vsiri/recipe:ep as ep
    FROM debian:9
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=ep /usr/local /usr/local
 
 jq - JSON Processor
@@ -159,7 +159,7 @@ jq is a lightweight and flexible command-line JSON processor
 
    FROM vsiri/recipe:jq as jq
    FROM debian:9
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=jq /usr/local /usr/local
 
 ninja
@@ -180,7 +180,7 @@ Ninja is generally a better/faster alternative to GNU Make.
 
    FROM vsiri/recipe:ninja as ninja
    FROM debian:9
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=ninja /usr/local /usr/local
 
 Docker
@@ -200,15 +200,30 @@ Docker is a tool for running container applications
 
    FROM vsiri/recipe:docker as docker
    FROM debian:9
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=docker /usr/local /usr/local
 
 Docker compose
 --------------
 
-Docker compose doesn't actually need a recipe, as the docker community already creates the images we need
+=========== =======
+Name        docker compose
+Build Args  ``DOCKER_COMPOSE_VERSION`` - Version of docker-compose to download
+Output dir  ``/usr/local``
+=========== =======
 
-As of version 1.25.2, for glibc, use ``docker/compose:debian-${DOCKER_COMPOSE_VERSION}``, and for musl use ``docker/compose:alpine-${DOCKER_COMPOSE_VERSION}``
+Tool for running simple docker orchestratioon, giving an organized way to run one or more dockers.
+
+.. rubric:: Example
+
+.. code-block:: Dockerfile
+
+   FROM vsiri/recipe:docker-compose as docker-compose
+   FROM debian:9
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
+   COPY --from=docker-compose /usr/local /usr/local
+
+This recipe will work glibc and musl for verion 2.0.0 and newer. Version 1 would need to use docker-compose provided images for alpine: ``docker/compose:alpine-${DOCKER_COMPOSE_VERSION}``
 
 .. rubric:: Example
 
@@ -220,39 +235,13 @@ As of version 1.25.2, for glibc, use ``docker/compose:debian-${DOCKER_COMPOSE_VE
    RUN apk add --no-cache git  # This line is just an example
    COPY --from=docker-compose /usr/local /usr/local
 
-.. note::
-
-   This recipe does have you use the ``ARG`` command in your ``Dockerfile``
-
-As long as you don't use alpine 3.8 or older, this will work. If you are using alpine 3.8 or older, you should probably install the glibc libraries and use the debian ``docker-compose`` in alpine.
-
-.. rubric:: Recipe
-
-If you need a recipe that you can use if the base image is allowed to switch between musl and glibc, it requires a few extra lines than a normal recipe.
-
-.. rubric:: Example
-
-.. code-block:: Dockerfile
-
-   ARG ${DOCKER_COMPOSE_VERSION}
-   FROM docker/compose:alpine-${DOCKER_COMPOSE_VERSION} as docker-compose_musl
-   FROM docker/compose:debian-${DOCKER_COMPOSE_VERSION} as docker-compose_glib
-   FROM vsiri/recipe:docker-compose as docker-compose
-   FROM alpine:3.11
-   ...
-   COPY --from=docker-compose_musl /usr/local/bin/docker-compose /usr/local/bin/docker-compose_musl
-   COPY --from=docker-compose_glib /usr/local/bin/docker-compose /usr/local/bin/docker-compose_glib
-   COPY --from=docker-compose /usr/local /usr/local
-
-A script attempts to auto-detect musl vs glibc. If this script is unable to come to the correct decision, set ``VSI_MUSL`` to ``1`` to force musl or ``0`` for glibc
-
 git Large File Support
 ----------------------
 
 =========== =======
 Name        git lfs
 Build Args  ``GIT_LFS_VERSION`` - Version of git-lfs to download
-Output dir  ``/usr/local/bin/git-lfs``
+Output dir  ``/usr/local``
 =========== =======
 
 git-lfs gives git the ability to handle large files gracefully.
@@ -263,7 +252,7 @@ git-lfs gives git the ability to handle large files gracefully.
 
    FROM vsiri/recipe:git-lfs as git-lfs
    FROM debian:9
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=git-lfs /usr/local /usr/local
    ...
    # Only needs to be run once for all recipes
@@ -286,7 +275,7 @@ CMake is a cross-platform family of tools designed to build, test and package so
 
    FROM vsiri/recipe:cmake as cmake
    FROM debian:9
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=cmake /usr/local /usr/local
 
 Pipenv
@@ -316,7 +305,7 @@ A script called ``fake_package`` is added to the pipenv virtualenv, this script 
 
    FROM vsiri/recipe:pipenv as pipenv
    FROM debian:9
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=pipenv /usr/local /usr/local
    ...
    # Only needs to be run once for all recipes
@@ -351,7 +340,7 @@ https://github.com/onetrueawk/awk is a severly limited version awk that some pri
 
    FROM vsiri/recipe:onetrueawk as onetrueawk
    FROM debian:9
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=onetrueawk /usr/local /usr/local
 
 GDAL
@@ -399,7 +388,7 @@ This is the easiest way to install an arbitrary version of python on an arbitrar
 
    FROM vsiri/recipe:conda-python as python
    FROM ubuntu:16.04
-   RUN apt-get update; apt-get install vim  # This line is just an example
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=python /usr/local /usr/local
 
 
