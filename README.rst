@@ -380,6 +380,8 @@ Output dir   ``/usr/local``
 
 This is not a recipe for installing anaconda or miniconda, rather it internally uses miniconda to install a "not" conda python. This python will still bare the markings of Anaconda, but does not have all the conda modifications, and works as a normal and extremely portable version of python for glibc linux.
 
+See https://anaconda.org/anaconda/python/files for values of ``PYTHON_VERSION``
+
 This is the easiest way to install an arbitrary version of python on an arbitrary linux distro.
 
 .. rubric:: Example
