@@ -45,6 +45,13 @@ FROM quay.io/pypa/manylinux2014_x86_64:2022-02-13-594988e as base_image
 # Set shell to bash
 SHELL ["/usr/bin/env", "/bin/bash", "-euxvc"]
 
+# staging & reporting directories, reused by each stage
+ENV STAGING_DIR="/staging"
+ENV REPORT_DIR="${STAGING_DIR}/usr/local/share/just/info"
+RUN mkdir -p "${STAGING_DIR}" "${REPORT_DIR}";
+
+# working directory (for download, unpack, build, etc.)
+WORKDIR /tmp
 
 # -----------------------------------------------------------------------------
 # OPENJPEG v2
@@ -53,14 +60,9 @@ FROM base_image as openjpeg
 
 # variables
 ENV OPENJPEG_VERSION=2.4.0
-ENV STAGING_DIR=/openjpeg
 
 # install
-RUN TEMP_DIR="/tmp${STAGING_DIR}"; \
-    REPORT_DIR="${STAGING_DIR}/usr/local/recipe"; \
-    mkdir -p "${TEMP_DIR}" "${REPORT_DIR}"; \
-    cd "${TEMP_DIR}"; \
-    #
+RUN \
     # download & unzip
     TAR_FILE="v${OPENJPEG_VERSION}.tar.gz"; \
     curl -fsSLO "https://github.com/uclouvain/openjpeg/archive/${TAR_FILE}"; \
@@ -76,7 +78,7 @@ RUN TEMP_DIR="/tmp${STAGING_DIR}"; \
     echo "${OPENJPEG_VERSION}" > "${REPORT_DIR}/openjpeg_version"; \
     #
     # cleanup
-    rm -rf "${TEMP_DIR}";
+    rm -rf /tmp/*;
 
 
 # -----------------------------------------------------------------------------
@@ -86,14 +88,9 @@ FROM base_image as ecw
 
 # variables
 ENV ECW_VERSION=5.5.0
-ENV STAGING_DIR=/ecw
 
 # install
-RUN TEMP_DIR="/tmp${STAGING_DIR}"; \
-    REPORT_DIR="${STAGING_DIR}/usr/local/recipe"; \
-    mkdir -p "${TEMP_DIR}" "${REPORT_DIR}"; \
-    cd "${TEMP_DIR}"; \
-    #
+RUN \
     # local variables
     if [ "${ECW_VERSION}" == "5.4.0" ]; then \
       ZIP_FILE=ERDASECWJP2SDKv54Update1forLinux; \
@@ -125,7 +122,7 @@ RUN TEMP_DIR="/tmp${STAGING_DIR}"; \
            "${LOCAL_DIR}"/{lib/x64/debug,bin/x64/debug}; \
     #
     # cleanup
-    rm -r "${TEMP_DIR}" "${UNPACK_DIR}";
+    rm -rf "${UNPACK_DIR}" /tmp/*;
 
 # link .so files to "/usr/local/lib" for easier discovery
 RUN mkdir -p "${STAGING_DIR}/usr/local/lib"; \
@@ -141,7 +138,6 @@ FROM base_image as tiff
 
 # variables
 ENV TIFF_VERSION=4.3.0
-ENV STAGING_DIR=/tiff
 
 # additional build dependencies
 RUN yum install -y \
@@ -150,11 +146,7 @@ RUN yum install -y \
     yum clean all
 
 # install
-RUN TEMP_DIR="/tmp${STAGING_DIR}"; \
-    REPORT_DIR="${STAGING_DIR}/usr/local/recipe"; \
-    mkdir -p "${TEMP_DIR}" "${REPORT_DIR}"; \
-    cd "${TEMP_DIR}"; \
-    #
+RUN \
     # download & unzip
     TAR_FILE="tiff-${TIFF_VERSION}.tar.gz"; \
     curl -fsSLO "https://download.osgeo.org/libtiff/${TAR_FILE}"; \
@@ -169,7 +161,7 @@ RUN TEMP_DIR="/tmp${STAGING_DIR}"; \
     echo "$TIFF_VERSION" > "${REPORT_DIR}/tiff_version"; \
     #
     # cleanup
-    rm -r "${TEMP_DIR}";
+    rm -rf /tmp/*;
 
 
 # -----------------------------------------------------------------------------
@@ -180,7 +172,6 @@ FROM base_image as proj
 
 # variables
 ENV PROJ_VERSION=8.1.1
-ENV STAGING_DIR=/proj
 
 # additional build dependencies
 RUN yum install -y \
@@ -190,14 +181,10 @@ RUN yum install -y \
     yum clean all
 
 # local dependencies to staging directory
-COPY --from=tiff /tiff/usr/local /usr/local
+COPY --from=tiff ${STAGING_DIR}/usr/local /usr/local
 
 # install
-RUN TEMP_DIR="/tmp${STAGING_DIR}"; \
-    REPORT_DIR="${STAGING_DIR}/usr/local/recipe"; \
-    mkdir -p "${TEMP_DIR}" "${REPORT_DIR}"; \
-    cd "${TEMP_DIR}"; \
-    #
+RUN \
     # download & unzip
     TAR_FILE="proj-${PROJ_VERSION}.tar.gz"; \
     curl -fsSLO "https://download.osgeo.org/proj/${TAR_FILE}"; \
@@ -214,7 +201,7 @@ RUN TEMP_DIR="/tmp${STAGING_DIR}"; \
     echo "${PROJ_VERSION}" > "${REPORT_DIR}/proj_version"; \
     #
     # cleanup
-    rm -r "${TEMP_DIR}";
+    rm -rf /tmp/*;
 
 
 # -----------------------------------------------------------------------------
@@ -225,7 +212,6 @@ FROM base_image as geotiff
 
 # variables
 ENV GEOTIFF_VERSION=1.7.0
-ENV STAGING_DIR=/geotiff
 
 # additional build dependencies
 RUN yum install -y \
@@ -235,15 +221,11 @@ RUN yum install -y \
     yum clean all
 
 # local dependencies to staging directory
-COPY --from=tiff /tiff/usr/local /usr/local
-COPY --from=proj /proj/usr/local /usr/local
+COPY --from=tiff ${STAGING_DIR}/usr/local /usr/local
+COPY --from=proj ${STAGING_DIR}/usr/local /usr/local
 
 # install
-RUN TEMP_DIR="/tmp${STAGING_DIR}"; \
-    REPORT_DIR="${STAGING_DIR}/usr/local/recipe"; \
-    mkdir -p "${TEMP_DIR}" "${REPORT_DIR}"; \
-    cd "${TEMP_DIR}"; \
-    mkdir -p "./source" "./build"; \
+RUN mkdir -p "./source" "./build"; \
     #
     # download & unzip
     TAR_FILE="libgeotiff-${GEOTIFF_VERSION}.tar.gz"; \
@@ -261,16 +243,13 @@ RUN TEMP_DIR="/tmp${STAGING_DIR}"; \
     echo "$GEOTIFF_VERSION" > "${REPORT_DIR}/geotiff_version"; \
     #
     # cleanup
-    rm -r "${TEMP_DIR}";
+    rm -rf /tmp/*;
 
 
 # -----------------------------------------------------------------------------
 # GDAL (final image)
 # -----------------------------------------------------------------------------
 FROM base_image
-
-# variables
-ENV STAGING_DIR=/gdal
 
 # additional build dependencies
 RUN yum install -y \
@@ -282,17 +261,17 @@ RUN yum install -y \
 # local dependencies to staging directory
 # the base_image has many other dependencies already in /usr/local,
 # so we isolate packages in a staging directory
-COPY --from=openjpeg /openjpeg ${STAGING_DIR}
-COPY --from=ecw /ecw ${STAGING_DIR}
-COPY --from=tiff /tiff ${STAGING_DIR}
-COPY --from=proj /proj ${STAGING_DIR}
-COPY --from=geotiff /geotiff ${STAGING_DIR}
+COPY --from=openjpeg ${STAGING_DIR} ${STAGING_DIR}
+COPY --from=ecw ${STAGING_DIR} ${STAGING_DIR}
+COPY --from=tiff ${STAGING_DIR} ${STAGING_DIR}
+COPY --from=proj ${STAGING_DIR} ${STAGING_DIR}
+COPY --from=geotiff ${STAGING_DIR} ${STAGING_DIR}
 
 # local dependencies to /usr/local
 # This is necessary only for those dependencies expected to be in a "normal"
 # location. GDAL "configure" accepts direct paths for many packages, including
 # ECW and PROJ.
-COPY --from=openjpeg /openjpeg/usr/local /usr/local
+COPY --from=openjpeg ${STAGING_DIR}/usr/local /usr/local
 
 # add staged libraries
 ENV LD_LIBRARY_PATH="${STAGING_DIR}/usr/local/lib"
@@ -306,11 +285,6 @@ RUN chmod +x ${GDAL_PATCH_FILE}
 ONBUILD ARG GDAL_VERSION=3.3.3
 
 ONBUILD RUN \
-    TEMP_DIR="/tmp${STAGING_DIR}"; \
-    REPORT_DIR="${STAGING_DIR}/usr/local/recipe"; \
-    mkdir -p "${TEMP_DIR}" "${REPORT_DIR}"; \
-    cd "${TEMP_DIR}"; \
-    #
     # download & unzip
     TAR_FILE="gdal-${GDAL_VERSION}.tar.gz"; \
     curl -fsSLO "https://download.osgeo.org/gdal/${GDAL_VERSION}/${TAR_FILE}"; \
@@ -330,7 +304,6 @@ ONBUILD RUN \
         --with-proj="${STAGING_DIR}/usr/local" \
         --with-ecw="${STAGING_DIR}/usr/local/ecw" \
         | tee "${REPORT_DIR}/gdal_configure"; \
-    # cat "${TEMP_DIR}/config.log"; \
     #
     # build & install
     make -j "$(nproc)"; \
@@ -338,7 +311,7 @@ ONBUILD RUN \
     echo "${GDAL_VERSION}" > "${REPORT_DIR}/gdal_version"; \
     #
     # cleanup
-    rm -r "${TEMP_DIR}";
+    rm -rf /tmp/*;
 
 # migrate staging directory to /usr/local
 ONBUILD RUN rm -rf /usr/local; \
