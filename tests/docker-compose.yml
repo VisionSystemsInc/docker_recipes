@@ -17,7 +17,7 @@ services:
       context: .
       dockerfile: test_gdal.Dockerfile
       args:
-        GDAL_VERSION: "3.2.3"
+        GDAL_VERSION: "3.3.3"
     image: vsiri/test_recipe:test_gdal
   test_git-lfs:
     build:
