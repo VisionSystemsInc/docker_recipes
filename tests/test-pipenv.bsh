@@ -17,7 +17,7 @@ begin_test "Pipenv"
   setup_test
 
   RESULT="$(docker run --rm vsiri/test_recipe:test_pipenv bash -c 'head -n1 /foo/bin/pipenv; readlink /foo/bin/python; /foo/bin/pipenv --version')"
-  [ "${RESULT}" = $'#!/foo/bin/python\n/bar\npipenv, version 2020.8.13' ]
+  [ "${RESULT}" = $'#!/foo/bin/python\n/bar\npipenv, version 2021.11.23' ]
 
 )
 end_test
@@ -31,7 +31,7 @@ begin_test "30_get-pipenv"
   setup_test
 
   # test version
-  export RECIPE_PIPENV_VERSION="2020.8.13"
+  export RECIPE_PIPENV_VERSION="2021.11.23"
 
   # locale
   EN_US_UTF8="$( (locale -a | grep -iE "en_us\.utf-?8") 2>/dev/null || :)"
@@ -76,7 +76,7 @@ begin_test "30_get-pipenv"
   rm -rf "${OUTPUT_DIR}"
 
   # test
-  [ "${RESULT}" = 'pipenv, version 2020.8.13' ]
+  [ "${RESULT}" = 'pipenv, version 2021.11.23' ]
 )
 end_test
 

@@ -7,8 +7,8 @@ services:
       context: .
       dockerfile: test_pipenv.Dockerfile
       args:
-        PIPENV_VERSION: "2020.8.13"
-        VIRTUALENV_VERSION: "20.0.33"
+        PIPENV_VERSION: "2021.11.23"
+        VIRTUALENV_VERSION: "20.13.3"
         PIPENV_VIRTUALENV: "/foo"
         PIPENV_PYTHON: "/bar"
     image: vsiri/test_recipe:test_pipenv
