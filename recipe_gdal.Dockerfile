@@ -93,10 +93,12 @@ ENV ECW_VERSION=5.5.0
 RUN \
     # local variables
     if [ "${ECW_VERSION}" == "5.4.0" ]; then \
-      ZIP_FILE=ERDASECWJP2SDKv54Update1forLinux; \
+      ZIP_FILE="erdas-ecw-sdk-5.4.0-update1-linux.zip"; \
+      ZIP_URL="https://downloads.hexagongeospatial.com/software/2018/ECW/${ZIP_FILE}"; \
       UNPACK_DIR=/hexagon/ERDAS-ECW_JPEG_2000_SDK-5.4.0/Desktop_Read-Only; \
     elif [ "${ECW_VERSION}" == "5.5.0" ]; then \
-      ZIP_FILE=erdas-ecw-jp2-sdk-v55-update-1-linux; \
+      ZIP_FILE="erdas-ecw-jp2-sdk-v55-update-4-linux"; \
+      ZIP_URL="https://go2.hexagongeospatial.com/${ZIP_FILE}"; \
       UNPACK_DIR=/root/hexagon/ERDAS-ECW_JPEG_2000_SDK-5.5.0/Desktop_Read-Only; \
     else \
       echo "Unrecognized ECW version ${ECW_VERSION}"; \
@@ -104,7 +106,7 @@ RUN \
     fi; \
     #
     # download & unzip
-    curl -fsSLO "https://go.hexagongeospatial.com/${ZIP_FILE}"; \
+    curl -fsSLO "${ZIP_URL}"; \
     unzip "${ZIP_FILE}"; \
     #
     # unpack & cleanup
