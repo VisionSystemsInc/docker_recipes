@@ -73,11 +73,23 @@ commands:
 
             # ci_load for each service
             for SERVICE in "${SERVICES[@]}"; do
+
+              # per service options
+              _ci_load_options="${CI_LOAD_OPTIONS}"
+
+              # if final image does not exist in cache, disable pull
+              # this allow new recipes to be built without a cache
+              _image="${CI_RECIPE_REPO}:${SERVICE}_final"
+              if ! docker manifest inspect "${_image}" &>/dev/null; then
+                _ci_load_options+=" --no-pull"
+              fi
+
+              # run ci_load
               python3 "${VSI_COMMON_DIR}/linux/ci_load.py" \
                 --recipe-repo "IGNORE" \
-                ${CI_RECIPE_REPO:+ --cache-repo "${CI_RECIPE_REPO}"} \
+                --cache-repo "${CI_RECIPE_REPO}" \
                 ${CI_RECIPE_VERSION:+ --cache-version "${CI_RECIPE_VERSION}"} \
-                ${CI_LOAD_OPTIONS:+ ${CI_LOAD_OPTIONS}} \
+                ${_ci_load_options} \
                 "${COMPOSE_FILE}" "${SERVICE}"
             done
 
