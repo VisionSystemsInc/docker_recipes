@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+if [ -z "${VSI_COMMON_DIR+set}" ]; then
+  VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"
+fi
+
+source "${VSI_COMMON_DIR}/tests/testlib.bsh"
+
+: ${DOCKER=docker}
+
+if ! command -v "${DOCKER}" &> /dev/null; then
+  skip_next_test
+fi
+begin_test "PDAL"
+(
+  setup_test
+
+  DOCKER_IMAGE="vsiri/test_recipe:test_pdal"
+
+  # command line PDAL version
+  RESULT="$(docker run --rm ${DOCKER_IMAGE} bash -c 'pdal info --version' | sed -n 2p)"
+  [ "${RESULT}" = 'pdal 2.3.0 (git-version: Release)' ]
+
+  # python PDAL version
+  RESULT="$(docker run --rm ${DOCKER_IMAGE} python -c 'import pdal; print(pdal.info.version)')"
+  [ "${RESULT}" = '2.3.0' ]
+
+  # command line GDAL version
+  # Note this version is purposefully different from the default recipe_gdal
+  # GDAL_VERSION to ensure the chained recipes honor all version ARGs
+  RESULT="$(docker run --rm ${DOCKER_IMAGE} bash -c 'gdalinfo --version')"
+  [ "${RESULT}" = 'GDAL 3.2.3, released 2021/04/27' ]
+
+)
+end_test

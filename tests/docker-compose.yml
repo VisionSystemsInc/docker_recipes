@@ -33,3 +33,11 @@ services:
       args:
         CMAKE_VERSION: "3.16.1"
     image: vsiri/test_recipe:test_cmake
+  test_pdal:
+    build:
+      context: .
+      dockerfile: test_pdal.Dockerfile
+      args:
+        GDAL_VERSION: "3.2.3"
+        PDAL_VERSION: "2.3.0"
+    image: vsiri/test_recipe:test_pdal

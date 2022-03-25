@@ -107,6 +107,15 @@ services:
       #   GDAL_VERSION: "${GDAL_VERSION}"
     image: vsiri/recipe:gdal
 
+  pdal:
+    build:
+      context: .
+      dockerfile: recipe_pdal.Dockerfile
+      # args:
+      #   GDAL_VERSION: "${GDAL_VERSION}"
+      #   PDAL_VERSION: "${PDAL_VERSION}"
+    image: vsiri/recipe:pdal
+
   conda-python:
     build:
       context: .

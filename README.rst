@@ -369,6 +369,30 @@ Compiles GDAL v3, including OPENJPEG 2.4, ECW J2K 5.5, libtiff4.3, libgeotiff 1.
    # Only needs to be run once for all recipes
    RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
 
+PDAL
+----
+
+============ ============
+Name         PDAL
+Build Args   ``PDAL_VERSION`` - Version of PDAL to download
+Output dir   ``/usr/local``
+============ ============
+
+Compiles PDAL v2 and dependencies.  Requires GDAL recipe install.
+
+.. rubric:: Example
+
+.. code-block:: Dockerfile
+
+   FROM vsiri/recipe:gdal as gdal
+   FROM vsiri/recipe:pdal as pdal
+   FROM python:3.8
+   COPY --from=gdal /usr/local /usr/local
+   COPY --from=pdal /usr/local /usr/local
+
+   # Only needs to be run once for all recipes
+   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+
 Conda's python
 --------------
 
