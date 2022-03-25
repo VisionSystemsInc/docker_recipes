@@ -123,6 +123,13 @@ jobs:
           command: |
             docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
 
+      - run:
+          name: build pdal
+          command: |
+
+            docker-compose build pdal
+            exit 1
+
       - ci_load:
           step_name: Build recipes (ci_load)
           compose_file: ${RECIPE_DIR}/docker-compose.yml
