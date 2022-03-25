@@ -127,6 +127,7 @@ jobs:
           name: build pdal
           command: |
 
+            cd docker/recipes
             docker-compose build pdal
             exit 1
 
