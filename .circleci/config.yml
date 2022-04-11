@@ -58,11 +58,13 @@ commands:
             set -x
 
             # push from main repo, master or ${JUST_CI_BRANCH_PUSH} branches
-            CI_LOAD_OPTIONS="--no-push"
-            if [ "${CIRCLE_PROJECT_USERNAME,,}" == "visionsystemsinc" ]; then
-               if [ "${CIRCLE_BRANCH}" == "master" ] || [ "${CIRCLE_BRANCH}" == "${JUST_CI_BRANCH_PUSH-}" ]; then
-                 CI_LOAD_OPTIONS=""
-               fi
+            if [[ "${CIRCLE_PROJECT_USERNAME,,}" == "visionsystemsinc" && \
+                  ("${CIRCLE_BRANCH}" == "master" || \
+                   "${CIRCLE_BRANCH}" == "${JUST_CI_BRANCH_PUSH-}") ]]
+            then
+              CI_PUSH_OPT="--push"
+            else
+              CI_PUSH_OPT="--no-push"
             fi
 
             # environment
@@ -77,7 +79,8 @@ commands:
                 --recipe-repo "IGNORE" \
                 ${CI_RECIPE_REPO:+ --cache-repo "${CI_RECIPE_REPO}"} \
                 ${CI_RECIPE_VERSION:+ --cache-version "${CI_RECIPE_VERSION}"} \
-                ${CI_LOAD_OPTIONS:+ ${CI_LOAD_OPTIONS}} \
+                --quiet-pull \
+                ${CI_PUSH_OPT} \
                 "${COMPOSE_FILE}" "${SERVICE}"
             done
 
