@@ -114,3 +114,12 @@ services:
       # args:
       #   PYTHON_VERSION: "${PYTHON_VERSION}"
     image: vsiri/recipe:conda-python
+
+  proj-data:
+    build:
+    build:
+      context: .
+      dockerfile: recipe_proj-data.Dockerfile
+      # args:
+      #   PROJ_DATA_VERSION: "${PYTHON_VERSION}"
+    image: vsiri/recipe:proj-data

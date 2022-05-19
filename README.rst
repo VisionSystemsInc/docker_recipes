@@ -394,6 +394,31 @@ This is the easiest way to install an arbitrary version of python on an arbitrar
    COPY --from=python /usr/local /usr/local
 
 
+PROJ-data
+---------
+
+============ ============
+Name         PROJ-data
+Build Args   ``PROJ_DATA_VERSION`` - Version of proj-data to download
+Output dir   ``/usr/local``
+============ ============
+
+This is a recipe for installing `PROJ-data <https://github.com/OSGeo/PROJ-data>`_, a very large (over 500MB) plugin for the `PROJ <https://github.com/OSGeo/PROJ>`_ package. PROJ-data contains a variety of datum grid files necessary for horizontal and vertical coordinate transformations.
+
+PROJ-data files are fully optional, and only downloaded and installed ``PROJ_DATA_VERSION`` is set.
+
+Users may alternatively make use of `remotely hosted PROJ-data <https://proj.org/usage/network.html>`_ to avoid installation of this large package.
+
+.. rubric:: Example
+
+.. code-block:: Dockerfile
+
+   FROM vsiri/recipe:proj-data as proj-data
+   FROM ubuntu:16.04
+   RUN apt-get update; apt-get install -y vim  # This line is just an example
+   COPY --from=proj-data /usr/local /usr/local
+
+
 J.U.S.T.
 ========
 
