@@ -18,6 +18,10 @@ ONBUILD RUN apk add --no-cache --virtual .deps unzip curl ca-certificates; \
             tar xf "/cmake-${CMAKE_VERSION}-${os_name}.tar.gz"; \
             rm -r /usr/local/*; \
             mv "/cmake-${CMAKE_VERSION}-${os_name}"/* /usr/local/; \
+            if [ -d "/usr/local/man" ]; then \
+              mkdir -p /usr/local/share; \
+              mv /usr/local/man /usr/local/share/; \
+            fi; \
             rmdir "/cmake-${CMAKE_VERSION}-${os_name}"; \
             rm "/cmake-${CMAKE_VERSION}-${os_name}.tar.gz"; \
             apk del .deps
