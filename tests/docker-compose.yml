@@ -33,3 +33,8 @@ services:
       args:
         CMAKE_VERSION: "3.16.1"
     image: vsiri/test_recipe:test_cmake
+  test_rocky:
+    build:
+      context: .
+      dockerfile: test_rocky.Dockerfile
+    image: vsiri/test_recipe:test_rocky
