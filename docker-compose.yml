@@ -123,3 +123,9 @@ services:
       # args:
       #   PROJ_DATA_VERSION: "${PYTHON_VERSION}"
     image: vsiri/recipe:proj-data
+
+  rocky:
+    build:
+      context: .
+      dockerfile: recipe_rocky.Dockerfile
+    image: vsiri/recipe:rocky

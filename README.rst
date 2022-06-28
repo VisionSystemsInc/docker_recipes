@@ -311,6 +311,33 @@ A script called ``fake_package`` is added to the pipenv virtualenv, this script 
    # Only needs to be run once for all recipes
    RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
 
+Rocky Repos
+-----------
+
+=========== =================
+Name        Rocky Linux Repos
+Output dir  ``/usr/local``
+=========== =================
+
+Rocky Linux is a subscription free RHEL alternative. Often adding Rocky packages to a UBI image is useful.
+
+Since this is installs specific packages based on the base image, you can't just move ``/usr/local/pipenv`` to anywhere in the destination image, it is a script that must run in the image.
+
+This recipe is a little different from other recipes in that it's just a script to install repos (and corresponding gpg keys).
+
+.. rubric:: Example
+
+.. code-block:: Dockerfile
+
+   FROM vsiri/recipe:rocky as rocky
+   FROM redhat/ubi8
+   COPY --from=rocky /usr/local /usr/local
+   # Only needs to be run once for all recipes
+   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+   
+   RUN dnf install -y --enablerepo=rocky-appstream telnet # This line is just an example
+   ...
+
 Amanda debian packages
 ----------------------
 
