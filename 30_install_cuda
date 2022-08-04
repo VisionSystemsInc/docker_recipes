@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+
+set -euxv
+
+source /usr/local/share/just/user_run_patch/10_load_cuda_env
+
+if command -v yum 2>&1 > /dev/null; then
+  source /etc/os-release
+  rhel_major_version=${VERSION_ID%%.*}
+
+  OLD_IFS="${IFS}"
+  IFS=.
+  cuda_version=(${CUDA_VERSION})
+  IFS="${OLD_IFS}"
+
+  install_base=0
+  install_runtime=0
+  install_devel=0
+
+  case "${CUDA_RECIPE_TARGET-runtime}" in
+    runtime)
+      install_base=1
+      install_runtime=1
+      ;;
+    devel)
+      install_base=1
+      install_runtime=1
+      install_devel=1
+      ;;
+    devel-only)
+      install_devel=0
+      ;;
+  esac
+
+  ########
+  # Base #
+  ########
+
+  if [ "${install_base}" = "1" ]; then
+    cp /usr/local/share/just/info/cuda/keys/RPM-GPG-KEY-NVIDIA /etc/pki/rpm-gpg/RPM-GPG-KEY-NVIDIA
+    cat - > /etc/yum.repos.d/cuda.repo << EOF
+[cuda]
+name=cuda
+baseurl=https://developer.download.nvidia.com/compute/cuda/repos/rhel${rhel_major_version}/x86_64
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-NVIDIA
+EOF
+
+    # For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
+    yum install -y \
+      cuda-cudart-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_CUDART_VERSION} \
+      cuda-compat-${cuda_version[0]}-${cuda_version[1]}
+    ln -s cuda-${cuda_version[0]}.${cuda_version[1]} /usr/local/cuda
+
+    # nvidia-docker 1.0
+    echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+  fi
+
+  ###########
+  # Runtime # Should be accurate for 10-11, I didn't check every sub-version, but did some greps
+  ###########
+  if [ "${install_runtime}" = "1" ]; then
+    packages=(${NV_CUDNN_PACKAGE-} ${NV_LIBCUBLAS_PACKAGE-} ${NV_LIBNCCL_PACKAGE-} ${NV_LIBNPP_PACKAGE-})
+
+    packages+=(cuda-libraries-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}
+              cuda-nvtx-${cuda_version[0]}-${cuda_version[1]}-${NV_NVTX_VERSION})
+
+    if [ "${CUDA_VERSION}" = "10.0" ]; then
+      packages+=(cuda-cublas-${cuda_version[0]}-${cuda_version[1]}
+                cuda-npp-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBNPP_VERSION})
+    else
+      packages+=(libcublas-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBCUBLAS_VERSION})
+    fi
+
+    #################
+    # Runtime cudnn #
+    #################
+    if [ -n "${CUDNN_VERSION:+set}" ]; then
+      packages+=(${NV_CUDNN_PACKAGE})
+    fi
+  fi
+
+  #########
+  # Devel #
+  #########
+  if [ "${install_devel}" = "1" ]; then
+    packages+=(make)
+
+    packages+=(cuda-command-line-tools-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}
+               cuda-minimal-build-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION})
+
+    if [ "${cuda_version[0]}" = "10" ]; then
+      packages+=(cuda-nvml-dev-${cuda_version[0]}-${cuda_version[1]}-${NV_NVML_DEV_VERSION}
+                 cuda-cudart-dev-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_CUDART_DEV_VERSION}
+                 cuda-libraries-dev-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}
+                 cuda-nvprof-${cuda_version[0]}-${cuda_version[1]}-${NV_NVPROF_VERSION}
+                 cuda-npp-dev-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBNPP_DEV_VERSION})
+    else
+      packages+=(cuda-libraries-devel-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}
+                 cuda-cudart-devel-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_CUDART_DEV_VERSION}
+                 cuda-nvml-devel-${cuda_version[0]}-${cuda_version[1]}-${NV_NVML_DEV_VERSION}
+                 libcublas-devel-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBCUBLAS_DEV_VERSION})
+    fi
+
+    packages+=(${NV_LIBCUBLAS_DEV_PACKAGE-} ${NV_LIBNCCL_DEV_PACKAGE-} ${NV_LIBNPP_DEV_PACKAGE-} ${NV_NVPROF_DEV_PACKAGE-})
+
+    ###############
+    # Devel cudnn #
+    ###############
+    if [ -n "${CUDNN_VERSION:+set}" ]; then
+      packages+=(${NV_CUDNN_PACKAGE} ${NV_CUDNN_PACKAGE_DEV})
+    fi
+  fi
+
+  ###########
+  # Install #
+  ###########
+  yum install --setopt=obsoletes=0 -y "${packages[@]}"
+  rm -rf /var/cache/yum/*
+elif command -v apt-get 2>&1 > /dev/null; then
+  ########
+  # Base #
+  ########
+
+  apt-key add /usr/local/share/just/info/cuda/keys/*
+
+  packages+=(${NV_CUDA_COMPAT_PACKAGE-})
+  echo "Ubuntu not done. Please amend this script" >&2
+  exit 2
+
+  ###########
+  # Runtime #
+  ###########
+
+  #################
+  # Runtime cudnn #
+  #################
+
+  #########
+  # Devel #
+  #########
+
+  ###############
+  # Devel cudnn #
+  ###############
+
+  ###########
+  # Install #
+  ###########
+  apt-get update
+  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${packages[@]}"
+  rm -rf /var/lib/apt/lists/*
+else
+  echo "Unable to ID os. Please amend this script" >&2
+  exit 1
+fi

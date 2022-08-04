@@ -1,0 +1,29 @@
+if [[ ${-} =~ a ]]; then
+  VSI_COMMON_SET_FLAG_A=1
+else
+  set -a
+fi
+
+for file in /usr/local/share/just/info/cuda/*_common; do
+  source "${file}"
+done
+
+if command -v yum 2>&1 > /dev/null; then
+  for file in /usr/local/share/just/info/cuda/*_rhel; do
+    source "${file}"
+  done
+elif command -v apt-get 2>&1 > /dev/null; then
+  for file in /usr/local/share/just/info/cuda/*_ubuntu; do
+    source "${file}"
+  done
+else
+  echo "Unable to ID os. Please amend this script" >&2
+  exit 1
+fi
+
+unset file
+
+if [ "${VSI_COMMON_SET_FLAG_A-}" = "1" ]; then
+  set +A
+  unset VSI_COMMON_SET_FLAG_A
+fi

@@ -334,7 +334,44 @@ This recipe is a little different from other recipes in that it's just a script 
    COPY --from=rocky /usr/local /usr/local
    # Only needs to be run once for all recipes
    RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
-   
+
+   RUN dnf install -y --enablerepo=rocky-appstream telnet # This line is just an example
+   ...
+
+CUDA
+----
+
+============ ============
+Name         CUDA
+Build Args   ``CUDA_VERSION`` - Version of CUDA to install (e.g. ``10.2`` or ``11.0.7``)
+Build Args   ``CUDNN_VERSION`` - Optional: Version of CUDNN to install. (e.g. ``7`` or ``8``)
+Build Args   ``OPENGL_?`` - Optional: Enable opengl installation
+Output dir   ``/usr/local``
+============ ============
+
+While starting from a base image with CUDA already setup for docker is ideal, when we have to be based on a specific image (e.g. hardened images), this becomes not possible. Instead we need to start with a particular image and add CUDA support to it.
+
+There are many steps to setting up CUDA in an image, including:
+
+- Setting up CUDA repo and GPG key
+- Installing the right packages
+- Setting various environment variables at container run time
+- Setting certain environment variables at container create time
+
+This recipe will attempt to do all of these things in as few steps as possible. Currently only supported versions of CUDA are supported (10 and 11).
+
+.. rubric:: Example
+
+.. code-block:: Dockerfile
+
+   FROM vsiri/recipe:cuda as cuda
+
+   FROM redhat/ubi8
+   COPY --from=cuda /usr/local /usr/local
+   # Only needs to be run once for all recipes
+   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+   ENV NVIDIA_VISIBLE_DEVICES=all
+
    RUN dnf install -y --enablerepo=rocky-appstream telnet # This line is just an example
    ...
 
