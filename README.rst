@@ -341,13 +341,14 @@ This recipe is a little different from other recipes in that it's just a script 
 CUDA
 ----
 
-============ ============
-Name         CUDA
-Build Args   ``CUDA_VERSION`` - Version of CUDA to install (e.g. ``10.2`` or ``11.0.7``)
-Build Args   ``CUDNN_VERSION`` - Optional: Version of CUDNN to install. (e.g. ``7`` or ``8``)
-Build Args   ``OPENGL_?`` - Optional: Enable opengl installation
-Output dir   ``/usr/local``
-============ ============
+=========================== ============
+Name                        CUDA
+Build Args                  ``CUDA_VERSION`` - Version of CUDA to install (e.g. ``10.2`` or ``11.0.7``)
+Build Args                  ``CUDNN_VERSION`` - Optional: Version of CUDNN to install. (e.g. ``7`` or ``8``)
+Build Args                  ``OPENGL_?`` - Optional: Enable opengl installation
+Output dir                  ``/usr/local``
+Minimum Dockerfile frontend docker/dockerfile:1.3-labs or docker/dockerfile:1.4
+=========================== ============
 
 While starting from a base image with CUDA already setup for docker is ideal, when we have to be based on a specific image (e.g. hardened images), this becomes not possible. Instead we need to start with a particular image and add CUDA support to it.
 
@@ -364,6 +365,7 @@ This recipe will attempt to do all of these things in as few steps as possible. 
 
 .. code-block:: Dockerfile
 
+   # syntax=docker/dockerfile:1.4
    FROM vsiri/recipe:cuda as cuda
 
    FROM redhat/ubi8
@@ -372,7 +374,9 @@ This recipe will attempt to do all of these things in as few steps as possible. 
    RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
    ENV NVIDIA_VISIBLE_DEVICES=all
 
-   RUN dnf install -y --enablerepo=rocky-appstream telnet # This line is just an example
+   # (Uncommon) If you need all the nvidia environment variables, source this file
+   RUN source /usr/local/share/just/user_run_patch/10_load_cuda_env; \
+       cmake # This line is just an example
    ...
 
 Amanda debian packages

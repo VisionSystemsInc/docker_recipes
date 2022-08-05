@@ -279,8 +279,8 @@ COPY --from=openjpeg ${STAGING_DIR}/usr/local /usr/local
 ENV LD_LIBRARY_PATH="${STAGING_DIR}/usr/local/lib"
 
 # Patch file for downstream image
-ENV GDAL_PATCH_FILE=${STAGING_DIR}/usr/local/share/just/container_build_patch/30_gdal
-ADD 30_gdal ${GDAL_PATCH_FILE}
+ENV GDAL_PATCH_FILE=${STAGING_DIR}/usr/local/share/just/container_build_patch/30_ldconfig
+ADD 30_ldconfig ${GDAL_PATCH_FILE}
 RUN chmod +x ${GDAL_PATCH_FILE}
 
 # install

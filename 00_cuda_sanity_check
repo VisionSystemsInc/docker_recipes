@@ -8,5 +8,13 @@ if [ -z "${NVIDIA_VISIBLE_DEVICES+set}" ]; then
   # Null and unset is actually a valid value
   # exit 1
 fi
+
 # if [ -z "${NVIDIA_DRIVER_CAPABILITIES+set}" ]; then
 # fi
+
+if gl and [[ ${NVIDIA_DRIVER_CAPABILITIES} =~ graphics|all ]]; then
+  echo "Error: NVIDIA_DRIVER_CAPABILITIES is not set to pass the graphics capability, " >&2
+  echo "but you have OpenGL configured. The docker is probably misconfigured" >&2
+  echo "https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities" >&2
+  echo "OpenGL support is probably disabled: Delete ${BASH_SOURCE[0]} to remove this message" >&2
+fi

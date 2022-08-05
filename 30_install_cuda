@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
-set -euxv
+set -eu
 
 source /usr/local/share/just/user_run_patch/10_load_cuda_env
+
+packages=()
 
 if command -v yum 2>&1 > /dev/null; then
   source /etc/os-release
@@ -28,7 +30,7 @@ if command -v yum 2>&1 > /dev/null; then
       install_devel=1
       ;;
     devel-only)
-      install_devel=0
+      install_devel=1
       ;;
   esac
 
@@ -54,7 +56,7 @@ EOF
     ln -s cuda-${cuda_version[0]}.${cuda_version[1]} /usr/local/cuda
 
     # nvidia-docker 1.0
-    echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+    echo "/usr/local/nvidia/lib" > /etc/ld.so.conf.d/nvidia.conf
     echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
   fi
 
@@ -62,7 +64,7 @@ EOF
   # Runtime # Should be accurate for 10-11, I didn't check every sub-version, but did some greps
   ###########
   if [ "${install_runtime}" = "1" ]; then
-    packages=(${NV_CUDNN_PACKAGE-} ${NV_LIBCUBLAS_PACKAGE-} ${NV_LIBNCCL_PACKAGE-} ${NV_LIBNPP_PACKAGE-})
+    packages+=(${NV_CUDNN_PACKAGE-} ${NV_LIBCUBLAS_PACKAGE-} ${NV_LIBNCCL_PACKAGE-} ${NV_LIBNPP_PACKAGE-})
 
     packages+=(cuda-libraries-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}
               cuda-nvtx-${cuda_version[0]}-${cuda_version[1]}-${NV_NVTX_VERSION})

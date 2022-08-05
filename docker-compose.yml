@@ -139,3 +139,12 @@ services:
       #   CUDNN_VERSION: "${CUDNN_VERSION}"
       #   CUDA_RECIPE_TARGET: "${CUDA_RECIPE_TARGET}"
     image: vsiri/recipe:cuda
+
+  cudagl:
+    build:
+      context: .
+      dockerfile: recipe_cudagl.Dockerfile
+      # args:
+      #   LIBGLVND_VERSION: "${LIBGLVND_VERSION}"
+      #   CUDA_RECIPE_TARGET: "${CUDA_RECIPE_TARGET}"
+    image: vsiri/recipe:cudagl

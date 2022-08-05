@@ -19,9 +19,10 @@ RUN tar xf /cuda-master.tar.gz; \
 
 ADD 00_cuda_sanity_check /usr/local/share/just/root_run_patch/
 ADD 10_load_cuda_env /usr/local/share/just/user_run_patch/
-ADD 30_install_cuda /usr/local/share/just/container_build_patch/
-RUN chmod 755 /usr/local/share/just/root_run_patch/00_cuda_sanity_check; \
-    chmod 755 /usr/local/share/just/container_build_patch/30_install_cuda; \
+ADD 30_ldconfig 30_install_cuda /usr/local/share/just/container_build_patch/
+RUN chmod 755 /usr/local/share/just/root_run_patch/00_cuda_sanity_check \
+              /usr/local/share/just/container_build_patch/30_ldconfig
+              /usr/local/share/just/container_build_patch/30_install_cuda; \
     chmod 644 /usr/local/share/just/user_run_patch/10_load_cuda_env
 
 ONBUILD ARG CUDA_VERSION=11.7.0
@@ -86,19 +87,8 @@ ONBUILD RUN set -o pipefail; \
             # echo ": \${CUDA_VERSION:=${CUDA_VERSION}}" >> "${file}"; \
             # echo ": \${CUDNN_VERSION:=${CUDNN_VERSION}}" >> "${file}"
 
-ONBUILD COPY <<EOF /usr/local/share/just/info/cuda/00_common
+ONBUILD COPY <<EOF /usr/local/share/just/info/cuda/00_cuda_common
 : \${CUDA_RECIPE_TARGET:=${CUDA_RECIPE_TARGET}}
 : \${CUDA_VERSION:=${CUDA_VERSION}}
 : \${CUDNN_VERSION:=${CUDNN_VERSION}}
 EOF
-# # Make a common file to pass the build args
-# file=/usr/local/share/just/info/cuda/00_common; \
-# echo ": \${CUDA_RECIPE_TARGET:=${CUDA_RECIPE_TARGET}}" > "${file}"; \
-# echo ": \${CUDA_VERSION:=${CUDA_VERSION}}" >> "${file}"; \
-# echo ": \${CUDNN_VERSION:=${CUDNN_VERSION}}" >> "${file}"
-
-
-# ONBUILD RUN <<EOF
-# echo "Hello" >> /hello
-# echo "World!" >> /hello
-# EOF
