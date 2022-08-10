@@ -6,6 +6,25 @@ source /usr/local/share/just/user_run_patch/10_load_cuda_env
 
 packages=()
 
+install_base=0
+install_runtime=0
+install_devel=0
+
+case "${CUDA_RECIPE_TARGET-runtime}" in
+  runtime)
+    install_base=1
+    install_runtime=1
+    ;;
+  devel)
+    install_base=1
+    install_runtime=1
+    install_devel=1
+    ;;
+  devel-only)
+    install_devel=1
+    ;;
+esac
+
 if command -v yum 2>&1 > /dev/null; then
   source /etc/os-release
   rhel_major_version=${VERSION_ID%%.*}
@@ -14,25 +33,6 @@ if command -v yum 2>&1 > /dev/null; then
   IFS=.
   cuda_version=(${CUDA_VERSION})
   IFS="${OLD_IFS}"
-
-  install_base=0
-  install_runtime=0
-  install_devel=0
-
-  case "${CUDA_RECIPE_TARGET-runtime}" in
-    runtime)
-      install_base=1
-      install_runtime=1
-      ;;
-    devel)
-      install_base=1
-      install_runtime=1
-      install_devel=1
-      ;;
-    devel-only)
-      install_devel=1
-      ;;
-  esac
 
   ########
   # Base #
@@ -54,10 +54,6 @@ EOF
       cuda-cudart-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_CUDART_VERSION} \
       cuda-compat-${cuda_version[0]}-${cuda_version[1]}
     ln -s cuda-${cuda_version[0]}.${cuda_version[1]} /usr/local/cuda
-
-    # nvidia-docker 1.0
-    echo "/usr/local/nvidia/lib" > /etc/ld.so.conf.d/nvidia.conf
-    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
   fi
 
   ###########
@@ -119,16 +115,23 @@ EOF
   ###########
   # Install #
   ###########
+  if [ "${rhel_major_version}" = "7" ]; then
+    ulimit -n 1048576 # https://github.com/containerd/containerd/discussions/6780
+  fi
   yum install --setopt=obsoletes=0 -y "${packages[@]}"
   rm -rf /var/cache/yum/*
 elif command -v apt-get 2>&1 > /dev/null; then
   ########
   # Base #
   ########
+  source /etc/os-release
+  ubuntu_major_version=${VERSION_ID%%.*}
 
   apt-key add /usr/local/share/just/info/cuda/keys/*
+  echo "deb deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${ubuntu_major_version}04/${NVARCH} /" > /etc/apt/sources.list.d/cuda.list
 
-  packages+=(${NV_CUDA_COMPAT_PACKAGE-})
+  packages+=(${NV_CUDA_COMPAT_PACKAGE-cuda-compat-${cuda_version[0]}-${cuda_version[1]}}
+             cuda-cudart-${cuda_version[0]}-${cuda_version[1]}=${NV_CUDA_CUDART_VERSION})
   echo "Ubuntu not done. Please amend this script" >&2
   exit 2
 
@@ -157,4 +160,10 @@ elif command -v apt-get 2>&1 > /dev/null; then
 else
   echo "Unable to ID os. Please amend this script" >&2
   exit 1
+fi
+
+if [ "${install_base}" = "1" ]; then
+    # nvidia-docker 1.0
+    echo "/usr/local/nvidia/lib" > /etc/ld.so.conf.d/nvidia.conf
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
 fi

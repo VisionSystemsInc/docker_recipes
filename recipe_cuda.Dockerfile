@@ -21,7 +21,7 @@ ADD 00_cuda_sanity_check /usr/local/share/just/root_run_patch/
 ADD 10_load_cuda_env /usr/local/share/just/user_run_patch/
 ADD 30_ldconfig 30_install_cuda /usr/local/share/just/container_build_patch/
 RUN chmod 755 /usr/local/share/just/root_run_patch/00_cuda_sanity_check \
-              /usr/local/share/just/container_build_patch/30_ldconfig
+              /usr/local/share/just/container_build_patch/30_ldconfig \
               /usr/local/share/just/container_build_patch/30_install_cuda; \
     chmod 644 /usr/local/share/just/user_run_patch/10_load_cuda_env
 

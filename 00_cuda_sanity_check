@@ -12,7 +12,8 @@ fi
 # if [ -z "${NVIDIA_DRIVER_CAPABILITIES+set}" ]; then
 # fi
 
-if gl and [[ ${NVIDIA_DRIVER_CAPABILITIES} =~ graphics|all ]]; then
+pattern="graphics|all"
+if [ -n "${LIBGLVND_VERSION+set}" ] && [[ ${NVIDIA_DRIVER_CAPABILITIES} =~ ${pattern} ]]; then
   echo "Error: NVIDIA_DRIVER_CAPABILITIES is not set to pass the graphics capability, " >&2
   echo "but you have OpenGL configured. The docker is probably misconfigured" >&2
   echo "https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities" >&2
