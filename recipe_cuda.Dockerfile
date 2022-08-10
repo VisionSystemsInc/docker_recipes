@@ -81,11 +81,6 @@ ONBUILD RUN set -o pipefail; \
               fi; \
             done; \
             apk del .deps
-            # # Make a common file to pass the build args
-            # file=/usr/local/share/just/info/cuda/00_common; \
-            # echo ": \${CUDA_RECIPE_TARGET:=${CUDA_RECIPE_TARGET}}" > "${file}"; \
-            # echo ": \${CUDA_VERSION:=${CUDA_VERSION}}" >> "${file}"; \
-            # echo ": \${CUDNN_VERSION:=${CUDNN_VERSION}}" >> "${file}"
 
 ONBUILD COPY <<EOF /usr/local/share/just/info/cuda/00_cuda_common
 : \${CUDA_RECIPE_TARGET:=${CUDA_RECIPE_TARGET}}

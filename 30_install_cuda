@@ -25,14 +25,14 @@ case "${CUDA_RECIPE_TARGET-runtime}" in
     ;;
 esac
 
+OLD_IFS="${IFS}"
+IFS=.
+cuda_version=(${CUDA_VERSION})
+IFS="${OLD_IFS}"
+
 if command -v yum 2>&1 > /dev/null; then
   source /etc/os-release
   rhel_major_version=${VERSION_ID%%.*}
-
-  OLD_IFS="${IFS}"
-  IFS=.
-  cuda_version=(${CUDA_VERSION})
-  IFS="${OLD_IFS}"
 
   ########
   # Base #
@@ -139,23 +139,56 @@ elif command -v apt-get 2>&1 > /dev/null; then
   # Runtime #
   ###########
 
+  if [ "${cuda_version[0]}" = "10" ]; then
+    packages+=(${NV_LIBCUSPARSE_VERSION+cuda-cusparse-${cuda_version[0]}-${cuda_version[1]}=${NV_LIBCUSPARSE_VERSION}})
+  else
+    packages+=(${NV_LIBCUSPARSE_VERSION+libcusparse-11-0=${NV_LIBCUSPARSE_VERSION}})
+  fi
+
+  packages+=(${NV_CUDA_LIB_VERSION+cuda-libraries-${cuda_version[0]}-${cuda_version[1]}=${NV_CUDA_LIB_VERSION}}
+             ${NV_LIBNPP_PACKAGE-${NV_LIBNPP_VERSION+cuda-npp-10-0=${NV_LIBNPP_VERSION}}}
+             ${NV_NVTX_VERSION+cuda-nvtx-${cuda_version[0]}-${cuda_version[1]}=${NV_NVTX_VERSION}}
+             ${NV_LIBCUBLAS_PACKAGE-}
+             ${NV_LIBNCCL_PACKAGE-})
+
   #################
-  # Runtime cudnn #
+  # Runtime cudnn # Won't work on the older CUDAs
   #################
 
+  if [ -n "${CUDNN_VERSION:+set}" ]; then
+    packages+=(${NV_CUDNN_PACKAGE})
+  fi
+
   #########
-  # Devel #
+  # Devel # Not accurate for older CUDAs
   #########
 
+  packages+=(libtinfo5 libncursesw5
+             ${NV_CUDA_CUDART_DEV_VERSION+cuda-cudart-dev-${cuda_version[0]}-${cuda_version[1]}=${NV_CUDA_CUDART_DEV_VERSION}}
+             ${NV_CUDA_LIB_VERSION+cuda-command-line-tools-${cuda_version[0]}-${cuda_version[1]}=${NV_CUDA_LIB_VERSION}}
+             ${NV_CUDA_LIB_VERSION+cuda-minimal-build-${cuda_version[0]}-${cuda_version[1]}=${NV_CUDA_LIB_VERSION}}
+             ${NV_CUDA_LIB_VERSION+cuda-libraries-dev-${cuda_version[0]}-${cuda_version[1]}=${NV_CUDA_LIB_VERSION}}
+             ${NV_NVML_DEV_VERSION+cuda-nvml-dev-${cuda_version[0]}-${cuda_version[1]}=${NV_NVML_DEV_VERSION}}
+             ${NV_NVPROF_DEV_PACKAGE-}
+             ${NV_LIBNPP_DEV_PACKAGE-}
+             ${NV_LIBCUSPARSE_DEV_VERSION+libcusparse-dev-${cuda_version[0]}-${cuda_version[1]}=${NV_LIBCUSPARSE_DEV_VERSION}}
+             ${NV_LIBCUBLAS_DEV_PACKAGE-}
+             ${NV_LIBNCCL_DEV_PACKAGE-})
+
   ###############
-  # Devel cudnn #
+  # Devel cudnn # Won't work on the older CUDAs
   ###############
+
+  if [ -n "${CUDNN_VERSION:+set}" ]; then
+    packages+=(${NV_CUDNN_PACKAGE} ${NV_CUDNN_PACKAGE_DEV})
+  fi
 
   ###########
   # Install #
   ###########
   apt-get update
   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${packages[@]}"
+  apt-mark hold ${NV_LIBCUBLAS_DEV_PACKAGE_NAME-} ${NV_LIBNCCL_DEV_PACKAGE_NAME-} || :
   rm -rf /var/lib/apt/lists/*
 else
   echo "Unable to ID os. Please amend this script" >&2
