@@ -28,8 +28,13 @@ if command -v yum 2>&1 > /dev/null; then
   rhel_major_version=${VERSION_ID%%.*}
 
   if [ -f "/etc/yum.repos.d/ubi.repo" ]; then
+    # UBI images only have a subset of all packages we need, use rocky to fill in the gaps.
     /usr/local/share/just/scripts/10_sideload_rocky; \
-    packages+=(--enablerepo=rocky-appstream,rocky-powertools)
+    if [ "${rhel_major_version}" -ge 9 ]; then
+      packages+=(--enablerepo=rocky-appstream,rocky-crb)
+    else
+      packages+=(--enablerepo=rocky-appstream,rocky-powertools)
+    fi
   fi
 
   ########

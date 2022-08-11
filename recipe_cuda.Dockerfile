@@ -5,17 +5,26 @@ FROM alpine:3.11.8
 RUN apk add --no-cache bash gettext
 SHELL ["/usr/bin/env", "bash", "-euxvc"]
 
-# More up to date than our traditional method, since nvidia can't get enough out of changing GPG keys
-ADD https://gitlab.com/nvidia/container-images/cuda/-/archive/master/cuda-master.tar.gz /
-RUN tar xf /cuda-master.tar.gz; \
-    mv /cuda-master /cuda; \
-    rm /cuda-master.tar.gz
-# RUN apk add --no-cache --virtual .deps curl ca-certificates; \
-#     curl -fsSLO https://gitlab.com/nvidia/container-images/cuda/-/archive/master/cuda-master.tar.gz; \
-#     tar xf /cuda-master.tar.gz; \
-#     mv /cuda-master /cuda; \
-#     rm /cuda-master.tar.gz
-#     apk del .deps
+# This ADD can be commented out to skip the test
+ADD https://gitlab.com/api/v4/projects/2330984/repository/branches/master /cuda-master.json
+
+ARG CUDA_REPO_REF=5bc8c5483115b8e9c68d4f1280acb8d56196d681
+RUN if [ -f "/cuda-master.json" ]; then \
+      new_master_ref="$(sed 's|.*"id":"\([^"]*\).*|\1|' /cuda-master.json)"; \
+      if [ "${new_master_ref}" != "${CUDA_REPO_REF}" ]; then \
+        mkdir -p /usr/local/share/just/user_run_patch/; \
+        echo "echo 'Cuda recipe is out of date. Consdier PRing to update CUDA_REPO_REF' >&2" > /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
+        echo "echo 'Consider updating CUDA_REPO_REF(${CUDA_REPO_REF}) to ${new_master_ref} in a PR' >&2" >> /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
+        echo 'echo "Or delete $0"' >> /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
+        chmod 755 /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
+      fi; \
+    fi; \
+    apk add --no-cache --virtual .deps curl ca-certificates; \
+    curl -fsSLO https://gitlab.com/nvidia/container-images/cuda/-/archive/${CUDA_REPO_REF}/cuda.tar.gz; \
+    tar xf /cuda.tar.gz; \
+    mv /cuda-* /cuda; \
+    rm /cuda.tar.gz; \
+    apk del .deps
 
 ADD 00_cuda_sanity_check /usr/local/share/just/root_run_patch/
 ADD 10_load_cuda_env /usr/local/share/just/user_run_patch/
@@ -33,6 +42,10 @@ ONBUILD RUN set -o pipefail; \
             apk add --no-cache --virtual .deps curl ca-certificates; \
             mkdir -p /usr/local/share/just/info/cuda/keys; \
             function parse_envvar(){ \
+              # Uses an awk trick to only find the unique names, based on the
+              # second column, which in this case the environment variable name.
+              # This works how we want because the x86_64 variables always come
+              # first in the cuda Dockerfiles.
               awk '!x[$2]++' "${1}" | sed -nE '/^ENV/s/ENV ([^ ]*) /\1=/p'; \
             }; \
             function parse_os(){ \

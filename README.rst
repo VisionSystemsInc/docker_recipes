@@ -343,23 +343,57 @@ CUDA
 
 =========================== ============
 Name                        CUDA
+Build Args                  ``CUDA_REPO_REF`` - The version of the CUDA container repo parsed
 Build Args                  ``CUDA_VERSION`` - Version of CUDA to install (e.g. ``10.2`` or ``11.0.7``)
 Build Args                  ``CUDNN_VERSION`` - Optional: Version of CUDNN to install. (e.g. ``7`` or ``8``)
-Build Args                  ``OPENGL_?`` - Optional: Enable opengl installation
+Build Args                  ``CUDA_RECIPE_TARGET`` - Optional: Sets the target level of CUDA install (explained below). Default: ``runtime``
+Environment Variable        ``NVIDIA_VISIBLE_DEVICES`` - Required: Sets while nvidia devices to connect. Set to ``all``
+Environment Variable        ``NVIDIA_DRIVER_CAPABILITIES`` - Optional: Default is ``compute,utility`` when unset
+Environment Variable        ``NVIDIA_REQUIRE_*`` - Optional: Sets test conditions to prevent running on incompatible systems
 Output dir                  ``/usr/local``
 Minimum Dockerfile frontend docker/dockerfile:1.3-labs or docker/dockerfile:1.4
 =========================== ============
 
-While starting from a base image with CUDA already setup for docker is ideal, when we have to be based on a specific image (e.g. hardened images), this becomes not possible. Instead we need to start with a particular image and add CUDA support to it.
+While starting from a base image with CUDA already setup for docker is ideal, when we have to be based on a specific image (e.g. hardened images), this becomes impossible or impractical. Instead we need to start with a particular image and add CUDA support to it.
 
-There are many steps to setting up CUDA in an image, including:
+Currently only RHEL and Ubuntu based images are supported (not Fedora or Debian).
+
+There are many steps to setting up CUDA in an image:
 
 - Setting up CUDA repo and GPG key
-- Installing the right packages
+- Installing the right packages, so that we limit the amount of bloat to the image
 - Setting various environment variables at container run time
 - Setting certain environment variables at container create time
 
-This recipe will attempt to do all of these things in as few steps as possible. Currently only supported versions of CUDA are supported (10 and 11).
+This recipe will attempt to do all of these things in as few steps as possible, except setting environment variables at container create time which you will have to do manually.
+
+---------------------
+Environment variables
+---------------------
+
+Because of how the nvidia runtime operates, it needs certain variables set at container create time. Some ways this can be accomplished include:
+
+- Adding an ``ENV`` to the Dockerfile
+- Adding to the ``environment:`` section in ``docker-compose.yml``
+- Adding the ``-e`` flag to the ``docker run`` call
+
+``NVIDIA_VISIBLE_DEVICES`` must be set, or else the nvidia runtime will not activate, and you will have no gpu support. It's suggested to make set ``NVIDIA_VISIBLE_DEVICES`` to ``all`` and allow for an environment variable on the host (i.e. ``local.env``) to override the value to use specific GPUs as needed.
+
+``NVIDIA_DRIVER_CAPABILITIES`` is usually set, but it is optional because unset and set to null means the ``compute,utility`` capabilities are passed in. This is enough for most CUDA capabilities.
+
+You can optionally add ``NVIDIA_REQUIRE_*`` environment variables (Commonly: ``NVIDIA_REQUIRE_CUDA``) as a set of rules to declare what version of cuda, drivers, architecture, and brand. You only need to set this if you want docker to refuse to run when constraints are not met (e.g. driver doesn't support CUDA 11.6). See the `documentation <https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#constraints>`_ and an `example <https://gitlab.com/nvidia/container-images/cuda/-/blob/5bc8c5483115b8e9c68d4f1280acb8d56196d681/dist/11.6.2/ubi8/base/Dockerfile#L6>`_ for more information.
+
+----------
+Build Args
+----------
+
+The ``CUDA_VERSION``/``CUDNN_VERSION`` build args must be limited to the versions of CUDA in the `nvidia package repos <https://developer.download.nvidia.com/compute/cuda/repos/>`_. Attempting combinations of OS versions and CUDA versions not in the nvidia `codebase <https://gitlab.com/nvidia/container-images/cuda/-/tree/master/dist>`_ will probably fail because those versions of CUDA most likely do not exist in the nvidia package repos. Currently the end-of-life directory is not supported.
+
+``CUDA_RECIPE_TARGET`` is used to specify how much of CUDA you install (devel vs runtime):
+
+- ``runtime``: Only installs the runtime packages for CUDA
+- ``devel``: Installs both the runtime and development packages for CUDA
+- ``devel-only``: Only installs the devel packages. This is intended to be used on an image that already has the CUDA runtime installed.
 
 .. rubric:: Example
 
@@ -372,11 +406,45 @@ This recipe will attempt to do all of these things in as few steps as possible. 
    COPY --from=cuda /usr/local /usr/local
    # Only needs to be run once for all recipes
    RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
-   ENV NVIDIA_VISIBLE_DEVICES=all
+   ENV NVIDIA_VISIBLE_DEVICES=all # Required for this recipe
+   ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility # Optional: compute,utility is the default if unset
 
    # (Uncommon) If you need all the nvidia environment variables, source this file
    RUN source /usr/local/share/just/user_run_patch/10_load_cuda_env; \
        cmake # This line is just an example
+   ...
+
+CUDA GL
+-------
+
+=========================== ============
+Name                        CUDA GL
+Build Args                  ``CUDA_RECIPE_TARGET`` - Sets the target level of CUDA install
+Build Args                  ``LIBGLVND_VERSION`` - The version of the GLVND used. Default: ``v1.2.0``
+Environment Variable        ``NVIDIA_DRIVER_CAPABILITIES`` - For opengl offscreen rendering, you at least need `graphics,compute,utility`
+Output dir                  ``/usr/local``
+Minimum Dockerfile frontend docker/dockerfile:1.3-labs or docker/dockerfile:1.4
+=========================== ============
+
+Similar to the CUDA recipe, ``CUDA_RECIPE_TARGET`` tells the recipe whether to install runtime or development dependencies. ``devel-only`` still installs both runtime and devel packages, due to how the recipe is structured.
+
+``LIBGLVND_VERSION`` sets the version of `glvnd repo <https://github.com/NVIDIA/libglvnd.git>`_ that is compiled and used.
+
+You will need to set the environment variable ``NVIDIA_DRIVER_CAPABILITIES`` to allow graphics capabilities which most GL applications will need.
+
+.. rubric:: Example
+
+.. code-block:: Dockerfile
+
+   # syntax=docker/dockerfile:1.4
+   FROM vsiri/recipe:cudagl as cudagl
+
+   FROM some_cuda_image
+   COPY --from=cudagl /usr/local /usr/local
+   # Only needs to be run once for all recipes
+   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+
+   ENV NVIDIA_DRIVER_CAPABILITIES=graphics,compute,utility
    ...
 
 Amanda debian packages

@@ -50,26 +50,23 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-NVIDIA
 EOF
 
     # For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
-    yum install -y \
-      cuda-cudart-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_CUDART_VERSION} \
-      cuda-compat-${cuda_version[0]}-${cuda_version[1]}
-    ln -s cuda-${cuda_version[0]}.${cuda_version[1]} /usr/local/cuda
+    packages+=(cuda-cudart-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_CUDART_VERSION}
+               cuda-compat-${cuda_version[0]}-${cuda_version[1]})
+
   fi
 
   ###########
   # Runtime # Should be accurate for 10-11, I didn't check every sub-version, but did some greps
   ###########
   if [ "${install_runtime}" = "1" ]; then
-    packages+=(${NV_CUDNN_PACKAGE-} ${NV_LIBCUBLAS_PACKAGE-} ${NV_LIBNCCL_PACKAGE-} ${NV_LIBNPP_PACKAGE-})
+    packages+=(${NV_LIBCUBLAS_PACKAGE-} ${NV_LIBNCCL_PACKAGE-} ${NV_LIBNPP_PACKAGE-})
 
-    packages+=(cuda-libraries-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}
-              cuda-nvtx-${cuda_version[0]}-${cuda_version[1]}-${NV_NVTX_VERSION})
+    packages+=(${NV_CUDA_LIB_VERSION+cuda-libraries-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}}
+               ${NV_NVTX_VERSION+cuda-nvtx-${cuda_version[0]}-${cuda_version[1]}-${NV_NVTX_VERSION}}
+               ${NV_LIBNPP_VERSION+cuda-npp-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBNPP_VERSION}})
 
     if [ "${CUDA_VERSION}" = "10.0" ]; then
-      packages+=(cuda-cublas-${cuda_version[0]}-${cuda_version[1]}
-                cuda-npp-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBNPP_VERSION})
-    else
-      packages+=(libcublas-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBCUBLAS_VERSION})
+      packages+=(cuda-cublas-${cuda_version[0]}-${cuda_version[1]})
     fi
 
     #################
@@ -87,19 +84,20 @@ EOF
     packages+=(make)
 
     packages+=(cuda-command-line-tools-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}
-               cuda-minimal-build-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION})
+               cuda-minimal-build-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}
+               ${NV_NVPROF_VERSION+cuda-nvprof-${cuda_version[0]}-${cuda_version[1]}-${NV_NVPROF_VERSION}}
+    )
 
     if [ "${cuda_version[0]}" = "10" ]; then
-      packages+=(cuda-nvml-dev-${cuda_version[0]}-${cuda_version[1]}-${NV_NVML_DEV_VERSION}
+      packages+=(cuda-libraries-dev-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}
                  cuda-cudart-dev-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_CUDART_DEV_VERSION}
-                 cuda-libraries-dev-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}
-                 cuda-nvprof-${cuda_version[0]}-${cuda_version[1]}-${NV_NVPROF_VERSION}
-                 cuda-npp-dev-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBNPP_DEV_VERSION})
+                 ${NV_NVML_DEV_VERSION+cuda-nvml-dev-${cuda_version[0]}-${cuda_version[1]}-${NV_NVML_DEV_VERSION}}
+                 ${NV_LIBNPP_DEV_VERSION+cuda-npp-dev-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBNPP_DEV_VERSION}})
     else
       packages+=(cuda-libraries-devel-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}
                  cuda-cudart-devel-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_CUDART_DEV_VERSION}
-                 cuda-nvml-devel-${cuda_version[0]}-${cuda_version[1]}-${NV_NVML_DEV_VERSION}
-                 libcublas-devel-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBCUBLAS_DEV_VERSION})
+                 ${NV_NVML_DEV_VERSION+cuda-nvml-devel-${cuda_version[0]}-${cuda_version[1]}-${NV_NVML_DEV_VERSION}}
+                 ${NV_LIBCUBLAS_DEV_VERSION+libcublas-devel-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBCUBLAS_DEV_VERSION}})
     fi
 
     packages+=(${NV_LIBCUBLAS_DEV_PACKAGE-} ${NV_LIBNCCL_DEV_PACKAGE-} ${NV_LIBNPP_DEV_PACKAGE-} ${NV_NVPROF_DEV_PACKAGE-})
@@ -124,6 +122,7 @@ elif command -v apt-get 2>&1 > /dev/null; then
   ########
   # Base #
   ########
+
   source /etc/os-release
   ubuntu_major_version=${VERSION_ID%%.*}
 
@@ -132,8 +131,6 @@ elif command -v apt-get 2>&1 > /dev/null; then
 
   packages+=(${NV_CUDA_COMPAT_PACKAGE-cuda-compat-${cuda_version[0]}-${cuda_version[1]}}
              cuda-cudart-${cuda_version[0]}-${cuda_version[1]}=${NV_CUDA_CUDART_VERSION})
-  echo "Ubuntu not done. Please amend this script" >&2
-  exit 2
 
   ###########
   # Runtime #
@@ -186,6 +183,7 @@ elif command -v apt-get 2>&1 > /dev/null; then
   ###########
   # Install #
   ###########
+
   apt-get update
   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${packages[@]}"
   apt-mark hold ${NV_LIBCUBLAS_DEV_PACKAGE_NAME-} ${NV_LIBNCCL_DEV_PACKAGE_NAME-} || :
