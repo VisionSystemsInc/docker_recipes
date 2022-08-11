@@ -62,9 +62,13 @@ EOF
   if [ "${install_runtime}" = "1" ]; then
     packages+=(${NV_LIBCUBLAS_PACKAGE-} ${NV_LIBNCCL_PACKAGE-} ${NV_LIBNPP_PACKAGE-})
 
+
     packages+=(${NV_CUDA_LIB_VERSION+cuda-libraries-${cuda_version[0]}-${cuda_version[1]}-${NV_CUDA_LIB_VERSION}}
-               ${NV_NVTX_VERSION+cuda-nvtx-${cuda_version[0]}-${cuda_version[1]}-${NV_NVTX_VERSION}}
-               ${NV_LIBNPP_VERSION+cuda-npp-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBNPP_VERSION}})
+               ${NV_NVTX_VERSION+cuda-nvtx-${cuda_version[0]}-${cuda_version[1]}-${NV_NVTX_VERSION}})
+
+    if [ "${cuda_version[0]}" = "10" ]; then
+      pcakaged+=(${NV_LIBNPP_VERSION+cuda-npp-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBNPP_VERSION}})
+    fi
 
     if [ "${CUDA_VERSION}" = "10.0" ]; then
       packages+=(cuda-cublas-${cuda_version[0]}-${cuda_version[1]})

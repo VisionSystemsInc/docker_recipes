@@ -11,6 +11,7 @@ ADD https://gitlab.com/api/v4/projects/2330984/repository/branches/master /cuda-
 ARG CUDA_REPO_REF=5bc8c5483115b8e9c68d4f1280acb8d56196d681
 RUN if [ -f "/cuda-master.json" ]; then \
       new_master_ref="$(sed 's|.*"id":"\([^"]*\).*|\1|' /cuda-master.json)"; \
+      rm /cuda-master.json; \
       if [ "${new_master_ref}" != "${CUDA_REPO_REF}" ]; then \
         mkdir -p /usr/local/share/just/user_run_patch/; \
         echo "echo 'Cuda recipe is out of date. Consdier PRing to update CUDA_REPO_REF' >&2" > /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
