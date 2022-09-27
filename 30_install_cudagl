@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+
+set -eu
+
+source /usr/local/share/just/user_run_patch/10_load_cuda_env
+
+packages=()
+
+install_base=0
+install_runtime=0
+install_devel=0
+
+case "${CUDA_RECIPE_TARGET-runtime}" in
+  runtime)
+    install_base=1
+    install_runtime=1
+    ;;
+  devel|devel-only)
+    install_base=1
+    install_runtime=1
+    install_devel=1
+    ;;
+esac
+
+
+if command -v yum 2>&1 > /dev/null; then
+  source /etc/os-release
+  rhel_major_version=${VERSION_ID%%.*}
+
+  if [ -f "/etc/yum.repos.d/ubi.repo" ]; then
+    # UBI images only have a subset of all packages we need; use rocky to fill in the gaps.
+    /usr/local/share/just/scripts/10_sideload_rocky; \
+    if [ "${rhel_major_version}" -ge 9 ]; then
+      packages+=(--enablerepo=rocky-appstream,rocky-crb)
+    else
+      packages+=(--enablerepo=rocky-appstream,rocky-powertools)
+    fi
+  fi
+
+  ########
+  # Base #
+  ########
+
+  if [ "${install_base}" = "1" ]; then
+    packages+=(libXau libXau.i686
+               libXdmcp libXdmcp.i686
+               libxcb libxcb.i686
+               libXext libXext.i686
+               libX11 libX11.i686)
+  fi
+
+  ###########
+  # Runtime #
+  ###########
+
+  if [ "${install_runtime}" = "1" ]; then
+    cp -ra "/usr/local/share/just/info/rhel${rhel_major_version}"/lib* /usr/local/
+
+    echo '/usr/local/lib64' >> /etc/ld.so.conf.d/glvnd.conf
+    echo '/usr/local/lib' >> /etc/ld.so.conf.d/glvnd.conf
+  fi
+
+  #########
+  # Devel #
+  #########
+
+  if [ "${install_devel}" = "1" ]; then
+    packages+=(pkgconfig
+               libXau-devel libXau-devel.i686
+               libXdmcp-devel libXdmcp-devel.i686
+               libxcb-devel libxcb-devel.i686
+               libXext-devel libXext-devel.i686
+               libX11-devel libX11-devel.i686)
+  fi
+
+  ###########
+  # Install #
+  ###########
+
+  if [ "${#packages[@]}" -ne "0" ]; then
+    if [ "${rhel_major_version}" = "7" ]; then
+      ulimit -n 1048576 # https://github.com/containerd/containerd/discussions/6780
+    fi
+    yum install --setopt=obsoletes=0 -y "${packages[@]}"
+    rm -rf /var/cache/yum/*
+  fi
+
+  # This has to happen after libX11.so.6 is installed, or else every command breaks
+  if [ "${install_runtime}" = "1" ]; then
+    echo '/usr/local/$LIB/libGL.so.1' >> /etc/ld.so.preload
+    echo '/usr/local/$LIB/libEGL.so.1' >> /etc/ld.so.preload
+  fi
+
+elif command -v apt-get 2>&1 > /dev/null; then
+
+  ########
+  # Base #
+  ########
+
+  if [ "${install_base}" = "1" ]; then
+    packages+=(libxau6 libxau6:i386
+               libxdmcp6 libxdmcp6:i386
+               libxcb1 libxcb1:i386
+               libxext6 libxext6:i386
+               libx11-6 libx11-6:i386)
+
+    echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+
+    echo 'LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}:/usr/local/nvidia/lib:/usr/local/nvidia/lib64' \
+          > /usr/local/share/just/info/cuda/90_librarypath_common
+  fi
+
+  ###########
+  # Runtime # Valid for Ubuntu 18 and 20. 16 was different but it's old
+  ###########
+
+  if [ "${install_runtime}" = "1" ]; then
+    packages+=(libglvnd0 libglvnd0:i386
+               libgl1 libgl1:i386
+               libglx0 libglx0:i386
+               libegl1 libegl1:i386
+               libgles2 libgles2:i386)
+  fi
+
+  #########
+  # Devel #
+  #########
+
+  if [ "${install_devel}" = "1" ]; then
+    packages+=(pkg-config
+               libglvnd-dev libglvnd-dev:i386
+               libgl1-mesa-dev libgl1-mesa-dev:i386
+               libegl1-mesa-dev libegl1-mesa-dev:i386
+               libgles2-mesa-dev libgles2-mesa-dev:i386)
+  fi
+
+  if [ "${#packages[@]}" -ne "0" ]; then
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${packages[@]}"
+    rm -rf /var/lib/apt/lists/*
+  fi
+fi

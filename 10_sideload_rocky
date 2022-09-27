@@ -30,4 +30,4 @@ rpm -i --nodeps "${repo_url}"
 # Disable all rocky packages by default, add rocky- to their name, and make the
 # cost 2000 so redhat is preferred by default
 sed -Ei 's|enabled=1|enabled=0|;
-         s|^\[(.*)|[rocky-\1\ncost=2000|' /etc/yum.repos.d/Rocky-*
+         s|^\[(.*)|[rocky-\1\ncost=2000|' /etc/yum.repos.d/[rR]ocky*

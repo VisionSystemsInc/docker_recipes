@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+if [ -z "${NVIDIA_VISIBLE_DEVICES+set}" ]; then
+  echo "Error: NVIDIA_VISIBLE_DEVICES is not set. The docker is probably misconfigured" >&2
+  echo "You probably forgot to add NVIDIA_VISIBLE_DEVICES to your docker-compose.yml/Dockerfile" >&2
+  echo "https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#gpu-enumeration" >&2
+  echo "GPU support is probably disabled: Delete ${BASH_SOURCE[0]} to remove this message" >&2
+  # Null and unset is actually a valid value
+  # exit 1
+fi
+
+# if [ -z "${NVIDIA_DRIVER_CAPABILITIES+set}" ]; then
+# fi
+
+pattern="graphics|all"
+if [ -n "${LIBGLVND_VERSION+set}" ] && [[ ${NVIDIA_DRIVER_CAPABILITIES} =~ ${pattern} ]]; then
+  echo "Error: NVIDIA_DRIVER_CAPABILITIES is not set to pass the graphics capability, " >&2
+  echo "but you have OpenGL configured. The docker is probably misconfigured" >&2
+  echo "https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities" >&2
+  echo "OpenGL support is probably disabled: Delete ${BASH_SOURCE[0]} to remove this message" >&2
+fi
