@@ -67,7 +67,7 @@ EOF
                ${NV_NVTX_VERSION+cuda-nvtx-${cuda_version[0]}-${cuda_version[1]}-${NV_NVTX_VERSION}})
 
     if [ "${cuda_version[0]}" = "10" ]; then
-      pcakaged+=(${NV_LIBNPP_VERSION+cuda-npp-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBNPP_VERSION}})
+      packages+=(${NV_LIBNPP_VERSION+cuda-npp-${cuda_version[0]}-${cuda_version[1]}-${NV_LIBNPP_VERSION}})
     fi
 
     if [ "${CUDA_VERSION}" = "10.0" ]; then
@@ -198,7 +198,7 @@ elif command -v apt-get 2>&1 > /dev/null; then
   apt-mark hold ${NV_LIBCUBLAS_DEV_PACKAGE_NAME-} ${NV_LIBNCCL_DEV_PACKAGE_NAME-} || :
   rm -rf /var/lib/apt/lists/*
 else
-  echo "Unable to ID os. Please amend this script" >&2
+  echo "Unable to ID OS. Please amend this script" >&2
   exit 1
 fi
 
