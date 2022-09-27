@@ -17,7 +17,7 @@ elif command -v apt-get 2>&1 > /dev/null; then
     source "${file}"
   done
 else
-  echo "Unable to ID os. Please amend this script" >&2
+  echo "Unable to ID OS. Please amend this script" >&2
   exit 1
 fi
 
