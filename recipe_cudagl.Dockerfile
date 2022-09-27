@@ -122,7 +122,8 @@ ONBUILD RUN case "${CUDA_RECIPE_TARGET}" in *devel*) \
               # cleanup
               apk del .del; \
               mkdir /usr/local/share/just/info/cuda/; \
-              echo 'PKG_CONFIG_PATH=${PKG_CONFIG_PATH-}${PKG_CONFIG_PATH:+:}/usr/local/lib64/pkgconfig:/usr/local/lib/pkgconfig' > /usr/local/share/just/info/cuda/30_pkgconfig_rhel ;;\
+              echo 'PKG_CONFIG_PATH=${PKG_CONFIG_PATH-}${PKG_CONFIG_PATH:+:}/usr/local/lib64/pkgconfig:/usr/local/lib/pkgconfig' > /usr/local/share/just/info/cuda/30_pkgconfig_rhel; \
+              ;; \
             esac
 
 ONBUILD ARG LIBGLVND_VERSION=v1.2.0
