@@ -343,7 +343,7 @@ CUDA
 
 =========================== ============
 Name                        CUDA
-Build Args                  ``CUDA_REPO_REF`` - The version of the CUDA container repo parsed
+Build Args                  ``CUDA_REPO_REF`` - The ref of the CUDA container repo parsed
 Build Args                  ``CUDA_VERSION`` - Version of CUDA to install (e.g. ``10.2`` or ``11.0.7``)
 Build Args                  ``CUDNN_VERSION`` - Optional: Version of CUDNN to install. (e.g. ``7`` or ``8``)
 Build Args                  ``CUDA_RECIPE_TARGET`` - Optional: Specifies how much of the CUDA stack to install (explained below). Default: ``runtime``
