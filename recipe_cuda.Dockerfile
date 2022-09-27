@@ -14,8 +14,8 @@ RUN if [ -f "/cuda-master.json" ]; then \
       rm /cuda-master.json; \
       if [ "${new_master_ref}" != "${CUDA_REPO_REF}" ]; then \
         mkdir -p /usr/local/share/just/user_run_patch/; \
-        echo "echo 'Cuda recipe is out of date. Consdier PRing to update CUDA_REPO_REF' >&2" > /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
-        echo "echo 'Consider updating CUDA_REPO_REF(${CUDA_REPO_REF}) to ${new_master_ref} in a PR' >&2" >> /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
+        echo "echo 'Cuda recipe is out of date.' >&2" > /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
+        echo "echo 'Consider submitting a PR to this repo to update CUDA_REPO_REF(${CUDA_REPO_REF}) to ${new_master_ref}' >&2" >> /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
         echo 'echo "Or delete $0"' >> /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
         chmod 755 /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
       fi; \
@@ -27,13 +27,9 @@ RUN if [ -f "/cuda-master.json" ]; then \
     rm /cuda.tar.gz; \
     apk del .deps
 
-ADD 00_cuda_sanity_check /usr/local/share/just/root_run_patch/
-ADD 10_load_cuda_env /usr/local/share/just/user_run_patch/
-ADD 30_ldconfig 30_install_cuda /usr/local/share/just/container_build_patch/
-RUN chmod 755 /usr/local/share/just/root_run_patch/00_cuda_sanity_check \
-              /usr/local/share/just/container_build_patch/30_ldconfig \
-              /usr/local/share/just/container_build_patch/30_install_cuda; \
-    chmod 644 /usr/local/share/just/user_run_patch/10_load_cuda_env
+ADD --chmod=755 00_cuda_sanity_check /usr/local/share/just/root_run_patch/
+ADD --chmod=644 10_load_cuda_env /usr/local/share/just/user_run_patch/
+ADD --chmod=755 30_ldconfig 30_install_cuda /usr/local/share/just/container_build_patch/
 
 ONBUILD ARG CUDA_VERSION=11.7.0
 ONBUILD ARG CUDNN_VERSION=
@@ -43,10 +39,11 @@ ONBUILD RUN set -o pipefail; \
             apk add --no-cache --virtual .deps curl ca-certificates; \
             mkdir -p /usr/local/share/just/info/cuda/keys; \
             function parse_envvar(){ \
-              # Uses an awk trick to only find the unique names, based on the
-              # second column, which in this case the environment variable name.
-              # This works how we want because the x86_64 variables always come
-              # first in the cuda Dockerfiles.
+              # Uses awk to only find the unique names, based on the second
+              # column, which in this case is the environment variable name. This
+              # works how we want because the x86_64 variables always come first
+              # in the cuda Dockerfiles.
+              # E.g.: https://gitlab.com/nvidia/container-images/cuda/-/blob/55e68010c6ed48abce440d25fbc25af42d318a73/dist/11.4.0/ubuntu1804/runtime/Dockerfile
               awk '!x[$2]++' "${1}" | sed -nE '/^ENV/s/ENV ([^ ]*) /\1=/p'; \
             }; \
             function parse_os(){ \
@@ -56,11 +53,11 @@ ONBUILD RUN set -o pipefail; \
               if [ -n "${CUDNN_VERSION:+set}" ]; then \
                 # If this errors during build, you probably set CUDNN_VERSION wrong
                 parse_envvar "${1}/runtime/cudnn${CUDNN_VERSION}/Dockerfile" > "/usr/local/share/just/info/cuda/13_cudaenv_${2}"; \
-                parse_envvar "${1}/devel/cudnn${CUDNN_VERSION}/Dockerfile" > "/usr/local/share/just/info/cuda/13_cudaenv_${2}"; \
+                parse_envvar "${1}/devel/cudnn${CUDNN_VERSION}/Dockerfile" >> "/usr/local/share/just/info/cuda/13_cudaenv_${2}"; \
               fi; \
             }; \
             # Env Vars
-            # Currently all the fedoras use the same vars, so the first one is good enough
+            # Currently all the fedoras use the same vars, so the first file found is good enough
             for rhel in ubi10 ubi9 ubi8 ubi7 rockylinux10 rockylinux9 rockylinux8 centos7; do \
               if [ -d "/cuda/dist/${CUDA_VERSION}/${rhel}" ]; then \
                 parse_os "/cuda/dist/${CUDA_VERSION}/${rhel}" rhel; \
