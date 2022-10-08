@@ -136,6 +136,7 @@ elif command -v apt-get 2>&1 > /dev/null; then
   fi
 
   if [ "${#packages[@]}" -ne "0" ]; then
+    dpkg --add-architecture i386
     apt-get update
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${packages[@]}"
     rm -rf /var/lib/apt/lists/*
