@@ -8,8 +8,7 @@ SHELL ["/usr/bin/env", "bash", "-euxvc"]
 # This ADD can be commented out to skip the test
 ADD https://gitlab.com/api/v4/projects/2330984/repository/branches/master /cuda-master.json
 
-# ARG CUDA_REPO_REF=a07cb97de5798b75147cbe1158c6caadffee2892
-ARG CUDA_REPO_REF=5bc8c5483115b8e9c68d4f1280acb8d56196d681
+ARG CUDA_REPO_REF=a07cb97de5798b75147cbe1158c6caadffee2892
 RUN if [ -f "/cuda-master.json" ]; then \
       new_master_ref="$(sed 's|.*"id":"\([^"]*\).*|\1|' /cuda-master.json)"; \
       rm /cuda-master.json; \
