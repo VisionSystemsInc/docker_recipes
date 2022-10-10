@@ -341,18 +341,18 @@ This recipe is a little different from other recipes in that it's just a script 
 CUDA
 ----
 
-=========================== ============
-Name                        CUDA
-Build Args                  ``CUDA_REPO_REF`` - The ref of the CUDA container repo parsed
-Build Args                  ``CUDA_VERSION`` - Version of CUDA to install (e.g. ``10.2`` or ``11.0.7``)
-Build Args                  ``CUDNN_VERSION`` - Optional: Version of CUDNN to install. (e.g. ``7`` or ``8``)
-Build Args                  ``CUDA_RECIPE_TARGET`` - Optional: Specifies how much of the CUDA stack to install (explained below). Default: ``runtime``
-Environment Variable        ``NVIDIA_VISIBLE_DEVICES`` - Required: Sets which nvidia devices are visible in the container. Default: ``all``
-Environment Variable        ``NVIDIA_DRIVER_CAPABILITIES`` - Optional: Which device capabilities are enabled in the container. Default: `compute,utility`, which is also the value the runtime interprets if this environment variable is unset.
-Environment Variable        ``NVIDIA_REQUIRE_*`` - Optional: Sets test conditions to prevent running on incompatible systems
-Output dir                  ``/usr/local``
+============================ ============
+Name                         CUDA
+Build Args                   ``CUDA_REPO_REF`` - The ref of the CUDA container repo parsed
+Build Args                   ``CUDA_VERSION`` - Version of CUDA to install (e.g. ``10.2`` or ``11.0.7``)
+Build Args                   ``CUDNN_VERSION`` - Optional: Version of CUDNN to install. (e.g. ``7`` or ``8``)
+Build Args                   ``CUDA_RECIPE_TARGET`` - Optional: Specifies how much of the CUDA stack to install (explained below). Default: ``runtime``
+Environment Variable         ``NVIDIA_VISIBLE_DEVICES`` - Required: Sets which nvidia devices are visible in the container. Default: ``all``
+Environment Variable         ``NVIDIA_DRIVER_CAPABILITIES`` - Optional: Which device capabilities are enabled in the container. Default: `compute,utility`, which is also the value the runtime interprets if this environment variable is unset.
+Environment Variable         ``NVIDIA_REQUIRE_*`` - Optional: Sets test conditions to prevent running on incompatible systems
+Output dir                   ``/usr/local``
 Minimum Dockerfile frontend: docker/dockerfile:1.3-labs or docker/dockerfile:1.4
-=======================================
+============================ ============
 
 While starting from a base image with CUDA already setup for docker is ideal, when we have to be based on a specific image (e.g. hardened images), this becomes impossible or impractical. Instead we need to start with a particular image and add CUDA support to it.
 
@@ -419,14 +419,14 @@ The ``CUDA_VERSION``/``CUDNN_VERSION`` build args must be limited to the version
 CUDA GL
 -------
 
-=========================== ============
-Name                        CUDA GL
-Build Args                  ``CUDA_RECIPE_TARGET`` - Specifies how much of the CUDA stack to install (explained further above in the CUDA recipe). Default: ``runtime``
-Build Args                  ``LIBGLVND_VERSION`` - The version of the GLVND used. Default: ``v1.2.0``
-Environment Variable        ``NVIDIA_DRIVER_CAPABILITIES`` - For OpenGL offscreen rendering, you at least need `graphics,compute,utility`
-Output dir                  ``/usr/local``
+============================ ============
+Name                         CUDA GL
+Build Args                   ``CUDA_RECIPE_TARGET`` - Specifies how much of the CUDA stack to install (explained further above in the CUDA recipe). Default: ``runtime``
+Build Args                   ``LIBGLVND_VERSION`` - The version of the GLVND used. Default: ``v1.2.0``
+Environment Variable         ``NVIDIA_DRIVER_CAPABILITIES`` - For OpenGL offscreen rendering, you at least need `graphics,compute,utility`
+Output dir                   ``/usr/local``
 Minimum Dockerfile frontend: docker/dockerfile:1.3-labs or docker/dockerfile:1.4
-=========================== ============
+============================ ============
 
 Similar to the CUDA recipe, ``CUDA_RECIPE_TARGET`` tells the recipe whether to install runtime or development dependencies, although ``devel-only`` installs both runtime and devel packages, due to how the recipe is structured.
 
