@@ -85,7 +85,7 @@ COPY --from=ubi8 /usr/local/lib64 /usr/local/share/just/info/rhel8/lib64
 # COPY --from=ubi9 /usr/local/lib64 /usr/local/share/just/info/rhel8/lib64
 
 ADD --chmod=644 10_load_cuda_env /usr/local/share/just/user_run_patch/
-ADD --chmod=755 30_ldconfig 30_install_cudagl /usr/local/share/just/container_build_patch/
+ADD --chmod=755 30_ldconfig 40_install_cudagl /usr/local/share/just/container_build_patch/
 ADD --chmod=755 10_sideload_rocky /usr/local/share/just/scripts/
 
 COPY <<EOF /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json
