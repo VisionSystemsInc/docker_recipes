@@ -1,5 +1,7 @@
 FROM alpine:3.11.8
 
+SHELL ["/usr/bin/env", "sh", "-euxvc"]
+
 ONBUILD ARG DOCKER_COMPOSE_VERSION=2.1.1
 
 ONBUILD RUN apk add --no-cache --virtual .deps curl ca-certificates; \
