@@ -411,7 +411,7 @@ The ``CUDA_VERSION``/``CUDNN_VERSION`` build args must be limited to the version
    # NVIDIA_DRIVER_CAPABILITIES is optional, but not setting it results in compute,utility
    ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
-   # Source this files when  building packages from source in docker build.
+   # Source this file when building packages from source in docker build.
    # It loads all the nvidia environment variables
    RUN source /usr/local/share/just/user_run_patch/10_load_cuda_env; \
        cmake . # This line is just an example
