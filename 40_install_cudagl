@@ -151,3 +151,6 @@ cat - << EOF > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
     }
 }
 EOF
+
+mkdir -p  /usr/local/share/glvnd/egl_vendor.d/
+cp /usr/share/glvnd/egl_vendor.d/10_nvidia.json /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json
