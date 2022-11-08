@@ -99,6 +99,7 @@ services:
       #   ONETRUEAWK_VERSION: "${ONETRUEAWK_VERSION}"
     image: vsiri/recipe:onetrueawk
 
+  ### GDAL - Deprecated ###
   gdal:
     build:
       context: .
