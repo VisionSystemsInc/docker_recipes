@@ -482,32 +482,6 @@ https://github.com/onetrueawk/awk is a severly limited version awk that some pri
    RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=onetrueawk /usr/local /usr/local
 
-GDAL
-----
-
-============ ============
-Name         GDAL
-Build Args   ``GDAL_VERSION`` - Version of GDAL to download
-Output dir   ``/usr/local``
-============ ============
-
-Compiles GDAL v3, including OPENJPEG 2.4, ECW J2K 5.5, libtiff4.3, libgeotiff 1.7, PROJ v8
-
-.. rubric:: Example
-
-.. code-block:: Dockerfile
-
-   FROM vsiri/recipe:gdal as gdal
-   FROM python:3.8
-   COPY --from=gdal /usr/local /usr/local
-
-   # numpy must be installed before GDAL python bindings
-   RUN pip install numpy; \
-       pip install GDAL==$(cat /usr/local/gdal_version);
-
-   # Only needs to be run once for all recipes
-   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
-
 Conda's python
 --------------
 
