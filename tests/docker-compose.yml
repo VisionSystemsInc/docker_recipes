@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: test_git-lfs.Dockerfile
       args:
-        GIT_LFS_VERSION: "v2.10.0"
+        GIT_LFS_VERSION: "v3.2.0"
     image: vsiri/test_recipe:test_git-lfs
   test_cmake:
     build:
