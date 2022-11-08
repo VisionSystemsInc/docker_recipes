@@ -348,7 +348,7 @@ Build Args                   ``CUDA_VERSION`` - Version of CUDA to install (e.g.
 Build Args                   ``CUDNN_VERSION`` - Optional: Version of CUDNN to install. (e.g. ``7`` or ``8``)
 Build Args                   ``CUDA_RECIPE_TARGET`` - Optional: Specifies how much of the CUDA stack to install (explained below). Default: ``runtime``
 Environment Variable         ``NVIDIA_VISIBLE_DEVICES`` - Required: Sets which nvidia devices are visible in the container. Default: ``all``
-Environment Variable         ``NVIDIA_DRIVER_CAPABILITIES`` - Optional: Which device capabilities are enabled in the container. Default: `compute,utility`, which is also the value the runtime interprets if this environment variable is unset.
+Environment Variable         ``NVIDIA_DRIVER_CAPABILITIES`` - Optional: Which device capabilities are enabled in the container. Default: `compute,utility`, which is also the value the runtime assumes if this environment variable is unset.
 Environment Variable         ``NVIDIA_REQUIRE_*`` - Optional: Sets test conditions to prevent running on incompatible systems
 Output dir                   ``/usr/local``
 Minimum Dockerfile frontend: docker/dockerfile:1.3-labs or docker/dockerfile:1.4

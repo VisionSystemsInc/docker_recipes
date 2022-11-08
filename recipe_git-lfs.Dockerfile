@@ -10,6 +10,8 @@ ONBUILD RUN apk add --no-cache --virtual .deps ca-certificates curl; \
             WORKDIR="/tmp/lfs"; \
             mkdir -p "${WORKDIR}"; \
             curl -fsSLo "${WORKDIR}/lfs.tar.gz" "https://github.com/git-lfs/git-lfs/releases/download/${GIT_LFS_VERSION}/git-lfs-linux-amd64-${GIT_LFS_VERSION}.tar.gz"; \
+            # They change the format of the tarball too much, but this'll work
+            # more generically by looking for a file named "git-lfs" exactly
             tar zxf "${WORKDIR}/lfs.tar.gz" -C "${WORKDIR}"; \
             find "${WORKDIR}" -type f -name git-lfs -exec mv {} /usr/local/bin/ \; ; \
             rm -r "${WORKDIR}"; \
