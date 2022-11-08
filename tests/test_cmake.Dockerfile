@@ -1,10 +1,10 @@
 FROM vsiri/recipe:cmake AS cmake
 
-FROM vsiri/circleci:bash-glibc
+FROM alpine:3.16.2
+
+RUN apk add --no-cache git bash gcompat
 
 SHELL ["/usr/bin/env", "bash", "-euxvc"]
-
-RUN apk add --no-cache git
 
 COPY --from=cmake /usr/local /usr/local
 
