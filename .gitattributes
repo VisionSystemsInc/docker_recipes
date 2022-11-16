@@ -1,2 +1,2 @@
-get-pipenv eol=lf
+[0-9]* eol=lf
 tini eol=lf
