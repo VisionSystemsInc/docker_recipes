@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+if [ -z "${VSI_COMMON_DIR+set}" ]; then
+  VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"
+fi
+
+source "${VSI_COMMON_DIR}/tests/testlib.bsh"
+source "${VSI_COMMON_DIR}/tests/test_utils.bsh"
+
+begin_test "Git LFS"
+(
+  setup_test
+
+  # Check that git-lfs is "installed"
+  docker run --rm vsiri/test_recipe:test_git-lfs
+  # assert_str_eq "$(docker run --rm vsiri/test_recipe:test_git-lfs bash -c 'git config --system filter.lfs.process')" "git-lfs filter-process"
+)
+end_test

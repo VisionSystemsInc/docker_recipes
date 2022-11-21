@@ -38,3 +38,8 @@ services:
       context: .
       dockerfile: test_rocky.Dockerfile
     image: vsiri/test_recipe:test_rocky
+  test_cuda:
+    build:
+      context: .
+      dockerfile: test_cuda.Dockerfile
+    image: vsiri/test_recipe:test_cuda
