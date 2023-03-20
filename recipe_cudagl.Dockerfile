@@ -128,7 +128,7 @@ ONBUILD RUN case "${CUDA_RECIPE_TARGET}" in *devel*) \
 
 ONBUILD ARG LIBGLVND_VERSION=v1.2.0
 
-ONBUILD COPY <<EOF /usr/local/share/just/info/cuda/00_cuda_common
+ONBUILD COPY <<EOF /usr/local/share/just/info/cuda/00_cudagl_common
 : \${CUDA_RECIPE_TARGET:=${CUDA_RECIPE_TARGET}}
 : \${LIBGLVND_VERSION:=${LIBGLVND_VERSION}}
 EOF
