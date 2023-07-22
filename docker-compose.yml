@@ -118,7 +118,6 @@ services:
 
   proj-data:
     build:
-    build:
       context: .
       dockerfile: recipe_proj-data.Dockerfile
       # args:
