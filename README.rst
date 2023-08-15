@@ -256,7 +256,7 @@ git-lfs gives git the ability to handle large files gracefully.
    COPY --from=git-lfs /usr/local /usr/local
    ...
    # Only needs to be run once for all recipes
-   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+   RUN shopt -s nullglob; for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
 
 CMake
 -----
@@ -309,7 +309,7 @@ A script called ``fake_package`` is added to the pipenv virtualenv, this script 
    COPY --from=pipenv /usr/local /usr/local
    ...
    # Only needs to be run once for all recipes
-   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+   RUN shopt -s nullglob; for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
 
 Rocky Repos
 -----------
@@ -333,7 +333,7 @@ This recipe is a little different from other recipes in that it's just a script 
    FROM redhat/ubi8
    COPY --from=rocky /usr/local /usr/local
    # Only needs to be run once for all recipes
-   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+   RUN shopt -s nullglob; for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
 
    RUN dnf install -y --enablerepo=rocky-appstream telnet # This line is just an example
    ...
@@ -405,7 +405,7 @@ The ``CUDA_VERSION``/``CUDNN_VERSION`` build args must be limited to the version
    FROM redhat/ubi8
    COPY --from=cuda /usr/local /usr/local
    # Only needs to be run once for all recipes
-   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+   RUN shopt -s nullglob; for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
    # Required for this recipe
    ENV NVIDIA_VISIBLE_DEVICES=all
    # NVIDIA_DRIVER_CAPABILITIES is optional, but not setting it results in compute,utility
@@ -445,7 +445,7 @@ You will need to set the environment variable ``NVIDIA_DRIVER_CAPABILITIES`` to 
    FROM redhat/ubi8
    COPY --from=cudagl /usr/local /usr/local
    # Only needs to be run once for all recipes
-   RUN for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+   RUN shopt -s nullglob; for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
 
    ENV NVIDIA_DRIVER_CAPABILITIES=graphics,compute,utility
    ...
@@ -543,4 +543,13 @@ To define the "build recipes" target, add this to your ``Justfile``
 
 And add ``justify build recipes`` to any Justfile target that is responsible for building docker images.
 
+Testing locally
+===============
 
+To run recipe tests locally, run:
+
+.. code-block:: bash
+
+   just build recipes --builder=default      # --builder is usually not needed
+   just build recipe-tests --builder=default # --builder is usually not needed
+   just test recipe

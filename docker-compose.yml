@@ -99,15 +99,6 @@ services:
       #   ONETRUEAWK_VERSION: "${ONETRUEAWK_VERSION}"
     image: vsiri/recipe:onetrueawk
 
-  ### GDAL - Deprecated ###
-  gdal:
-    build:
-      context: .
-      dockerfile: recipe_gdal.Dockerfile
-      # args:
-      #   GDAL_VERSION: "${GDAL_VERSION}"
-    image: vsiri/recipe:gdal
-
   conda-python:
     build:
       context: .

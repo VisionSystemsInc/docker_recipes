@@ -1,33 +1,58 @@
 #!/usr/bin/env bash
 
-os_version="${OS_VERSION-$(source /etc/os-release; echo "${VERSION_ID}")}"
+function install_rocky_repo()
+{
+  os_version="${OS_VERSION-$(source /etc/os-release; echo "${VERSION_ID}")}"
 
-# Alternative: If using the direct url gets slow, use the mirror list:
-# https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&repo=rocky-AppStream-${os_version}
+  # Alternative: If using the direct url gets slow, use the mirror list:
+  # https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&repo=rocky-AppStream-${os_version}
 
-versions="$(curl -fsSL https://dl.rockylinux.org/pub/rocky/)"
-pattern='href="'"${os_version}"'/"'
+  versions="$(curl -fsSL https://dl.rockylinux.org/pub/rocky/)"
+  pattern='href="'"${os_version}"'/"'
 
-if [[ ${versions,,} = *${pattern}* ]]; then
-  base_url="https://dl.rockylinux.org/pub/rocky/${os_version}"
+  if [[ ${versions,,} = *${pattern}* ]]; then
+    base_url="https://dl.rockylinux.org/pub/rocky/${os_version}"
+  else
+    base_url="https://dl.rockylinux.org/vault/rocky/${os_version}"
+  fi
+
+  # Alternative idea: If this code breaks, use ${base_url}/rocky/fullfilelist
+  r_data="$(curl -fsSL "${base_url}/BaseOS/x86_64/os/Packages/r/" | sed -nE 's|.*href="([^"]*)".*|\1|p')"
+  gpg_keys=($(echo "${r_data}" | grep ^rocky-gpg-keys-)) # noquotes
+  repos=($(echo "${r_data}" | grep ^rocky-repos-)) # noquotes
+
+  gpg_url="${base_url}/BaseOS/x86_64/os/Packages/r/${gpg_keys[-1]}"
+  repo_url="${base_url}/BaseOS/x86_64/os/Packages/r/${repos[-1]}"
+
+  # Install packages
+  dnf install -y "${gpg_url}"
+  # Repo package has a rocky system package as a requirement, which we don't want
+  rpm -i --nodeps "${repo_url}"
+
+  # Disable all rocky packages by default, add rocky- to their name, and make the
+  # cost 2000 so redhat is preferred by default
+  sed -Ei 's|enabled=1|enabled=0|;
+          s|^\[(.*)|[rocky-\1\ncost=2000|' /etc/yum.repos.d/[rR]ocky*
+}
+
+if [ -n "${BASH_SOURCE+set}" ]; then
+  if [ "${BASH_SOURCE[0]}" = "${0}" ] || [ "$(basename "${BASH_SOURCE[0]}")" = "${0}" ]; then
+    set -eu
+    install_rocky_repo ${@+"${@}"}
+    # Self delete this file, so that rocky doesn't try to get installed twice if
+    # /usr/local/share/just/container_build_patch/* is called twice
+    exec bash -c "rm '${BASH_SOURCE[0]}'"
+  fi
 else
-  base_url="https://dl.rockylinux.org/vault/rocky/${os_version}"
+  case "${0}" in
+    *30_get-pipenv) # Ran
+      set -eu
+      install_rocky_repo ${@+"${@}"}
+      # sh doesn't have BASH_SOURCE or exact equivalent, this is closest, unless
+      # they are sourcing it, then bad things can happen, hence the guards
+      exec bash -c "rm '${0}'"
+      ;;
+    *sh) # Sourced for sh/dash/etc...
+      ;;
+  esac
 fi
-
-# Alternative idea: If this code breaks, use ${base_url}/rocky/fullfilelist
-r_data="$(curl -fsSL "${base_url}/BaseOS/x86_64/os/Packages/r/" | sed -nE 's|.*href="([^"]*)".*|\1|p')"
-gpg_keys=($(echo "${r_data}" | grep ^rocky-gpg-keys-)) # noquotes
-repos=($(echo "${r_data}" | grep ^rocky-repos-)) # noquotes
-
-gpg_url="${base_url}/BaseOS/x86_64/os/Packages/r/${gpg_keys[-1]}"
-repo_url="${base_url}/BaseOS/x86_64/os/Packages/r/${repos[-1]}"
-
-# Install packages
-dnf install -y "${gpg_url}"
-# Repo package has a rocky system package as a requirement, which we don't want
-rpm -i --nodeps "${repo_url}"
-
-# Disable all rocky packages by default, add rocky- to their name, and make the
-# cost 2000 so redhat is preferred by default
-sed -Ei 's|enabled=1|enabled=0|;
-         s|^\[(.*)|[rocky-\1\ncost=2000|' /etc/yum.repos.d/[rR]ocky*

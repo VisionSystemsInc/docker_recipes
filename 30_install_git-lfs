@@ -1,3 +1,18 @@
 #!/usr/bin/env sh
 
+set -eu
+
 git lfs install --system
+
+# This script is so simple, there's no reason to support sourcing this file
+if [ -n "${BASH_SOURCE+set}" ]; then
+  if [[ ${BASH_SOURCE[0]} = *30_install_git-lfs ]]; then # CYA
+    exec bash -c "rm '${BASH_SOURCE[0]}'"
+  fi
+else
+  case "${0}" in
+    *30_install_git-lfs) # CYA
+      exec sh -c "rm '${0}'"
+      ;;
+  esac
+fi
