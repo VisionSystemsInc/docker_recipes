@@ -26,7 +26,7 @@ commands:
             cd "${VSI_COMMON_DIR}/docker/recipes"
             git checkout "${CIRCLE_SHA1}"
 
-  # run "ci_load" command on user-selected docker-compose file
+  # run "ci_load" command on user-selected docker compose file
   # - cache is updated only from master branch of main repo (not forks)
   # - assumes python3 with pyyaml is already available
   # - assumes docker login was successful
@@ -36,7 +36,7 @@ commands:
   #     $CI_RECIPE_REPO - dockerhub repo for recipe cache (default "vsiri/ci_cache_recipes")
   #     $CI_RECIPE_VERSION - version string for recipe cache (default "")
   #     $JUST_CI_BRANCH_PUSH - branch (besides master) for dockerhub push
-  # - each service identified in the docker-compose file will be separately
+  # - each service identified in the docker compose file will be separately
   #   built via "${VSI_COMMON_DIR}/linux/ci_load.py"
   # - As we are building recipes themselves, we ignore the vsiri/recipe
   #   dockerhub repo by setting "--recipe-repo" to a dummy variable.
@@ -48,7 +48,7 @@ commands:
         type: string
         default: Build recipes (ci_load)
       compose_file:
-        description: docker-compose file
+        description: docker compose file
         type: string
     steps:
       - run:
@@ -71,7 +71,7 @@ commands:
             : ${CI_RECIPE_REPO="vsiri/ci_cache_recipes"}
             : ${CI_RECIPE_VERSION=}
             COMPOSE_FILE="<< parameters.compose_file >>"
-            SERVICES=( $(docker-compose -f "${COMPOSE_FILE}" config --services | grep -v cuda) ) # noquotes
+            SERVICES=( $(docker compose -f "${COMPOSE_FILE}" config --services | grep -v cuda) ) # noquotes
 
             # ci_load for each service
             for SERVICE in "${SERVICES[@]}"; do

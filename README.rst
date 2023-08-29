@@ -34,7 +34,7 @@ Many recipes have build arguments. This allows you to control what versions (usu
 
 * When using ``docker``, this is done by ``docker build --build-arg key=val ...``.
 
-* With ``docker-compose`` this can be done by ``docker-compose build --build-arg key=val ...``.
+* With ``docker compose`` this can be done by ``docker compose build --build-arg key=val ...``.
 
   * But it is usually better to add it to the ``docker-compose.yml`` file.
 
@@ -208,11 +208,11 @@ Docker compose
 
 =========== =======
 Name        docker compose
-Build Args  ``DOCKER_COMPOSE_VERSION`` - Version of docker-compose to download
+Build Args  ``DOCKER_COMPOSE_VERSION`` - Version of docker compose to download
 Output dir  ``/usr/local``
 =========== =======
 
-Tool for running simple docker orchestratioon, giving an organized way to run one or more dockers.
+Tool for running simple docker orchestration, giving an organized way to run one or more dockers.
 
 .. rubric:: Example
 
@@ -223,7 +223,7 @@ Tool for running simple docker orchestratioon, giving an organized way to run on
    RUN apt-get update; apt-get install -y vim  # This line is just an example
    COPY --from=docker-compose /usr/local /usr/local
 
-This recipe will work glibc and musl for verion 2.0.0 and newer. Version 1 would need to use docker-compose provided images for alpine: ``docker/compose:alpine-${DOCKER_COMPOSE_VERSION}``
+This recipe will work glibc and musl for docker compose version 2.0.0 and newer. Version 1 would need to use docker compose provided images for alpine: ``docker/compose:alpine-${DOCKER_COMPOSE_VERSION}``
 
 .. rubric:: Example
 
