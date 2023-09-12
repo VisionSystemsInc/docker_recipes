@@ -34,9 +34,9 @@ Many recipes have build arguments. This allows you to control what versions (usu
 
 * When using ``docker``, this is done by ``docker build --build-arg key=val ...``.
 
-* With ``docker compose`` this can be done by ``docker compose build --build-arg key=val ...``.
+* With ``docker compose`` this can be done by ``docker buildx bake --set *.args.key=val ...``.
 
-  * But it is usually better to add it to the ``docker-compose.yml`` file.
+  * But it is better to add it to the ``docker-compose.yml`` file instead.
 
 * What you cannot do is add a build ``ARG`` to the global section of the ``Dockerfile`` and expect that default value to affect the recipe, that is not how they work.
 
