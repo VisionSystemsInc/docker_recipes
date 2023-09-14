@@ -12,7 +12,7 @@ orbs:
 commands:
 
   # checkout docker_recipes within vsi_common:
-  # -- checkout vsi_common master, then navigate to docker_recipes submodule
+  # -- checkout vsi_common main, then navigate to docker_recipes submodule
   #    and checkout current docker_recipes SHA
   # -- requires $VSI_COMMON_DIR to be defined
   # -- allows use of "just" targets as needed (such as "just test recipe")
@@ -27,15 +27,15 @@ commands:
             git checkout "${CIRCLE_SHA1}"
 
   # run "ci_load" command on user-selected docker compose file
-  # - cache is updated only from master branch of main repo (not forks)
+  # - cache is updated only from main branch of main repo (not forks)
   # - assumes python3 with pyyaml is already available
   # - assumes docker login was successful
   # - required environment variables:
   #     $VSI_COMMON_DIR - location of vsi_common repo
-  # - optional enviromment variables
+  # - optional environment variables
   #     $CI_RECIPE_REPO - dockerhub repo for recipe cache (default "vsiri/ci_cache_recipes")
   #     $CI_RECIPE_VERSION - version string for recipe cache (default "")
-  #     $JUST_CI_BRANCH_PUSH - branch (besides master) for dockerhub push
+  #     $JUST_CI_BRANCH_PUSH - branch (besides main) for dockerhub push
   # - each service identified in the docker compose file will be separately
   #   built via "${VSI_COMMON_DIR}/linux/ci_load.py"
   # - As we are building recipes themselves, we ignore the vsiri/recipe
@@ -57,9 +57,9 @@ commands:
 
             set -x
 
-            # push from main repo, master or ${JUST_CI_BRANCH_PUSH} branches
+            # push from main repo, main or ${JUST_CI_BRANCH_PUSH} branches
             if [[ "${CIRCLE_PROJECT_USERNAME,,}" == "visionsystemsinc" && \
-                  ("${CIRCLE_BRANCH}" == "master" || \
+                  ("${CIRCLE_BRANCH}" == "main" || \
                    "${CIRCLE_BRANCH}" == "${JUST_CI_BRANCH_PUSH-}") ]]
             then
               CI_PUSH_OPT="--push"

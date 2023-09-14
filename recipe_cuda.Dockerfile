@@ -6,16 +6,16 @@ RUN apk add --no-cache bash gettext
 SHELL ["/usr/bin/env", "bash", "-euxvc"]
 
 # This ADD can be commented out to skip the test
-ADD https://gitlab.com/api/v4/projects/2330984/repository/branches/master /cuda-master.json
+ADD https://gitlab.com/api/v4/projects/2330984/repository/branches/master /cuda-main.json
 
-ARG CUDA_REPO_REF=a07cb97de5798b75147cbe1158c6caadffee2892
-RUN if [ -f "/cuda-master.json" ]; then \
-      new_master_ref="$(sed 's|.*"id":"\([^"]*\).*|\1|' /cuda-master.json)"; \
-      rm /cuda-master.json; \
-      if [ "${new_master_ref}" != "${CUDA_REPO_REF}" ]; then \
+ARG CUDA_REPO_REF=81682547e12c8807ebc5fa61ff4576510925a324
+RUN if [ -f "/cuda-main.json" ]; then \
+      new_main_ref="$(sed 's|.*"id":"\([^"]*\).*|\1|' /cuda-main.json)"; \
+      rm /cuda-main.json; \
+      if [ "${new_main_ref}" != "${CUDA_REPO_REF}" ]; then \
         mkdir -p /usr/local/share/just/user_run_patch/; \
         echo "echo 'Cuda recipe is out of date.' >&2" > /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
-        echo "echo 'Consider submitting a PR to this repo to update CUDA_REPO_REF(${CUDA_REPO_REF}) to ${new_master_ref}' >&2" >> /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
+        echo "echo 'Consider submitting a PR to this repo to update CUDA_REPO_REF(${CUDA_REPO_REF}) to ${new_main_ref}' >&2" >> /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
         echo 'echo "Or delete $0"' >> /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
         chmod 755 /usr/local/share/just/user_run_patch/00_cuda_outdated_warning; \
       fi; \
