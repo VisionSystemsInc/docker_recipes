@@ -6,7 +6,7 @@ RUN apk add --no-cache bash gettext
 SHELL ["/usr/bin/env", "bash", "-euxvc"]
 
 # This ADD can be commented out to skip the test
-ADD https://gitlab.com/api/v4/projects/2330984/repository/branches/master /cuda-main.json
+# ADD https://gitlab.com/api/v4/projects/2330984/repository/branches/master /cuda-main.json
 
 ARG CUDA_REPO_REF=81682547e12c8807ebc5fa61ff4576510925a324
 RUN if [ -f "/cuda-main.json" ]; then \
