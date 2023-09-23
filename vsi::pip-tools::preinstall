@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+#*# vsi::pip-tools::preinstall
+
+#**
+# ============
+# New J.U.S.T.
+# ============
+#
+# .. default-domain:: bash
+#
+# .. file:: vsi::pip-tools::preinstall
+#
+# Installs pip-tools and optionally other packages that may be needed to before running pip-sync
+#
+# :Arguments: * ``$1`` - Location of requirements.txt file
+#             * [``$2``...] - Packages to preinstall (E.g. ``numpy`` or ``torch``)
+#**
+
+requirements_file=${1}
+shift 1
+
+# pypa/pip#8210 support. Pip install -c does not support editables or packages with extras
+# Hopefully there is never a reason to pre-install either of those
+grep -v '^-e\|\[' "${requirements_file}" > /tmp/requirements.8210; \
+
+# Install pip-tools, the || is to handle the initial bootstrap case
+if ! pip install -c /tmp/requirements.8210 pip-tools; then
+  echo "pip-tools failed to install with constraints. This is highly abnormal unless you just started a new project" >&2
+  pip install pip-tools
+fi
+
+if (( $# )); then
+  # Pre-install select packages
+  pip install -c /tmp/requirements.8210 "${@}"
+fi

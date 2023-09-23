@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+
+set -eu
+
+# Useful for creating a fake editable package for when you plan on mounting it
+# in at runtime
+# $1 - name
+# $2 - subdir
+
+mkdir -p "${2-${1}}"
+touch "${2-${1}}/__init__.py"
+if [ ! -e "setup.py" ]; then
+  echo "from distutils.core import setup" > setup.py
+  echo "setup(name='${1}', packages=['${2-${1}}'], description='Project')" >> setup.py
+fi
