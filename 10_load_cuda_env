@@ -23,7 +23,7 @@ fi
 
 unset file
 
-if [ "${VSI_COMMON_SET_FLAG_A-}" = "1" ]; then
-  set +A
+if [ "${VSI_COMMON_SET_FLAG_A-}" != "1" ]; then
+  set +a
   unset VSI_COMMON_SET_FLAG_A
 fi
