@@ -9,7 +9,7 @@ RUN apt-get update -y; \
 
 ONBUILD ARG USE_MINICONDA=0
 ONBUILD RUN if [ "${USE_MINICONDA}" = "1" ]; then \
-              curl -fsSLo / mini.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
+              curl -fsSLo /mini.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
             else \
               curl -fsSLo /mini.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh; \
             fi; \

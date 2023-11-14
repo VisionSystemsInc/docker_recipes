@@ -106,7 +106,7 @@ services:
       # args:
       #   PYTHON_VERSION: "${PYTHON_VERSION}"
       #   PYTHON_INSTALL_DIR: "${PYTHON_INSTALL_DIR}"
-      #   USE_MINIFORGE: ${USE_MINIFORGE}"
+      #   USE_MINICONDA: ${USE_MINICONDA}"
     image: vsiri/recipe:conda-python
 
   proj-data:
