@@ -487,13 +487,15 @@ Conda's python
 
 ============ ============
 Name         Python
+Build Args   ``USE_MINICONDA`` - Set to ``1`` to use miniconda instead of miniforge
 Build Args   ``PYTHON_VERSION`` - Version of python to download
+Build Args   ``PYTHON_INSTALL_DIR`` - Location where python will be installed. While you can copy this directory to another docker image, care should be taken as to not change the final absolute path, as python will not be happy about that (e.g. tk/tcl paths will be broken).
 Output dir   ``/usr/local``
 ============ ============
 
-This is not a recipe for installing anaconda or miniconda, rather it internally uses miniconda to install a "not" conda python. This python will still bare the markings of Anaconda, but does not have all the conda modifications, and works as a normal and extremely portable version of python for glibc linux.
+This is not a recipe for installing anaconda or miniforge, rather it internally uses miniforge to install a "not" conda python environment. This python will still bare the markings of Anaconda, but does not have all the conda modifications, and works as a normal and extremely portable version of python for glibc linux.
 
-See https://anaconda.org/anaconda/python/files for values of ``PYTHON_VERSION``
+See https://anaconda.org/conda-forge/python/files (for miniforge)/ https://anaconda.org/anaconda/python/files (for miniconda) for values of ``PYTHON_VERSION``
 
 This is the easiest way to install an arbitrary version of python on an arbitrary linux distro.
 
