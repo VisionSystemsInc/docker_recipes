@@ -2,7 +2,7 @@
 
 function install_rocky_repo()
 {
-  os_version="${OS_VERSION-$(source /etc/os-release; echo "${VERSION_ID}")}"
+  os_version="${OS_VERSION-$(source /etc/os-release; echo "${VERSION_ID%%.*}")}"
 
   # Alternative: If using the direct url gets slow, use the mirror list:
   # https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&repo=rocky-AppStream-${os_version}
