@@ -1,4 +1,4 @@
-==============NVIDIA_VISIBLE_DEVICES
+==============
 Docker recipes
 ==============
 
