@@ -21,6 +21,10 @@ function install_rocky_repo()
   gpg_url="${base_url}/BaseOS/x86_64/os/Packages/r/${gpg_keys[-1]}"
   repo_url="${base_url}/BaseOS/x86_64/os/Packages/r/${repos[-1]}"
 
+  # ensure rocky-offical GPG key is always available
+  # otherwise ``dnf install -y "${gpg_url}"`` might fail
+  rpm --import https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-rockyofficial
+
   # Install packages
   dnf install -y "${gpg_url}"
   # Repo package has a rocky system package as a requirement, which we don't want
