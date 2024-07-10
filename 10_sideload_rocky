@@ -2,17 +2,14 @@
 
 function install_rocky_repo()
 {
-  os_version="${OS_VERSION-$(source /etc/os-release; echo "${VERSION_ID}")}"
+  os_version="${OS_VERSION-$(source /etc/os-release; echo "${VERSION_ID%%.*}")}"
 
   # Alternative: If using the direct url gets slow, use the mirror list:
   # https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&repo=rocky-AppStream-${os_version}
 
-  versions="$(curl -fsSL https://dl.rockylinux.org/pub/rocky/)"
-  pattern='href="'"${os_version}"'/"'
-
-  if [[ ${versions,,} = *${pattern}* ]]; then
-    base_url="https://dl.rockylinux.org/pub/rocky/${os_version}"
-  else
+  # test direct url, otherwise use vault
+  base_url="https://dl.rockylinux.org/pub/rocky/${os_version}"
+  if ! curl --output /dev/null --silent --head --fail "${base_url}/BaseOS/"; then
     base_url="https://dl.rockylinux.org/vault/rocky/${os_version}"
   fi
 
@@ -23,6 +20,10 @@ function install_rocky_repo()
 
   gpg_url="${base_url}/BaseOS/x86_64/os/Packages/r/${gpg_keys[-1]}"
   repo_url="${base_url}/BaseOS/x86_64/os/Packages/r/${repos[-1]}"
+
+  # ensure rocky-offical GPG key is always available
+  # otherwise ``dnf install -y "${gpg_url}"`` might fail
+  rpm --import https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-rockyofficial
 
   # Install packages
   dnf install -y "${gpg_url}"

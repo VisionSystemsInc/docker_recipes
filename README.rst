@@ -347,8 +347,8 @@ Build Args                   ``CUDA_REPO_REF`` - The ref of the CUDA container r
 Build Args                   ``CUDA_VERSION`` - Version of CUDA to install (e.g. ``10.2`` or ``11.0.7``)
 Build Args                   ``CUDNN_VERSION`` - Optional: Version of CUDNN to install. (e.g. ``7`` or ``8``)
 Build Args                   ``CUDA_RECIPE_TARGET`` - Optional: Specifies how much of the CUDA stack to install (explained below). Default: ``runtime``
-Environment Variable         ``NVIDIA_VISIBLE_DEVICES`` - Required: Sets which nvidia devices are visible in the container. Default: ``all``
-Environment Variable         ``NVIDIA_DRIVER_CAPABILITIES`` - Optional: Which device capabilities are enabled in the container. Default: `compute,utility`, which is also the value the runtime assumes if this environment variable is unset.
+Environment Variable         ``NVIDIA_VISIBLE_DEVICES`` - Required: Sets which nvidia devices are visible in the container. Set to: ``all``
+Environment Variable         ``NVIDIA_DRIVER_CAPABILITIES`` - Optional: Which device capabilities are enabled in the container. Default: ``compute,utility``, which, if unset, is the default assumed by the runtime.
 Environment Variable         ``NVIDIA_REQUIRE_*`` - Optional: Sets test conditions to prevent running on incompatible systems
 Output dir                   ``/usr/local``
 Minimum Dockerfile frontend: docker/dockerfile:1.3-labs or docker/dockerfile:1.4
@@ -487,13 +487,15 @@ Conda's python
 
 ============ ============
 Name         Python
+Build Args   ``USE_MINICONDA`` - Set to ``1`` to use miniconda instead of miniforge
 Build Args   ``PYTHON_VERSION`` - Version of python to download
+Build Args   ``PYTHON_INSTALL_DIR`` - Location where python will be installed. While you can copy this directory to another docker image, care should be taken as to not change the final absolute path, as python will not be happy about that (e.g. tk/tcl paths will be broken).
 Output dir   ``/usr/local``
 ============ ============
 
-This is not a recipe for installing anaconda or miniconda, rather it internally uses miniconda to install a "not" conda python. This python will still bare the markings of Anaconda, but does not have all the conda modifications, and works as a normal and extremely portable version of python for glibc linux.
+This is not a recipe for installing anaconda or miniforge, rather it internally uses miniforge to install a "not" conda python environment. This python will still bare the markings of Anaconda, but does not have all the conda modifications, and works as a normal and extremely portable version of python for glibc linux.
 
-See https://anaconda.org/anaconda/python/files for values of ``PYTHON_VERSION``
+See https://anaconda.org/conda-forge/python/files (for miniforge)/ https://anaconda.org/anaconda/python/files (for miniconda) for values of ``PYTHON_VERSION``
 
 This is the easiest way to install an arbitrary version of python on an arbitrary linux distro.
 
