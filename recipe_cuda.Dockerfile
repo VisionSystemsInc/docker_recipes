@@ -58,7 +58,7 @@ ONBUILD RUN set -o pipefail; \
             }; \
             # Env Vars
             # Currently all the fedoras use the same vars, so the first file found is good enough
-            for rhel in ubi10 ubi9 ubi8 ubi7 rockylinux10 rockylinux9 rockylinux8 centos7; do \
+            for rhel in ubi10 ubi9 ubi8 rockylinux10 rockylinux9 rockylinux8; do \
               if [ -d "/cuda/dist/${CUDA_VERSION}/${rhel}" ]; then \
                 parse_os "/cuda/dist/${CUDA_VERSION}/${rhel}" rhel; \
                 break; \

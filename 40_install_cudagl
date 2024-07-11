@@ -24,7 +24,7 @@ function install_cudagl_packages()
       ;;
   esac
 
-  if command -v yum 2>&1 > /dev/null; then
+  if command -v dnf 2>&1 > /dev/null; then
     source /etc/os-release
     rhel_major_version=${VERSION_ID%%.*}
 
@@ -79,10 +79,7 @@ function install_cudagl_packages()
     ###########
 
     if [ "${#packages[@]}" -ne "0" ]; then
-      if [ "${rhel_major_version}" = "7" ]; then
-        ulimit -n 1048576 # https://github.com/containerd/containerd/discussions/6780
-      fi
-      yum install --setopt=obsoletes=0 -y "${packages[@]}"
+      dnf install --setopt=obsoletes=0 -y "${packages[@]}"
       rm -rf /var/cache/yum/*
     fi
 
