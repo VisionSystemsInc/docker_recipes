@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+
+if [[ ${-} != *i* ]]; then
+  source_once &> /dev/null && return 0
+fi
+
+#*# pip-8210
+
+#**
+# .. file:: pip-8210
+#
+# This script allows us to install a package outside of pip-tools. In order to accomplish correctly, we use the ``requirements.txt`` file as a constraint files,and this and handle corner cases like pip issue 8210.
+#
+# It add the -c constraints to ``pip install``, ``pip download``, and ``pip wheel``
+#
+# You should activate your virtualenv before calling this; it will use the ``pip`` on the path.
+#
+# :Arguments: * [--if-not-found <executable name>] - Only runs the ``pip`` command if a specified executable is not found.
+#             * ``$1``... - Args to pass to ``pip``. E.g. ``install pip-tools``
+#
+# .. note::
+#
+#    If the first package is ``pip-tools``, it will install pip-tools even if it is not in ``requirements.txt`` (necessary to bootstrap new ``requirements.txt`` files). If additional arguments were added in this corner case, the return value will be non-zero since not all the packages got installed, but ``pip-tools`` did get installed.
+#
+# .. seealso::
+#
+#    https://github.com/pypa/pip/issues/8210
+#
+# .. function:: pip-8210
+#
+# Same syntax as :file:`pip-8210`
+#**
+
+if [ -z "${VSI_COMMON_DIR+set}" ]; then
+  VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.."; pwd)"
+fi
+
+if [ -f "${VSI_COMMON_DIR}/linux/command_tools.bsh" ]; then
+  source "${VSI_COMMON_DIR}/linux/command_tools.bsh"
+else
+  # function parse-generic(){ :;}
+  function parse-generic()
+  {
+    command_args=()
+    subcommand_args=()
+
+    while (( ${#} )); do
+      case "${1}" in
+        -*)
+          # Anything that takes one arguments from the array arguments_with_value
+          for arg in ${arguments_with_value[@]+"${arguments_with_value[@]}"}; do
+            # No need to check "${arg}=", that will be handled as taking "zero argument" below
+            if [ "${1}" = "${arg}" ]; then
+              command_args+=("${1}" "${2}")
+              shift 2
+              # Break out of the case
+              continue 2
+            fi
+          done
+          # Everything takes zero arguments, so no need to enumerate examples like: -d --debug -h --help
+          command_args+=("${1}")
+          shift 1
+          ;;
+        *)
+          subcommand="${1}"
+          shift 1
+          subcommand_args=(${@+"${@}"})
+          break
+          ;;
+      esac
+    done
+  }
+fi
+
+function parse_pip()
+{
+  local arguments_with_value=(--python --log --keyring-provider --proxy
+                              --retries --timeout --exists-action --trusted-host
+                              --cert --client-cert --cache-dir --use-feature --use-deprecated)
+  parse-generic ${@+"${@}"}
+}
+
+function pip-8210()
+{
+  # local args_parsed=0
+  # local command_checks=()
+  # parse_args args_parsed --if-not-found +command_checks:\
+  #                        -- ${@+"${@}"}
+  # shift "${args_parsed}"
+
+  # local command_check
+  # for command_check in ${command_checks[@]+"${command_checks[@]}"}; do
+  #   if command -v "${command_check}" &> /dev/null; then
+  #     return 0
+  #   fi
+  # done
+
+  # Don't use parse_args to decrease dependencies
+  while (( $# )); do
+    case "${1}" in
+      --if-not-found)
+        if command -v "${2}" &> /dev/null; then
+          return 0
+        fi
+        shift 2
+        ;;
+      *)
+        break
+    esac
+  done
+
+  local cmd command_args subcommand subcommand_args
+  parse_pip ${@+"${@}"}
+
+  case "${subcommand}" in
+    install|download|wheel)
+      local temp_8210=$(mktemp)
+
+      # Only remove editables, since extras are taken care right after `pip-compile`
+      grep -v '^-e ' /src/requirements.txt > "${temp_8210}"
+      # Todo: unhardcode /src/requirements.txt somehow. For Wriva this is perfect though.
+
+      pip ${command_args[@]+"${command_args[@]}"} "${subcommand}" -c "${temp_8210}" ${subcommand_args[@]+"${subcommand_args[@]}"} || (
+        # If pip-tools it the first argument, force it to be installed for bootstrap reasons
+        [ "${subcommand}" = "install" -a "${subcommand_args[0]}" = "pip-tools" ] && \
+        pip install pip-tools && \
+        [ "${#}" = "1" ] # Add this check last, so pip-tools gets installed, but return value is false
+      ) || rv=$?
+
+      # Cleanup
+      rm "${temp_8210}"
+      return "${rv-0}"
+      ;;
+    *)
+      pip ${@+"${@}"}
+      ;;
+  esac
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ] || [ "$(basename "${BASH_SOURCE[0]}")" = "${0}" ]; then
+  set -eu
+  pip-8210 "${@}"
+fi
