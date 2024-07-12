@@ -117,11 +117,10 @@ function pip-8210()
       local temp_8210=$(mktemp)
 
       # Only remove editables, since extras are taken care right after `pip-compile`
-      grep -v '^-e ' /src/requirements.txt > "${temp_8210}"
-      # Todo: unhardcode /src/requirements.txt somehow. For Wriva this is perfect though.
+      grep -v '^-e ' "${PIP_REQUIREMENTS-/src/requirements.txt}" > "${temp_8210}"
 
       pip ${command_args[@]+"${command_args[@]}"} "${subcommand}" -c "${temp_8210}" ${subcommand_args[@]+"${subcommand_args[@]}"} || (
-        # If pip-tools it the first argument, force it to be installed for bootstrap reasons
+        # If pip-tools is the first argument and it failed, force it to be installed for bootstrap reasons
         [ "${subcommand}" = "install" -a "${subcommand_args[0]}" = "pip-tools" ] && \
         pip install pip-tools && \
         [ "${#}" = "1" ] # Add this check last, so pip-tools gets installed, but return value is false

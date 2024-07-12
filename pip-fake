@@ -4,12 +4,16 @@ set -eu
 
 # Useful for creating a fake editable package for when you plan on mounting it
 # in at runtime
-# $1 - name
-# $2 - subdir
+# $1 - root package directory (where setup.py goes)
+# $2 - name
+# [$3] - subdir
 
-mkdir -p "${2-${1}}"
-touch "${2-${1}}/__init__.py"
+subdir="${3-${2}}"
+mkdir -p "${1}/${subdir}"
+cd "${1}"
+
+touch "${subdir}/__init__.py"
 if [ ! -e "setup.py" ]; then
   echo "from distutils.core import setup" > setup.py
-  echo "setup(name='${1}', packages=['${2-${1}}'], description='Project')" >> setup.py
+  echo "setup(name='${2}', packages=['${subdir}'], description='Project')" >> setup.py
 fi
