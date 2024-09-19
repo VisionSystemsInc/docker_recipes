@@ -21,24 +21,6 @@ make -j"$(nproc)" install-strip
 find /usr/local/lib -type f -name 'lib*.la' -delete
 EOF
 
-FROM centos:7 as centos7
-
-SHELL ["/usr/bin/env", "bash", "-euxvc"]
-
-RUN if [ "$(ulimit -n)" -gt "1048576" ]; then \
-      # https://github.com/containerd/containerd/discussions/6780
-      ulimit -n 1048576; \
-    fi; \
-    yum install -y install git make libtool gcc pkgconfig python2 libXext-devel \
-                   libX11-devel xorg-x11-proto-devel \
-                   glibc-devel.x86_64 libgcc.x86_64 libXext-devel.x86_64 libX11-devel.x86_64 \
-                   glibc-devel.i686 libgcc.i686 libXext-devel.i686 libX11-devel.i686; \
-    rm -rf /var/cache/yum/*
-
-ARG LIBGLVND_VERSION=v1.2.0
-COPY --from=scripts /setup /setup
-RUN /setup
-
 FROM redhat/ubi8 as ubi8
 
 SHELL ["/usr/bin/env", "bash", "-euxvc"]
@@ -46,7 +28,7 @@ SHELL ["/usr/bin/env", "bash", "-euxvc"]
 ADD --chmod=755 10_sideload_rocky /usr/local/share/just/scripts/
 
 RUN /usr/local/share/just/scripts/10_sideload_rocky; \
-    yum install -y --enablerepo=rocky-appstream,rocky-powertools \
+    dnf install -y --enablerepo=rocky-appstream,rocky-powertools \
                    git make libtool gcc pkgconfig python2 libXext-devel \
                    libX11-devel xorg-x11-proto-devel\
                    glibc-devel.i686 libgcc.i686 libXext-devel.i686 libX11-devel.i686; \
@@ -63,7 +45,7 @@ RUN /setup
 # ADD 10_sideload_rocky /
 
 # RUN bash /10_sideload_rocky; \
-#     yum install -y --enablerepo=rocky-appstream,rocky-crb \
+#     dnf install -y --enablerepo=rocky-appstream,rocky-crb \
 #                    git make libtool gcc pkgconfig libXext-devel \
 #                    libX11-devel xorg-x11-proto-devel\
 #                    glibc-devel.i686 libgcc.i686 libXext-devel.i686 libX11-devel.i686; \
@@ -77,8 +59,6 @@ FROM alpine:3.11.8
 
 SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
-COPY --from=centos7 /usr/local/lib  /usr/local/share/just/info/rhel7/lib
-COPY --from=centos7 /usr/local/lib64  /usr/local/share/just/info/rhel7/lib64
 COPY --from=ubi8 /usr/local/lib /usr/local/share/just/info/rhel8/lib
 COPY --from=ubi8 /usr/local/lib64 /usr/local/share/just/info/rhel8/lib64
 # COPY --from=ubi9 /usr/local/lib /usr/local/share/just/info/rhel8/lib
