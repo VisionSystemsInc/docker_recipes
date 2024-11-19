@@ -7,35 +7,22 @@ set -eu
 
 # $1 - Base directory of the python package (where setup.py goes)
 # $2 - Name of the python package
-# $3... - Optional module list of the python source code, defaults to same as $2
+# $3... - Optional module list of the python source code dir, defaults to same as $2
 
 # Make sure the directory exists and cd into it
 mkdir -p "${1}"
 cd "${1}"
 name=${2}
 
+# Keep the name around as one of the dirs to be created, if there are no others
 if [ "${#}" = "2" ]; then
   shift 1
 else
   shift 2
 fi
 
-if [ ! -e "setup.py" ]; then
-  (
-    echo "from distutils.core import setup"
-    echo "setup("
-    echo "  name='${name}',"
-    echo "  description='Project',"
-    echo "  packages=["
-    while (( ${#} )); do
-      echo "    '${1}',"
-      shift 1
-    done
-    echo "  ])"
-  ) > setup.py
-fi
-
-if [ ! -e "pyproject.toml" ]; then
+# Use Autodiscovery: https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#automatic-discovery
+if [ ! -e "setup.py" -a ! -e "pyproject.toml" ]; then
   (
     echo "[build-system]"
     echo "requires = [\"setuptools >= 61.0\"]"
@@ -43,15 +30,6 @@ if [ ! -e "pyproject.toml" ]; then
     echo "[project]"
     echo "version = \"0.0.1\""
     echo "name = \"${name}\""
-    echo "[tool.setuptools]"
-    echo -n "packages = ["
-    echo -n "\"${1}\""
-    shift 1
-    while (( ${#} )); do
-      echo -n ", \"${1}\""
-      shift 1
-    done
-    echo "]"
   ) > pyproject.toml
 fi
 
