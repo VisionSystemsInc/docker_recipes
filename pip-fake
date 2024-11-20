@@ -7,26 +7,23 @@ set -eu
 
 # $1 - Base directory of the python package (where setup.py goes)
 # $2 - Name of the python package
-# $3... - Optional module list of the python source code dir, defaults to same as $2
+# $3 - Optional python source code dir
 
 # Make sure the directory exists and cd into it
 mkdir -p "${1}"
 cd "${1}"
 name=${2}
 
-# Keep the name around as one of the dirs to be created, if there are no others
-if [ "${#}" = "2" ]; then
-  shift 1
-else
-  shift 2
-fi
-
 # Use Autodiscovery: https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#automatic-discovery
 if [ ! -e "setup.py" -a ! -e "pyproject.toml" ]; then
   (
     echo "[build-system]"
     echo "requires = [\"setuptools >= 61.0\"]"
-    echo "build-backend = 'setuptools.build_meta'"
+    echo "build-backend = \"setuptools.build_meta\""
+    if [ "${#}" -gt "2" ]; then
+      echo "[tool.setuptools]"
+      echo "package-dir = {\"\" = \"${1}\"}"
+    fi
     echo "[project]"
     echo "version = \"0.0.1\""
     echo "name = \"${name}\""
