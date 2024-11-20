@@ -7,31 +7,39 @@ set -eu
 
 # $1 - Base directory of the python package (where setup.py goes)
 # $2 - Name of the python package
-# $3 - Optional python source code dir
+# $3... - Optional module list of the python source code, defaults to same as $2
 
 # Make sure the directory exists and cd into it
 mkdir -p "${1}"
 cd "${1}"
 name=${2}
 
-# Use Autodiscovery: https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#automatic-discovery
-if [ ! -e "setup.py" -a ! -e "pyproject.toml" ]; then
-  (
-    echo "[build-system]"
-    echo "requires = [\"setuptools >= 61.0\"]"
-    echo "build-backend = \"setuptools.build_meta\""
-    if [ "${#}" -gt "2" ]; then
-      echo "[tool.setuptools]"
-      echo "package-dir = {\"\" = \"${1}\"}"
-    fi
-    echo "[project]"
-    echo "version = \"0.0.1\""
-    echo "name = \"${name}\""
-  ) > pyproject.toml
+if [ "${#}" = "2" ]; then
+  shift 1
+else
+  shift 2
 fi
 
-while (( ${#} )); do
-  mkdir -p "${1}"
-  touch "${1}/__init__.py"
-  shift 1
-done
+if [ ! -e "setup.py" ]; then
+  (
+    echo "from distutils.core import setup"
+    echo "setup("
+    echo "  name='${name}',"
+    echo "  description='Project',"
+    echo "  packages=["
+    while (( ${#} )); do
+      echo "    '${1}',"
+      mkdir -p "${1}"
+      touch "${1}/__init__.py"
+      shift 1
+    done
+    echo "  ])"
+  ) > setup.py
+else
+  while (( ${#} )); do
+    echo "    '${1}',"
+    mkdir -p "${1}"
+    touch "${1}/__init__.py"
+    shift 1
+  done
+fi
