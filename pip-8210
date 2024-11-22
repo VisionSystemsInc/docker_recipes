@@ -38,7 +38,7 @@ fi
 if [ -f "${VSI_COMMON_DIR}/linux/command_tools.bsh" ]; then
   source "${VSI_COMMON_DIR}/linux/command_tools.bsh"
 else
-  # function parse-generic(){ :;}
+  # Copy from command_tools.bsh for portability
   function parse-generic()
   {
     command_args=()
@@ -47,17 +47,13 @@ else
     while (( ${#} )); do
       case "${1}" in
         -*)
-          # Anything that takes one arguments from the array arguments_with_value
           for arg in ${arguments_with_value[@]+"${arguments_with_value[@]}"}; do
-            # No need to check "${arg}=", that will be handled as taking "zero argument" below
             if [ "${1}" = "${arg}" ]; then
               command_args+=("${1}" "${2}")
               shift 2
-              # Break out of the case
               continue 2
             fi
           done
-          # Everything takes zero arguments, so no need to enumerate examples like: -d --debug -h --help
           command_args+=("${1}")
           shift 1
           ;;
