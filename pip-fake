@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -eu
 
@@ -20,7 +20,7 @@ else
   shift 2
 fi
 
-if [ ! -e "setup.py" ]; then
+if [ ! -e "setup.py" -a ! -e "pyproject.toml" ]; then
   (
     echo "from distutils.core import setup"
     echo "setup("
@@ -29,17 +29,14 @@ if [ ! -e "setup.py" ]; then
     echo "  packages=["
     while (( ${#} )); do
       echo "    '${1}',"
-      mkdir -p "${1}"
-      touch "${1}/__init__.py"
       shift 1
     done
     echo "  ])"
   ) > setup.py
-else
-  while (( ${#} )); do
-    echo "    '${1}',"
-    mkdir -p "${1}"
-    touch "${1}/__init__.py"
-    shift 1
-  done
 fi
+
+while (( ${#} )); do
+  mkdir -p "${1}"
+  touch "${1}/__init__.py"
+  shift 1
+done
