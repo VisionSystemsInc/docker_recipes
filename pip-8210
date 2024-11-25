@@ -38,7 +38,7 @@ fi
 if [ -f "${VSI_COMMON_DIR}/linux/command_tools.bsh" ]; then
   source "${VSI_COMMON_DIR}/linux/command_tools.bsh"
 else
-  # Copy from command_tools.bsh for portability
+  # Copied from command_tools.bsh for portability
   function parse-generic()
   {
     command_args=()

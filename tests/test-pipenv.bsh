@@ -23,7 +23,7 @@ begin_test "Pipenv"
 end_test
 
 # test 30_get-pipenv script without a container
-if ! ( command -v "${PIPENV_PYTHON-python}" &>/dev/null || command -v python3 &>/dev/null ); then
+if ! ( command -v "${PIPENV_PYTHON-python}" &>/dev/null || command -v python3 &>/dev/null ) || [ "${OS-}" = "Windows_NT" ]; then
   skip_next_test
 fi
 begin_test "30_get-pipenv"
