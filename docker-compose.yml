@@ -7,7 +7,7 @@ services:
       dockerfile: recipe_amanda_deb.Dockerfile
       # args:
       #   AMANDA_VERSION: "${AMANDA_VERSION}"
-    image: vsiri/recipe:amanda_deb
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:amanda_deb
 
   gosu:
     build:
@@ -15,7 +15,7 @@ services:
       dockerfile: recipe_gosu.Dockerfile
       # args:
       #   GOSU_VERSION: "${GOSU_VERSION}"
-    image: vsiri/recipe:gosu
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:gosu
 
   tini:
     build:
@@ -23,7 +23,7 @@ services:
       dockerfile: recipe_tini.Dockerfile
       # args:
       #   TINI_VERSION: "${TINI_VERSION}"
-    image: vsiri/recipe:tini
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:tini
 
   tini-musl:
     build:
@@ -31,7 +31,7 @@ services:
       dockerfile: recipe_tini-musl.Dockerfile
       # args:
       #   TINI_VERSION: "${TINI_VERSION}"
-    image: vsiri/recipe:tini-musl
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:tini-musl
 
   ep:
     build:
@@ -39,7 +39,7 @@ services:
       dockerfile: recipe_ep.Dockerfile
       # args:
       #   EP_VERSION: "${EP_VERSION}"
-    image: vsiri/recipe:ep
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:ep
 
   jq:
     build:
@@ -47,49 +47,55 @@ services:
       dockerfile: recipe_jq.Dockerfile
       # args:
       #   JQ_VERSION: "${JQ_VERSION}"
-    image: vsiri/recipe:jq
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:jq
 
   ninja:
     build:
       context: .
       dockerfile: recipe_ninja.Dockerfile
-    image: vsiri/recipe:ninja
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:ninja
 
   cmake:
     build:
       context: .
       dockerfile: recipe_cmake.Dockerfile
-    image: vsiri/recipe:cmake
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:cmake
 
   docker:
     build:
       context: .
       dockerfile: recipe_docker.Dockerfile
-    image: vsiri/recipe:docker
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:docker
 
   docker-compose:
     build:
       context: .
       dockerfile: recipe_docker-compose.Dockerfile
-    image: vsiri/recipe:docker-compose
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:docker-compose
 
   git-lfs:
     build:
       context: .
       dockerfile: recipe_git-lfs.Dockerfile
-    image: vsiri/recipe:git-lfs
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:git-lfs
 
   pipenv:
     build:
       context: .
       dockerfile: recipe_pipenv.Dockerfile
-    image: vsiri/recipe:pipenv
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:pipenv
+
+  pip-tools:
+    build:
+      context: .
+      dockerfile: recipe_pip-tools.Dockerfile
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:pip-tools
 
   vsi:
     build:
       context: ../..
       dockerfile: docker/recipes/recipe_vsi.Dockerfile
-    image: vsiri/recipe:vsi
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:vsi
 
   onetrueawk:
     build:
@@ -97,7 +103,7 @@ services:
       dockerfile: recipe_onetrueawk.Dockerfile
       # args:
       #   ONETRUEAWK_VERSION: "${ONETRUEAWK_VERSION}"
-    image: vsiri/recipe:onetrueawk
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:onetrueawk
 
   conda-python:
     build:
@@ -107,7 +113,7 @@ services:
       #   PYTHON_VERSION: "${PYTHON_VERSION}"
       #   PYTHON_INSTALL_DIR: "${PYTHON_INSTALL_DIR}"
       #   USE_MINICONDA: ${USE_MINICONDA}"
-    image: vsiri/recipe:conda-python
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:conda-python
 
   proj-data:
     build:
@@ -115,13 +121,13 @@ services:
       dockerfile: recipe_proj-data.Dockerfile
       # args:
       #   PROJ_DATA_VERSION: "${PROJ_DATA_VERSION}"
-    image: vsiri/recipe:proj-data
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:proj-data
 
   rocky:
     build:
       context: .
       dockerfile: recipe_rocky.Dockerfile
-    image: vsiri/recipe:rocky
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:rocky
 
   cuda:
     build:
@@ -131,7 +137,7 @@ services:
       #   CUDA_VERSION: "${CUDA_VERSION}"
       #   CUDNN_VERSION: "${CUDNN_VERSION}"
       #   CUDA_RECIPE_TARGET: "${CUDA_RECIPE_TARGET}"
-    image: vsiri/recipe:cuda
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:cuda
 
   cudagl:
     build:
@@ -140,4 +146,4 @@ services:
       # args:
       #   LIBGLVND_VERSION: "${LIBGLVND_VERSION}"
       #   CUDA_RECIPE_TARGET: "${CUDA_RECIPE_TARGET}"
-    image: vsiri/recipe:cudagl
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:cudagl
