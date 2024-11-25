@@ -4,9 +4,15 @@ if [[ ${-} != *i* ]]; then
   source_once &> /dev/null && return 0
 fi
 
-#*# pip-8210
+#*# docker/recipes/pip-8210
 
 #**
+# ========
+# pip 8210
+# ========
+#
+# .. default-domain:: bash
+#
 # .. file:: pip-8210
 #
 # This script allows us to install a package outside of pip-tools. In order to accomplish this correctly, we use the ``requirements.txt`` file as a constraint file to handle corner cases like pip issue 8210.
