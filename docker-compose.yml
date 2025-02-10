@@ -142,7 +142,7 @@ services:
     build:
       context: .
       dockerfile: recipe_cudagl.Dockerfile
-      args:
-        LIBGLVND_VERSION: "${DOCKER_RECIPE_LIBGLVND_VERSION-v1.2.0}"
+      # args:
+      #   LIBGLVND_VERSION: "${LIBGLVND_VERSION}"
       #   CUDA_RECIPE_TARGET: "${CUDA_RECIPE_TARGET}"
     image: ${VSI_RECIPE_REPO-vsiri/recipe}:cudagl
