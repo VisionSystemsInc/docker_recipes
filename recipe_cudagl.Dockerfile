@@ -34,7 +34,7 @@ RUN /usr/local/share/just/scripts/10_sideload_rocky; \
                    glibc-devel.i686 libgcc.i686 libXext-devel.i686 libX11-devel.i686; \
     rm -rf /var/cache/yum/*
 
-ARG LIBGLVND_VERSION=v1.2.0
+ARG LIBGLVND_VERSION
 COPY --from=scripts /setup /setup
 RUN /setup
 

@@ -131,7 +131,8 @@ services:
     build:
       context: .
       dockerfile: recipe_cuda.Dockerfile
-      # args:
+      args:
+        CUDA_REPO_REF: "${DOCKER_RECIPE_CUDA_REPO_REF-81682547e12c8807ebc5fa61ff4576510925a324}"
       #   CUDA_VERSION: "${CUDA_VERSION}"
       #   CUDNN_VERSION: "${CUDNN_VERSION}"
       #   CUDA_RECIPE_TARGET: "${CUDA_RECIPE_TARGET}"
@@ -141,7 +142,7 @@ services:
     build:
       context: .
       dockerfile: recipe_cudagl.Dockerfile
-      # args:
-      #   LIBGLVND_VERSION: "${LIBGLVND_VERSION}"
+      args:
+        LIBGLVND_VERSION: "${DOCKER_RECIPE_LIBGLVND_VERSION-v1.2.0}"
       #   CUDA_RECIPE_TARGET: "${CUDA_RECIPE_TARGET}"
     image: ${VSI_RECIPE_REPO-vsiri/recipe}:cudagl
