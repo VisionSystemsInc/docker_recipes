@@ -38,22 +38,22 @@ ARG LIBGLVND_VERSION=v1.2.0
 COPY --from=scripts /setup /setup
 RUN /setup
 
-# Does not currently work. Doesn't find GLDouble, and I don't know why nor care yet
-# FROM redhat/ubi9 as ubi9
+FROM redhat/ubi9 as ubi9
 
-# SHELL ["/usr/bin/env", "bash", "-euxvc"]
-# ADD 10_sideload_rocky /
+SHELL ["/usr/bin/env", "bash", "-euxvc"]
 
-# RUN bash /10_sideload_rocky; \
-#     dnf install -y --enablerepo=rocky-appstream,rocky-crb \
-#                    git make libtool gcc pkgconfig libXext-devel \
-#                    libX11-devel xorg-x11-proto-devel\
-#                    glibc-devel.i686 libgcc.i686 libXext-devel.i686 libX11-devel.i686; \
-#     rm -rf /var/cache/yum/*
+ADD --chmod=755 10_sideload_rocky /usr/local/share/just/scripts/
 
-# ARG LIBGLVND_VERSION=v1.2.0
-# COPY --from=scripts /setup /setup
-# RUN /setup
+RUN /usr/local/share/just/scripts/10_sideload_rocky; \
+    dnf install -y --enablerepo=rocky-appstream,rocky-crb \
+                   git make libtool gcc pkgconfig libXext-devel \
+                   libX11-devel xorg-x11-proto-devel\
+                   glibc-devel.i686 libgcc.i686 libXext-devel.i686 libX11-devel.i686; \
+    rm -rf /var/cache/yum/*
+
+ARG LIBGLVND_VERSION=v1.2.0
+COPY --from=scripts /setup /setup
+RUN /setup
 
 FROM alpine:3.11.8
 
@@ -61,8 +61,9 @@ SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
 COPY --from=ubi8 /usr/local/lib /usr/local/share/just/info/rhel8/lib
 COPY --from=ubi8 /usr/local/lib64 /usr/local/share/just/info/rhel8/lib64
-# COPY --from=ubi9 /usr/local/lib /usr/local/share/just/info/rhel8/lib
-# COPY --from=ubi9 /usr/local/lib64 /usr/local/share/just/info/rhel8/lib64
+
+COPY --from=ubi9 /usr/local/lib /usr/local/share/just/info/rhel9/lib
+COPY --from=ubi9 /usr/local/lib64 /usr/local/share/just/info/rhel9/lib64
 
 ADD --chmod=644 10_load_cuda_env /usr/local/share/just/user_run_patch/
 ADD --chmod=755 30_ldconfig 40_install_cudagl /usr/local/share/just/container_build_patch/
