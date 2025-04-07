@@ -34,7 +34,7 @@ RUN /usr/local/share/just/scripts/10_sideload_rocky; \
                    glibc-devel.i686 libgcc.i686 libXext-devel.i686 libX11-devel.i686; \
     rm -rf /var/cache/yum/*
 
-ARG LIBGLVND_VERSION=v1.2.0
+ARG LIBGLVND_VERSION=v1.7.0
 COPY --from=scripts /setup /setup
 RUN /setup
 
@@ -51,7 +51,7 @@ RUN /usr/local/share/just/scripts/10_sideload_rocky; \
                    glibc-devel.i686 libgcc.i686 libXext-devel.i686 libX11-devel.i686; \
     rm -rf /var/cache/yum/*
 
-ARG LIBGLVND_VERSION=v1.2.0
+ARG LIBGLVND_VERSION=v1.7.0
 COPY --from=scripts /setup /setup
 RUN /setup
 
@@ -107,7 +107,7 @@ ONBUILD RUN case "${CUDA_RECIPE_TARGET}" in *devel*) \
               ;; \
             esac
 
-ONBUILD ARG LIBGLVND_VERSION=v1.2.0
+ONBUILD ARG LIBGLVND_VERSION=v1.7.0
 
 ONBUILD COPY <<EOF /usr/local/share/just/info/cuda/00_cudagl_common
 : \${CUDA_RECIPE_TARGET:=${CUDA_RECIPE_TARGET}}
