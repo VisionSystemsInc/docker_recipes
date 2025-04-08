@@ -423,7 +423,7 @@ CUDA GL
 ============================ ============
 Name                         CUDA GL
 Build Args                   ``CUDA_RECIPE_TARGET`` - Specifies how much of the CUDA stack to install (explained further above in the CUDA recipe). Default: ``runtime``
-Build Args                   ``LIBGLVND_VERSION`` - The version of the GLVND used. Default: ``v1.2.0``
+Build Args                   ``LIBGLVND_VERSION`` - The version of the GLVND used. Default: ``v1.7.0``
 Environment Variable         ``NVIDIA_DRIVER_CAPABILITIES`` - For OpenGL offscreen rendering, you at least need `graphics,compute,utility`
 Output dir                   ``/usr/local``
 Minimum Dockerfile frontend: docker/dockerfile:1.3-labs or docker/dockerfile:1.4
