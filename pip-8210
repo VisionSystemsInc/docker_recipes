@@ -118,8 +118,14 @@ function pip-8210()
     install|download|wheel)
       local temp_8210=$(mktemp)
 
-      # Only remove editables, since extras are taken care right after `pip-compile`
-      grep -v '^-e ' "${PIP_REQUIREMENTS-/src/requirements.txt}" > "${temp_8210}"
+      : ${PIP_REQUIREMENTS=/src/requirements.txt}
+
+      # If requirements.txt is empty, don't fail incase you are installing pip-tools.
+      # This is important for bootstrapping a new project
+      if [ -s "${PIP_REQUIREMENTS}" ]; then
+        # Only remove editables, since extras are taken care right after `pip-compile`
+        grep -v '^-e ' "${PIP_REQUIREMENTS}" > "${temp_8210}"
+      fi
 
       pip ${command_args[@]+"${command_args[@]}"} "${subcommand}" -c "${temp_8210}" ${subcommand_args[@]+"${subcommand_args[@]}"} || (
         # If pip-tools is the first argument and it failed, force it to be installed for bootstrap reasons
