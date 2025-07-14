@@ -1,4 +1,4 @@
-FROM debian:buster-20210311-slim
+FROM debian:bookworm-20250630-slim
 
 SHELL ["/usr/bin/env", "bash", "-euxvc"]
 
