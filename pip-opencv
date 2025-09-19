@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+
+if [[ ${-} != *i* ]]; then
+  source_once &> /dev/null && return 0
+fi
+
+#*# docker/recipes/pip-opencv
+
+#**
+# ==========
+# pip opencv
+# ==========
+#
+# .. default-domain:: bash
+#
+# .. file:: pip-opencv
+#
+# This script allow us to install only one of the four available opencv-python packages via pip-tools.
+#
+# :Arguments: * ``$1``... - The path to the ``requirements.txt`` to be inline patched
+#
+# OpenCV provides four interchangable python packages:
+# - opencv-contrib-python: main modules, contrib/extra, GUI
+# - opencv-python: main modules, GUI
+# - opencv-contrib-python-headless: main modules, contrib/extra, headless (no GUI)
+# - opencv-python-headless: main modules, headless (no GUI)
+#
+# Users are advised to install only one of the four packages opencv-python depending on their needs
+# https://pypi.org/project/opencv-python/#:~:text=There%20are%20four,only%20one%20package
+#
+# This function will modify a pip-tools ``requirements.txt`` file to keep only the most fully featured opencv-python package.  Less featured opencv-python packages are commented out from the ``requirements.txt`` file.
+#
+# A subsequent ``pip-sync`` must be run with the argument ``--pip-args --no-deps`` to ensure only one opencv-python package is installed.
+#
+# :Arguments: * ``$1``... - ``requirements.txt`` file to be modified
+#
+# .. function:: pip-opencv
+#
+# Same syntax as :file:`pip-opencv`
+#**
+function pip-opencv()
+{
+  # requirements.txt file to be modified
+  local file="${1}"
+
+  # check for multiple opencv-python packages
+  local num_opencv=$(grep -c '^opencv.*-python.*==' "${file}" || :)
+  if (( ${num_opencv} <= 1 )); then
+    return 0
+  fi
+
+  # check for contrib & GUI options
+  local num_gui=$(grep -c -e '^opencv-contrib-python==' -e '^opencv-python==' "${file}" || :)
+  local gui=$(( ${num_gui} > 0 ))
+
+  local num_contrib=$(grep -c '^opencv-contrib-python.*==' "${file}" || :)
+  local contrib=$(( ${num_contrib} > 0 ))
+
+  # package to keep
+  local selected=
+  if [ "${gui}" == "1" ] && [ "${contrib}" == "1" ]; then
+    selected="opencv-contrib-python"
+  elif [ "${gui}" == "1" ] && [ "${contrib}" == "0" ]; then
+    selected="opencv-python"
+  elif [ "${gui}" == "0" ] && [ "${contrib}" == "1" ]; then
+    selected="opencv-contrib-python-headless"
+  else
+    selected="opencv-python-headless"
+  fi
+
+  # report
+  echo "Keeping only ${selected} (commenting out other opencv-python packages)" >&2
+
+  # keep only the first instance of the selected package
+  local packages=(
+      opencv-contrib-python
+      opencv-python
+      opencv-contrib-python-headless
+      opencv-python-headless
+  )
+
+  for package in "${packages[@]}"; do
+    local pattern="/^${package}==/s/^/# /g"
+    if [ "${package}" == "${selected}" ]; then
+      # replace all but the first occurance
+      pattern="0,/^${package}==/!{${pattern}}"
+    fi
+    sed "${pattern}" -i "${file}"
+  done
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ] || [ "$(basename "${BASH_SOURCE[0]}")" = "${0}" ]; then
+  set -eu
+  pip-opencv "${@}"
+fi

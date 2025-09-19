@@ -10,6 +10,13 @@ services:
         PIPENV_VIRTUALENV: "/foo"
         PIPENV_PYTHON: "/bar"
     image: vsiri/test_recipe:test_pipenv
+  test_pip-tools:
+    build:
+      context: .
+      dockerfile: test_pip-tools.Dockerfile
+      args:
+        PIP_TOOLS_VERSION: "7.5.0"
+    image: vsiri/test_recipe:test_pip-tools
   test_git-lfs:
     build:
       context: .

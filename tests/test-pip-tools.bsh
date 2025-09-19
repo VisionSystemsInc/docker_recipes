@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+
+if [ -z "${VSI_COMMON_DIR+set}" ]; then
+  VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"
+fi
+
+source "${VSI_COMMON_DIR}/tests/testlib.bsh"
+source "${TESTLIB_DIR}/test_utils.bsh"
+
+: ${DOCKER=docker}
+
+# array to newline-delimited requirements
+function array_to_req()
+{
+  printf '%s\n' "${@}"
+}
+
+# test pip-opencv (container not required)
+begin_test "pip-opencv"
+(
+  setup_test
+
+  # load function
+  source "${VSI_COMMON_DIR}/docker/recipes/pip-opencv"
+
+  # single pip-opencv test
+  function _test-pip-opencv()
+  {
+    # inputs, replacing spaces with newlines
+    local input="${1}"
+    local expected="${2:-${input}}"
+
+    # save input to temporary file
+    local file="$(mktemp -p "${TESTDIR}")"
+    echo -e "${input}" >> "${file}"
+
+    # run pip-opencv and check result
+    pip-opencv "${file}"
+    assert_str_eq "$(cat "${file}")" "${expected}"
+  }
+
+  # no opencv-python
+  REQ_A=(
+    "a==1.2.3"
+    "b==2.3.4"
+  )
+  _test-pip-opencv "$(array_to_req "${REQ_A[@]}")"
+
+  # single version
+  REQ_B=(
+    "${REQ_A[@]}"
+    "opencv-python==4.10"
+  )
+  _test-pip-opencv "$(array_to_req "${REQ_B[@]}")"
+
+  # two versions, including duplicates
+  REQ_C=(
+    "${REQ_A[@]}"
+    "opencv-python-headless==4.10"
+    "opencv-python==4.11"
+    "opencv-python-headless==4.12"
+    "opencv-python==4.13"
+  )
+  EXP_C=(
+    "${REQ_A[@]}"
+    "# opencv-python-headless==4.10"
+    "opencv-python==4.11"
+    "# opencv-python-headless==4.12"
+    "# opencv-python==4.13"
+  )
+  _test-pip-opencv "$(array_to_req "${REQ_C[@]}")" \
+                   "$(array_to_req "${EXP_C[@]}")"
+
+  # all versions including duplicates
+  REQ_D=(
+    "${REQ_A[@]}"
+    "opencv-python-headless==4.10"
+    "opencv-contrib-python-headless==4.11"
+    "opencv-python==4.12"
+    "opencv-contrib-python==4.13"
+    "opencv-contrib-python-headless==4.14"
+    "opencv-contrib-python==4.15"
+  )
+  EXP_D=(
+    "${REQ_A[@]}"
+    "# opencv-python-headless==4.10"
+    "# opencv-contrib-python-headless==4.11"
+    "# opencv-python==4.12"
+    "opencv-contrib-python==4.13"
+    "# opencv-contrib-python-headless==4.14"
+    "# opencv-contrib-python==4.15"
+  )
+  _test-pip-opencv "$(array_to_req "${REQ_D[@]}")" \
+                   "$(array_to_req "${EXP_D[@]}")"
+
+)
+end_test
+
+# test pip-opencv within a docker
+if ! command -v "${DOCKER}" &> /dev/null; then
+  skip_next_test
+fi
+begin_test "pip-opencv docker"
+(
+  setup_test
+
+  # run pip-sync & get list of installed packages
+  # - optionally run ``pip-opencv`` to resolve opencv-python dependencies
+  # - use ``pip-sync --pip-args "--no-deps" ...`` to ensure only selected packages are installed
+  function pip-sync-docker()
+  {
+    docker run --rm vsiri/test_recipe:test_pip-tools bash -c '
+        file=/tmp/requirements.txt
+        echo "${1}" > "${file}"
+        if [ "${2:-false}" == "true" ]; then pip-opencv ${file} >&2; fi
+        pip-sync -v --pip-args "--no-deps" ${file} >&2
+        pip freeze
+      ' -- "${@}"
+  }
+
+  # requirements
+  REQ_ARRAY=(
+    "numpy==2.2.6"
+    "opencv-python==4.12.0.88"
+    "opencv-python-headless==4.12.0.88"
+  )
+  REQ="$(array_to_req "${REQ_ARRAY[@]}")"
+
+  # test full sync, where two opencv packages are installed
+  RESULT="$(pip-sync-docker "${REQ}")"
+  assert_sub_str "${RESULT}" "pip-tools==7.5.0"
+  assert_sub_str "${RESULT}" "numpy==2.2.6"
+  assert_sub_str "${RESULT}" "opencv-python==4.12.0.88"
+  assert_sub_str "${RESULT}" "opencv-python-headless==4.12.0.88"
+
+  # test sync with pip-opencv, installing only one opencv package
+  RESULT="$(pip-sync-docker "${REQ}" true)"
+  assert_sub_str "${RESULT}" "pip-tools==7.5.0"
+  assert_sub_str "${RESULT}" "numpy==2.2.6"
+  assert_sub_str "${RESULT}" "opencv-python==4.12.0.88"
+  not assert_sub_str "${RESULT}" "opencv-python-headless==4.12.0.88"
+
+)
+end_test
