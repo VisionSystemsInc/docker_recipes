@@ -28,7 +28,7 @@ fi
 #
 # This function will modify a pip-tools ``requirements.txt`` file to keep only the most fully featured opencv-python package.  Less featured opencv-python packages are commented out from the ``requirements.txt`` file.
 #
-# A subsequent ``pip-sync`` must be run with the argument ``--pip-args '--no-deps'`` to ensure only one opencv-python package is installed.
+# A subsequent ``pip-sync`` must be run with the argument ``--pip-args --no-deps`` to ensure only one opencv-python package is installed.
 #
 # :Arguments: * ``$1``... - ``requirements.txt`` file to be modified
 #
