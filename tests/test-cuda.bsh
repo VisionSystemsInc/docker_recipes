@@ -16,7 +16,7 @@ begin_test "CUDA"
 (
   setup_test
 
-  RESULT="$("${DOCKER}" run --rm vsiri/test_recipe:test_cuda bash -c '/usr/local/cuda/bin/nvcc --version | head -n1')"
+  RESULT="$("${DOCKER}" run --rm vsiri/test_recipe:test_cuda bash -c '/usr/local/cuda/bin/nvcc --version')"
   assert_sub_str "${RESULT}" "Cuda compilation tools, release 12.6"
 
 )
