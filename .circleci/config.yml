@@ -71,10 +71,15 @@ commands:
             : ${CI_RECIPE_REPO="vsiri/ci_cache_recipes"}
             : ${CI_RECIPE_VERSION=}
             COMPOSE_FILE="<< parameters.compose_file >>"
-            SERVICES=( $(docker compose -f "${COMPOSE_FILE}" config --services | grep -v cuda) ) # noquotes
+            SERVICES=( $(docker compose -f "${COMPOSE_FILE}" config --services) ) # noquotes
 
             # ci_load for each service
             for SERVICE in "${SERVICES[@]}"; do
+              if [[ "${SERVICE}" == *cudagl* ]]; then
+                continue
+              elif [[ "${SERVICE}" == *cuda* ]]; then
+                CI_PUSH_OPT="--no-push"
+              fi
               python3 "${VSI_COMMON_DIR}/linux/ci_load.py" \
                 --recipe-repo "IGNORE" \
                 ${CI_RECIPE_REPO:+ --cache-repo "${CI_RECIPE_REPO}"} \
