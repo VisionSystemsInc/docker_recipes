@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+if [ -z "${VSI_COMMON_DIR+set}" ]; then
+  VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"
+fi
+
+source "${VSI_COMMON_DIR}/tests/testlib.bsh"
+source "${VSI_COMMON_DIR}/tests/test_utils.bsh"
+
+: ${DOCKER=docker}
+
+if ! command -v "${DOCKER}" &> /dev/null; then
+  skip_next_test
+fi
+begin_test "CUDA"
+(
+  setup_test
+
+  RESULT="$("${DOCKER}" run --rm vsiri/test_recipe:test_cuda bash -c '/usr/local/cuda/bin/nvcc --version | head -n1')"
+  assert_sub_str "${RESULT}" "Cuda compilation tools, release 12.6"
+
+)
+end_test
