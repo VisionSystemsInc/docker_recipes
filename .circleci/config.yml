@@ -75,6 +75,9 @@ commands:
 
             # ci_load for each service
             for SERVICE in "${SERVICES[@]}"; do
+              if [[ "${}" == *cuda* ]]; then
+                CI_PUSH_OPT="--no-push"
+              fi
               python3 "${VSI_COMMON_DIR}/linux/ci_load.py" \
                 --recipe-repo "IGNORE" \
                 ${CI_RECIPE_REPO:+ --cache-repo "${CI_RECIPE_REPO}"} \
