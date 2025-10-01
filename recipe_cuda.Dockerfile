@@ -74,22 +74,19 @@ ONBUILD RUN set -o pipefail; \
             # get GPG keys
             rhel_keys=($(grep -hr 'rhel.*\.pub' /cuda/dist/[0-9]* | sed -E 's|.*(https://[^ ]*).*|\1|' | sort -u)); \
             ubuntu_keys=($(grep -hr 'ubuntu.*\.pub' /cuda/dist/[0-9]* | sed -E 's|.*(https://[^ ]*).*|\1|' | sort -u)); \
-            # even though there are multiple URLs, they are all the same key. They get
-            # updated together
+            # save all keys, even if some are duplicates
             export NVARCH=x86_64; \
             for rhel_key in "${rhel_keys[@]}"; do \
               file=/usr/local/share/just/info/cuda/keys/RPM-GPG-KEY-NVIDIA; \
-              if [ ! -f "${file}" ]; then \
-                rhel_key="$(echo "${rhel_key}" | envsubst)"; \
-                curl -fsSL "${rhel_key}" |  sed '/^Version/d' > "${file}"; \
-              fi; \
+              touch "${file}"; \
+              rhel_key="$(echo "${rhel_key}" | envsubst)"; \
+              curl -fsSL "${rhel_key}" |  sed '/^Version/d' >> "${file}"; \
             done; \
             for ubuntu_key in "${ubuntu_keys[@]}"; do \
               file=/usr/local/share/just/info/cuda/keys/$(basename "${ubuntu_key}"); \
-              if [ ! -f "${file}" ]; then \
-                ubuntu_key="$(echo "${ubuntu_key}" | envsubst)"; \
-                curl -fsSL "${ubuntu_key}" > "${file}"; \
-              fi; \
+              touch "${file}"; \
+              ubuntu_key="$(echo "${ubuntu_key}" | envsubst)"; \
+              curl -fsSL "${ubuntu_key}" >> "${file}"; \
             done; \
             apk del .deps
 
