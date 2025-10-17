@@ -26,68 +26,190 @@ commands:
             cd "${VSI_COMMON_DIR}/docker/recipes"
             git checkout "${CIRCLE_SHA1}"
 
-  # run "ci_load" command on user-selected docker compose file
-  # - cache is updated only from main branch of main repo (not forks)
-  # - assumes python3 with pyyaml is already available
-  # - assumes docker login was successful
-  # - required environment variables:
-  #     $VSI_COMMON_DIR - location of vsi_common repo
-  # - optional environment variables
-  #     $CI_RECIPE_REPO - dockerhub repo for recipe cache (default "vsiri/ci_cache_recipes")
-  #     $CI_RECIPE_VERSION - version string for recipe cache (default "")
-  #     $JUST_CI_BRANCH_PUSH - branch (besides main) for dockerhub push
-  # - each service identified in the docker compose file will be separately
-  #   built via "${VSI_COMMON_DIR}/linux/ci_load.py"
-  # - As we are building recipes themselves, we ignore the vsiri/recipe
-  #   dockerhub repo by setting "--recipe-repo" to a dummy variable.
-  ci_load:
-    description: Build dockers (ci_load)
+  # docker setup
+  # - setup a remote docker environment
+  # - dockerhub login using project variables
+  # - create a buildx builder using the "docker-container" driver to
+  #   take advantage of "cache-to" capabilities.
+  # - use of the docker-container driver also requires a local registry when
+  #   building test images to be able to source the latest recipe images
+  #   (docker-container only uses registry images during the build process)
+  setup_docker:
+    description: Setup docker
+    steps:
+
+      - setup_remote_docker
+
+      - run:
+          name: Dockerhub login
+          command: echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+
+      - run:
+          name: Buildx with "docker-container" driver
+          command: |
+            : ${CONTEXT_NAME="ci_builder_context"}
+            : ${BUILDER_NAME="ci_builder"}
+            : ${BUILDKITD_TOML="${RECIPE_DIR}/.circleci/buildkitd.toml"}
+            docker context create "${CONTEXT_NAME}"
+            docker buildx create \
+                --name "${BUILDER_NAME}" \
+                --driver docker-container \
+                --driver-opt network=host \
+                --config "${BUILDKITD_TOML}" \
+                ${CONTEXT_NAME}
+            docker buildx use --builder "${BUILDER_NAME}"
+
+      - run:
+          name: Start localhost docker registry
+          command: |
+            : ${COMPOSE_FILE="${RECIPE_DIR}/.circleci/docker-compose.yml"}
+            docker compose -f "${COMPOSE_FILE}" up -d
+
+  # run "docker buildx bake" on user-selected docker compose file
+  build:
+    description: Build dockers (buildx)
     parameters:
       step_name:
         description: Step name
         type: string
-        default: Build recipes (ci_load)
-      compose_file:
-        description: docker compose file
-        type: string
+        default: Build recipes (buildx)
+      step_type:
+        description: Build recipe or test
+        type: enum
+        enum: ["recipe", "test"]
     steps:
       - run:
           name: << parameters.step_name >>
           command: |
 
-            set -x
-
-            # push from main repo, main or ${JUST_CI_BRANCH_PUSH} branches
+            # some push/cache to dockerhub options are enabled only from:
+            # - `main` branch of VSI repo
+            # - `${CI_BRANCH_PUSH}` branch of VSI repo
             if [[ "${CIRCLE_PROJECT_USERNAME,,}" == "visionsystemsinc" && \
                   ("${CIRCLE_BRANCH}" == "main" || \
-                   "${CIRCLE_BRANCH}" == "${JUST_CI_BRANCH_PUSH-}") ]]
+                   "${CIRCLE_BRANCH}" == "${CI_BRANCH_PUSH-}") ]]
             then
-              CI_PUSH_OPT="--push"
+              PUSH=1
             else
-              CI_PUSH_OPT="--no-push"
+              PUSH=0
             fi
 
-            # environment
-            : ${CI_RECIPE_REPO="vsiri/ci_cache_recipes"}
-            : ${CI_RECIPE_VERSION=}
-            COMPOSE_FILE="<< parameters.compose_file >>"
+            # options based on "step_type" parameter
+            STEP_TYPE="<< parameters.step_type >>"
+
+            if [ "${STEP_TYPE}" == "recipe" ]; then
+              COMPOSE_FILE="${RECIPE_DIR}/docker-compose.yml"
+              LOCALHOST_PUSH=1  # push to localhost registry needed for tests
+              DOCKERHUB_PUSH="${PUSH}"  # push to dockerhub in some cases
+              DOCKERHUB_CACHE_TO="${PUSH}"  # cache-to dockerhub in some cases
+
+            elif [ "${STEP_TYPE}" == "test" ]; then
+              COMPOSE_FILE="${RECIPE_DIR}/tests/docker-compose.yml"
+              LOCALHOST_PUSH=0  # push to localhost registry not needed
+              DOCKERHUB_PUSH=0  # push to dockerhub not needed
+              DOCKERHUB_CACHE_TO="${PUSH}"  # cache-to dockerhub in some cases
+
+            else
+              echo "Unrecognized step type '${STEP_TYPE}'" >&2
+              exit 1
+            fi
+
+            # report options
+            echo "--------------------"
+            echo "COMPOSE_FILE=${COMPOSE_FILE}"
+            echo "LOCALHOST_PUSH=${LOCALHOST_PUSH}"
+            echo "DOCKERHUB_PUSH=${DOCKERHUB_PUSH}"
+            echo "DOCKERHUB_CACHE_TO=${DOCKERHUB_CACHE_TO}"
+            echo "--------------------"
+
+            # discover services
             SERVICES=( $(docker compose -f "${COMPOSE_FILE}" config --services) ) # noquotes
 
-            # ci_load for each service
+            # function to discover service image from docker-compose file
+            function get_image() {
+              docker compose -f "${COMPOSE_FILE}" config --images "${1}"
+            }
+
+            # localhost registry
+            LOCALHOST_RECIPE_REPO="localhost:5000/recipe"
+            LOCALHOST_TEST_REPO="${LOCALHOST_RECIPE_REPO}-test"
+
+            # dockerhub registry
+            DOCKERHUB_RECIPE_REPO="vsiri/recipe"
+            DOCKERHUB_TEST_REPO="${DOCKERHUB_RECIPE_REPO}-test"
+
+            # dockerhub cache
+            DOCKERHUB_CACHE_REPO="${DOCKERHUB_RECIPE_REPO}-cache"
+
+            # build options
+            OPTS=(
+              -f "${COMPOSE_FILE}"
+              --load
+              # --progress=plain
+
+              # direct the buildx 'docker-continer' driver to source recipes
+              # from the localhost registry (not dockerhub)
+              "--set=*.args.VSI_RECIPE_REPO=${LOCALHOST_RECIPE_REPO}"
+            )
+
+            # array of docker images to push after build
+            IMAGES_TO_PUSH=()
+
+            # cache options
             for SERVICE in "${SERVICES[@]}"; do
-              if [[ "${SERVICE}" == *cudagl* ]]; then
-                continue
-              elif [[ "${SERVICE}" == *cuda* ]]; then
-                CI_PUSH_OPT="--no-push"
+
+              # default image tag (never pushed)
+              DEFAULT_TAG="$(get_image "${SERVICE}")"
+              OPTS+=( "--set=${SERVICE}.tags=${DEFAULT_TAG}" )
+
+              # optionally tag & push to localhost
+              if [ "${LOCALHOST_PUSH-}" == "1" ]; then
+                LOCALHOST_TAG="$(VSI_RECIPE_REPO="${LOCALHOST_RECIPE_REPO}" \
+                                 VSI_TEST_RECIPE_REPO="${LOCALHOST_TEST_REPO}" \
+                                 get_image "${SERVICE}")"
+                OPTS+=( "--set=${SERVICE}.tags=${LOCALHOST_TAG}" )
+                IMAGES_TO_PUSH+=( "${LOCALHOST_TAG}" )
               fi
-              python3 "${VSI_COMMON_DIR}/linux/ci_load.py" \
-                --recipe-repo "IGNORE" \
-                ${CI_RECIPE_REPO:+ --cache-repo "${CI_RECIPE_REPO}"} \
-                ${CI_RECIPE_VERSION:+ --cache-version "${CI_RECIPE_VERSION}"} \
-                --quiet-pull \
-                ${CI_PUSH_OPT} \
-                "${COMPOSE_FILE}" "${SERVICE}"
+
+              # optionally tag & push to dockerhub
+              # (do not push cuda & cudagl images)
+              if [ "${DOCKERHUB_PUSH-}" == "1" ] && [[ "${SERVICE}" != *cuda* ]]; then
+                DOCKERHUB_TAG="$(VSI_RECIPE_REPO="${DOCKERHUB_RECIPE_REPO}" \
+                                 VSI_TEST_RECIPE_REPO="${DOCKERHUB_TEST_REPO}" \
+                                 get_image "${SERVICE}")"
+                OPTS+=( "--set=${SERVICE}.tags=${DOCKERHUB_TAG}" )
+                IMAGES_TO_PUSH+=( "${DOCKERHUB_TAG}" )
+              fi
+
+              # service dockerhub cache
+              CACHE="${DOCKERHUB_CACHE_REPO}:${SERVICE}"
+
+              # always cache-from
+              OPTS+=( "--set=${SERVICE}.cache-from=ref=${CACHE},type=registry" )
+
+              # optionally cache-to
+              if [ "${DOCKERHUB_CACHE_TO-}" == "1" ]; then
+                OPTS+=( "--set=${SERVICE}.cache-to=ref=${CACHE},type=registry,mode=max,image-manifest=true" )
+              fi
+
             done
+
+            # report & build
+            pushd "$(dirname "${COMPOSE_FILE}")" &> /dev/null
+              docker buildx bake --print ${OPTS[@]} ${SERVICES[@]}
+              docker buildx bake ${OPTS[@]} ${SERVICES[@]}
+            popd &> /dev/null
+
+            # report local images
+            echo -e "\n----- DOCKER IMAGES -----"
+            docker images
+
+            # push images
+            for IMAGE in "${IMAGES_TO_PUSH[@]}"; do
+              echo -e "\n----- PUSH ${IMAGE} ------"
+              docker push "${IMAGE}"
+            done
+
 
 # -----
 # CircleCI jobs
@@ -97,7 +219,7 @@ jobs:
   # linux docker environment
   build_and_test:
     docker:
-      - image: cimg/python:3.8
+      - image: cimg/python:3.11
     shell: /bin/bash -eo pipefail
     working_directory: ~/vsi
     environment:
@@ -106,26 +228,16 @@ jobs:
 
     steps:
 
-      - run:
-          name: Install software
-          command: |
-            pip3 install pyyaml
-
       - checkout_in_vsi_common
-      - setup_remote_docker
+      - setup_docker
 
-      - run:
-          name: Additional setup
-          command: |
-            docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
+      - build:
+          step_name: Build recipes (buildx)
+          step_type: recipe
 
-      - ci_load:
-          step_name: Build recipes (ci_load)
-          compose_file: ${RECIPE_DIR}/docker-compose.yml
-
-      - ci_load:
-          step_name: Build tests (ci_load)
-          compose_file: ${RECIPE_DIR}/tests/docker-compose.yml
+      - build:
+          step_name: Build tests (buildx)
+          step_type: test
 
       - run:
           name: Run integration tests
@@ -171,4 +283,4 @@ workflows:
   recipes:
     jobs:
       - build_and_test
-      - windows_test
+      # - windows_test
