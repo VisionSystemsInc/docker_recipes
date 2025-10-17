@@ -1,4 +1,6 @@
-FROM vsiri/recipe:pipenv AS pipenv
+ARG VSI_RECIPE_REPO=vsiri/recipe
+
+FROM ${VSI_RECIPE_REPO}:pipenv AS pipenv
 
 FROM python:3.8
 SHELL ["/usr/bin/env", "bash", "-euxvc"]

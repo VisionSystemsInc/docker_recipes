@@ -1,4 +1,6 @@
-FROM vsiri/recipe:cmake AS cmake
+ARG VSI_RECIPE_REPO=vsiri/recipe
+
+FROM ${VSI_RECIPE_REPO}:cmake AS cmake
 
 FROM alpine:3.16.2
 
