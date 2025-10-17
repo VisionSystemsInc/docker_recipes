@@ -1,4 +1,6 @@
-FROM vsiri/recipe:cuda AS cuda
+ARG VSI_RECIPE_REPO=vsiri/recipe
+
+FROM ${VSI_RECIPE_REPO}:cuda AS cuda
 
 FROM redhat/ubi8
 

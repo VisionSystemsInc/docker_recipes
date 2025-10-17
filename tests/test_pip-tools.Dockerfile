@@ -1,4 +1,6 @@
-FROM vsiri/recipe:pip-tools AS pip-tools
+ARG VSI_RECIPE_REPO=vsiri/recipe
+
+FROM ${VSI_RECIPE_REPO}:pip-tools AS pip-tools
 
 FROM python:3.11
 SHELL ["/usr/bin/env", "bash", "-euxvc"]

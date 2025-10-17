@@ -1,3 +1,7 @@
+x-args:
+  common: &common_args
+    VSI_RECIPE_REPO:
+
 services:
 
   test_pipenv:
@@ -5,41 +9,48 @@ services:
       context: .
       dockerfile: test_pipenv.Dockerfile
       args:
+        <<: *common_args
         PIPENV_VERSION: "2021.11.23"
         VIRTUALENV_VERSION: "20.13.3"
         PIPENV_VIRTUALENV: "/foo"
         PIPENV_PYTHON: "/bar"
-    image: vsiri/test_recipe:test_pipenv
+    image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_pipenv
   test_pip-tools:
     build:
       context: .
       dockerfile: test_pip-tools.Dockerfile
       args:
+        <<: *common_args
         PIP_TOOLS_VERSION: "7.5.0"
-    image: vsiri/test_recipe:test_pip-tools
+    image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_pip-tools
   test_git-lfs:
     build:
       context: .
       dockerfile: test_git-lfs.Dockerfile
       args:
+        <<: *common_args
         GIT_LFS_VERSION: "v3.2.0"
-    image: vsiri/test_recipe:test_git-lfs
+    image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_git-lfs
   test_cmake:
     build:
       context: .
       dockerfile: test_cmake.Dockerfile
       args:
+        <<: *common_args
         CMAKE_VERSION: "3.16.1"
-    image: vsiri/test_recipe:test_cmake
+    image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_cmake
   test_rocky:
     build:
       context: .
       dockerfile: test_rocky.Dockerfile
-    image: vsiri/test_recipe:test_rocky
+      args:
+        <<: *common_args
+    image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_rocky
   test_cuda:
     build:
       context: .
       dockerfile: test_cuda.Dockerfile
       args:
+        <<: *common_args
         CUDA_VERSION: "12.6.3"
-    image: vsiri/test_recipe:test_cuda
+    image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_cuda
