@@ -1,4 +1,6 @@
-FROM vsiri/recipe:git-lfs AS git-lfs
+ARG VSI_RECIPE_REPO=vsiri/recipe
+
+FROM ${VSI_RECIPE_REPO}:git-lfs AS git-lfs
 
 FROM alpine:3.16.2
 

@@ -1,4 +1,7 @@
-FROM vsiri/recipe:rocky as rocky
+ARG VSI_RECIPE_REPO=vsiri/recipe
+
+FROM ${VSI_RECIPE_REPO}:rocky as rocky
+
 FROM redhat/ubi8
 COPY --from=rocky /usr/local /usr/local
 RUN test -e /usr/local/share/just/container_build_patch/10_sideload_rocky
