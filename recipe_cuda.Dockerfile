@@ -39,12 +39,15 @@ ONBUILD RUN set -o pipefail; \
             apk add --no-cache --virtual .deps curl ca-certificates; \
             mkdir -p /usr/local/share/just/info/cuda/keys; \
             function parse_envvar(){ \
+              # turn all ENVs that use space syntax to =.
+              # Then remove ENV to look like bash syntax
+              sed -nE 's|(^ENV +[^ =]+) |\1=|; s|^ENV *||p' "${1}" | \
               # Uses awk to only find the unique names, based on the second
               # column, which in this case is the environment variable name. This
               # works how we want because the x86_64 variables always come first
               # in the cuda Dockerfiles.
               # E.g.: https://gitlab.com/nvidia/container-images/cuda/-/blob/55e68010c6ed48abce440d25fbc25af42d318a73/dist/11.4.0/ubuntu1804/runtime/Dockerfile
-              awk '!x[$2]++' "${1}" | sed -nE '/^ENV/s/ENV ([^ ]*) /\1=/p'; \
+              awk -F = '!x[$1]++'; \
             }; \
             function parse_os(){ \
               parse_envvar "${1}/base/Dockerfile" > "/usr/local/share/just/info/cuda/10_cudaenv_${2}"; \
