@@ -9,15 +9,34 @@ source "${VSI_COMMON_DIR}/tests/test_utils.bsh"
 
 : ${DOCKER=docker}
 
-if ! command -v "${DOCKER}" &> /dev/null; then
-  skip_next_test
-fi
-begin_test "CUDA"
-(
-  setup_test
-
-  RESULT="$("${DOCKER}" run --rm vsiri/test_recipe:test_cuda bash -c '/usr/local/cuda/bin/nvcc --version')"
-  assert_sub_str "${RESULT}" "Cuda compilation tools, release 12.6"
-
+# test CUDA with different versions
+CUDA_TEST_ID_ARRAY=(
+    "12.6.3"
+    "12.8.1"
 )
-end_test
+CUDA_EXPECTED_ARRAY=(
+    "Cuda compilation tools, release 12.6"
+    "Cuda compilation tools, release 12.8"
+)
+
+for i in "${!CUDA_TEST_ID_ARRAY[@]}"; do
+
+  # test options
+  CUDA_TEST_ID="${CUDA_TEST_ID_ARRAY[$i]}"
+  CUDA_EXPECTED="${CUDA_EXPECTED_ARRAY[$i]}"
+
+  # run test
+  if ! command -v "${DOCKER}" &> /dev/null; then
+    skip_next_test
+  fi
+  begin_test "CUDA ${CUDA_TEST_ID}"
+  (
+    setup_test
+
+    RESULT="$("${DOCKER}" run --rm "vsiri/test_recipe:test_cuda-${CUDA_TEST_ID}" bash -c '/usr/local/cuda/bin/nvcc --version')"
+    assert_sub_str "${RESULT}" "${CUDA_EXPECTED}"
+
+  )
+  end_test
+
+done
