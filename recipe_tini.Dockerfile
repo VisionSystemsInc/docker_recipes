@@ -16,9 +16,12 @@ ONBUILD RUN apk add --no-cache --virtual .deps gnupg curl ca-certificates; \
                 export GNUPGHOME=/dev/shm; \
                 for server in $(shuf -e ha.pool.sks-keyservers.net \
                                         hkp://p80.pool.sks-keyservers.net:80 \
+                                        keys.openpgp.org \
+                                        hkp://keys.openpgp.org:80 \
                                         keyserver.ubuntu.com \
                                         hkp://keyserver.ubuntu.com:80 \
-                                        pgp.mit.edu ); do \
+                                        pgp.mit.edu \
+                                        hkp://pgp.mit.edu:80 ); do \
                     gpg --batch --keyserver "${server}" --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 && break || : ; \
                 done; \
                 gpg --batch --verify /dev/shm/tini.asc /usr/local/bin/_tini; \
