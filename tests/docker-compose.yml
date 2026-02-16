@@ -10,8 +10,8 @@ services:
       dockerfile: test_pipenv.Dockerfile
       args:
         <<: *common_args
-        PIPENV_VERSION: "2021.11.23"
-        VIRTUALENV_VERSION: "20.13.3"
+        PIPENV_VERSION: "2026.0.3"
+        VIRTUALENV_VERSION: "20.36.1"
         PIPENV_VIRTUALENV: "/foo"
         PIPENV_PYTHON: "/bar"
     image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_pipenv
