@@ -29,13 +29,14 @@ begin_test "pip-opencv"
     # inputs, replacing spaces with newlines
     local input="${1}"
     local expected="${2:-${input}}"
+    local selected="${3:-}"
 
     # save input to temporary file
     local file="$(mktemp -p "${TESTDIR}")"
     echo -e "${input}" >> "${file}"
 
     # run pip-opencv and check result
-    pip-opencv "${file}"
+    pip-opencv "${file}" "${selected}"
     assert_str_eq "$(cat "${file}")" "${expected}"
   }
 
@@ -93,6 +94,19 @@ begin_test "pip-opencv"
   _test-pip-opencv "$(array_to_req "${REQ_D[@]}")" \
                    "$(array_to_req "${EXP_D[@]}")"
 
+  # input selected version
+  EXP_D_selected=(
+    "${REQ_A[@]}"
+    "# opencv-python-headless==4.10"
+    "opencv-contrib-python-headless==4.11"
+    "# opencv-python==4.12"
+    "# opencv-contrib-python==4.13"
+    "# opencv-contrib-python-headless==4.14"
+    "# opencv-contrib-python==4.15"
+  )
+  _test-pip-opencv "$(array_to_req "${REQ_D[@]}")" \
+                   "$(array_to_req "${EXP_D_selected[@]}")" \
+                   "opencv-contrib-python-headless"
 )
 end_test
 
