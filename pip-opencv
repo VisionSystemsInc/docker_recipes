@@ -28,50 +28,23 @@ fi
 # Users are advised to install only one of the four packages opencv-python depending on their needs
 # https://pypi.org/project/opencv-python/#:~:text=There%20are%20four,only%20one%20package
 #
-# This function will modify a pip-tools ``requirements.txt`` file to keep only the most fully featured opencv-python package.  Less featured opencv-python packages are commented out from the ``requirements.txt`` file.
+# This function will modify a pip-tools ``requirements.txt`` file to keep only one opencv python package.  By default, this will be the most fully featured opencv python package.  Other opencv python packages are commented out from the ``requirements.txt`` file.
 #
 # A subsequent ``pip-sync`` must be run with the argument ``--pip-args --no-deps`` to ensure only one opencv-python package is installed.
 #
-# :Arguments: * ``$1``... - ``requirements.txt`` file to be modified
-#
+# :Arguments: * ``$1`` - ``requirements.txt`` file to be modified
+#             * [``$2``] - optional opencv python package to keep, defaults to most fully featured package
 # .. function:: pip-opencv
 #
 # Same syntax as :file:`pip-opencv`
 #**
 function pip-opencv()
 {
-  # requirements.txt file to be modified
+  # inputs
   local file="${1}"
+  local selected="${2-}"
 
-  # check for multiple opencv-python packages
-  local num_opencv=$(grep -c '^opencv.*-python.*==' "${file}" || :)
-  if (( ${num_opencv} <= 1 )); then
-    return 0
-  fi
-
-  # check for contrib & GUI options
-  local num_gui=$(grep -c -e '^opencv-contrib-python==' -e '^opencv-python==' "${file}" || :)
-  local gui=$(( ${num_gui} > 0 ))
-
-  local num_contrib=$(grep -c '^opencv-contrib-python.*==' "${file}" || :)
-  local contrib=$(( ${num_contrib} > 0 ))
-
-  # package to keep
-  local selected=
-  if [ "${gui}" == "1" ] && [ "${contrib}" == "1" ]; then
-    selected="opencv-contrib-python"
-  elif [ "${gui}" == "1" ] && [ "${contrib}" == "0" ]; then
-    selected="opencv-python"
-  elif [ "${gui}" == "0" ] && [ "${contrib}" == "1" ]; then
-    selected="opencv-contrib-python-headless"
-  else
-    selected="opencv-python-headless"
-  fi
-
-  # report
-  echo "Keeping only ${selected} (commenting out other opencv-python packages)" >&2
-
-  # keep only the first instance of the selected package
+  # possible packages
   local packages=(
       opencv-contrib-python
       opencv-python
@@ -79,6 +52,50 @@ function pip-opencv()
       opencv-python-headless
   )
 
+  # validate "selected" input
+  if [ -n "${selected}" ]; then
+    if ! printf "%s\n" "${packages[@]}" | grep -Fxq "${selected}"; then
+      echo "Unrecognized opencv python package \"${selected}\"" >&2
+      exit 1
+    elif ! grep -c "^${selected}==" "${file}"; then
+      echo "\"${selected}\" not in requirements" >&2
+      exit 1
+    fi
+  fi
+
+  # check for multiple opencv python packages
+  local num_opencv=$(grep -c '^opencv.*-python.*==' "${file}" || :)
+  if (( ${num_opencv} <= 1 )); then
+    echo "Multiple opencv python packages not found in requirements" >&2
+    return 0
+  fi
+
+  # default "selected" - choose most fully featured package
+  if [ -z "${selected}" ]; then
+
+    # count packages with features
+    local num_gui=$(grep -c -e '^opencv-contrib-python==' -e '^opencv-python==' "${file}" || :)
+    local gui=$(( ${num_gui} > 0 ))
+
+    local num_contrib=$(grep -c '^opencv-contrib-python.*==' "${file}" || :)
+    local contrib=$(( ${num_contrib} > 0 ))
+
+    # package to keep
+    if [ "${gui}" == "1" ] && [ "${contrib}" == "1" ]; then
+      selected="opencv-contrib-python"
+    elif [ "${gui}" == "1" ] && [ "${contrib}" == "0" ]; then
+      selected="opencv-python"
+    elif [ "${gui}" == "0" ] && [ "${contrib}" == "1" ]; then
+      selected="opencv-contrib-python-headless"
+    else
+      selected="opencv-python-headless"
+    fi
+  fi
+
+  # report
+  echo "Keeping only ${selected} (commenting out other opencv python packages)" >&2
+
+  # keep only the first instance of the selected package
   for package in "${packages[@]}"; do
     local pattern="/^${package}==/s/^/# /g"
     if [ "${package}" == "${selected}" ]; then
