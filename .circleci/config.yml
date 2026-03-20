@@ -21,6 +21,7 @@ x-stuff:
     environment:
       VSI_COMMON_DIR: /home/circleci/vsi
       RECIPE_DIR: /home/circleci/vsi/docker/recipes
+      BUILDX_BAKE_ENTITLEMENTS_FS: 0
 
 
 # -----
