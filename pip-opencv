@@ -34,6 +34,7 @@ fi
 #
 # :Arguments: * ``$1`` - ``requirements.txt`` file to be modified
 #             * [``$2``] - optional opencv python package to keep, defaults to most fully featured package
+#
 # .. function:: pip-opencv
 #
 # Same syntax as :file:`pip-opencv`
