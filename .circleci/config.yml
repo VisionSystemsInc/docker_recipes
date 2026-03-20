@@ -6,6 +6,23 @@ version: 2.1
 orbs:
   win: circleci/windows@2.4.0
 
+
+# -----
+# generic yaml anchors (reusable by multiple projects)
+# -----
+x-stuff:
+
+  # linux container configuration
+  linux_container_config: &linux_container_config
+    docker:
+      - image: cimg/python:3.11
+    shell: /bin/bash -eo pipefail
+    working_directory: ~/vsi
+    environment:
+      VSI_COMMON_DIR: /home/circleci/vsi
+      RECIPE_DIR: /home/circleci/vsi/docker/recipes
+
+
 # -----
 # CircleCI custom commands
 # -----
@@ -218,13 +235,7 @@ jobs:
 
   # linux docker environment
   build_and_test:
-    docker:
-      - image: cimg/python:3.11
-    shell: /bin/bash -eo pipefail
-    working_directory: ~/vsi
-    environment:
-      VSI_COMMON_DIR: /home/circleci/vsi
-      RECIPE_DIR: /home/circleci/vsi/docker/recipes
+    <<: *linux_container_config
 
     steps:
 
@@ -276,6 +287,25 @@ jobs:
             source setup.env
             run_single_test pipenv 30_get-pipenv
 
+
+  # compile documentation
+  # this will compile all vsi_common docs, which includes recipe docs
+  compile_docs:
+    <<: *linux_container_config
+
+    steps:
+
+      - checkout_in_vsi_common
+      - setup_docker
+
+      - run:
+          name: Generate docs
+          command: |
+            source setup.env
+            tar c . | docker run -i --rm -v ${VSI_COMMON_DIR}:/src -w /src alpine:3.11 tar x
+            SPHINXOPTS='-W  --keep-going' just sphinx build compile -n --all
+
+
 # -----
 # CircleCI workflows
 # -----
@@ -284,3 +314,4 @@ workflows:
     jobs:
       - build_and_test
       - windows_test
+      - compile_docs
