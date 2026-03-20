@@ -34,7 +34,7 @@ begin_test "30_get-pipenv"
   setup_test
 
   # test version
-  export RECIPE_PIPENV_VERSION="2021.11.23"
+  export RECIPE_PIPENV_VERSION="2026.0.3"
 
   # locale
   EN_US_UTF8="$( (locale -a | grep -iE "en_us\.utf-?8") 2>/dev/null || :)"
@@ -79,7 +79,7 @@ begin_test "30_get-pipenv"
   rm -rf "${OUTPUT_DIR}"
 
   # test
-  [ "${RESULT}" = 'pipenv, version 2021.11.23' ]
+  [ "${RESULT}" = 'pipenv, version 2026.0.3' ]
 )
 end_test
 
