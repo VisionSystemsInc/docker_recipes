@@ -21,7 +21,7 @@ ONBUILD RUN apk add --no-cache --virtual .deps curl dpkg gnupg openssl; \
                                         hkp://keyserver.ubuntu.com:80 \
                                         pgp.mit.edu \
                                         hkp://pgp.mit.edu:80 ); do \
-                    gpg --batch --keyserver "${server}" --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && break || :; \
+                    timeout 30 gpg --batch --keyserver "${server}" --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && break || :; \
                 done; \
                 gpg --batch --verify /dev/shm/gosu.asc /usr/local/bin/gosu; \
             fi; \
