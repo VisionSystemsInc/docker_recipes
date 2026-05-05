@@ -2,11 +2,10 @@ FROM alpine:3.11.8
 
 SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
-ADD tini /usr/local/bin/tini
+COPY tini verify_gpg.sh /usr/local/bin/
 
 ONBUILD ARG TINI_VERSION=v0.18.0
 ONBUILD ARG TINI_SKIP_GPG=0
-ONBUILD COPY --chmod=755 verify_gpg.sh /usr/local/bin
 ONBUILD RUN apk add --no-cache --virtual .deps gnupg curl ca-certificates; \
             # download tini
             curl -fsSRLo /usr/local/bin/_tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-muslc-amd64; \

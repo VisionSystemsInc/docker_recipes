@@ -2,9 +2,10 @@ FROM alpine:3.11.8
 
 SHELL ["/usr/bin/env", "sh", "-euxvc"]
 
+COPY --chmod=755 verify_gpg.sh /usr/local/bin/
+
 ONBUILD ARG GOSU_VERSION=1.11
 ONBUILD ARG GOSU_SKIP_GPG=0
-ONBUILD COPY --chmod=755 verify_gpg.sh /usr/local/bin
 ONBUILD RUN apk add --no-cache --virtual .deps curl dpkg gnupg openssl; \
             # download gosu
             dpkgArch="$(dpkg --print-architecture | awk -F- '{print $NF}')"; \
