@@ -18,4 +18,5 @@ ONBUILD RUN if [ "${USE_MINICONDA}" = "1" ]; then \
 
 ONBUILD ARG PYTHON_VERSION=3.8.5
 ONBUILD ARG PYTHON_INSTALL_DIR=/usr/local
-ONBUILD RUN /conda/bin/conda create -y -p "${PYTHON_INSTALL_DIR}" "python==${PYTHON_VERSION}"
+ONBUILD ARG PIP_VERSION=
+ONBUILD RUN /conda/bin/conda create -y -p "${PYTHON_INSTALL_DIR}" "python==${PYTHON_VERSION}" "pip${PIP_VERSION:+==${PIP_VERSION}}"
