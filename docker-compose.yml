@@ -108,6 +108,7 @@ services:
       context: .
       dockerfile: recipe_conda_python.Dockerfile
       # args:
+      #   PIP_VERSION: "${PIP_VERSION}"
       #   PYTHON_VERSION: "${PYTHON_VERSION}"
       #   PYTHON_INSTALL_DIR: "${PYTHON_INSTALL_DIR}"
       #   USE_MINICONDA: ${USE_MINICONDA}"
