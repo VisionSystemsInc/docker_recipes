@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+
+set -eu
+
+# variables
+: ${UV_INSTALL_SH="/usr/local/share/just/temp/uv_install.sh"}
+: ${UV_INSTALL_DIR="/usr/local/bin"}
+
+# pre-downloaded install script
+if [ ! -f "${UV_INSTALL_SH}" ]; then
+  echo "Missing UV install script" >&2
+  exit 1
+fi
+
+# call install script
+UV_INSTALL_DIR="${UV_INSTALL_DIR}" sh "${UV_INSTALL_SH}"
+
+# delete files after install
+# This script is so simple, there's no reason to support sourcing this file
+if [ -n "${BASH_SOURCE+set}" ]; then
+  if [[ ${BASH_SOURCE[0]} = *30_get-uv ]]; then # CYA
+    exec sh -c "rm '${BASH_SOURCE[0]}' '${UV_INSTALL_SH}'"
+  fi
+else
+  case "${0}" in
+    *30_get-uv) # CYA
+      exec sh -c "rm '${0}' '${UV_INSTALL_SH}'"
+      ;;
+  esac
+fi
