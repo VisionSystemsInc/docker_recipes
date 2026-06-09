@@ -147,3 +147,11 @@ services:
       #   LIBGLVND_VERSION: "${LIBGLVND_VERSION}"
       #   CUDA_RECIPE_TARGET: "${CUDA_RECIPE_TARGET}"
     image: ${VSI_RECIPE_REPO-vsiri/recipe}:cudagl
+
+  uv:
+    build:
+      context: .
+      dockerfile: recipe_uv.Dockerfile
+      # args:
+      #   UV_VERSION: "${UV_VERSION}"
+    image: ${VSI_RECIPE_REPO-vsiri/recipe}:uv

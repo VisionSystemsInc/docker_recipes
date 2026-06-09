@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+if [ -z "${VSI_COMMON_DIR+set}" ]; then
+  VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"
+fi
+
+source "${VSI_COMMON_DIR}/tests/testlib.bsh"
+source "${VSI_COMMON_DIR}/tests/test_utils.bsh"
+
+: ${DOCKER=docker}
+
+# test uv in docker
+if ! command -v "${DOCKER}" &> /dev/null; then
+  skip_next_test
+fi
+begin_test "uv"
+(
+  setup_test
+
+  RESULT="$(docker run --rm vsiri/test_recipe:test_uv bash -c 'cd /foo; uv run python --version; uv pip freeze')"
+  assert_sub_str "${RESULT}" "Python 3.13.12"
+  assert_sub_str "${RESULT}" "numpy==2.4.5"
+)
+end_test

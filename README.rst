@@ -537,6 +537,32 @@ Users may alternatively make use of `remotely hosted PROJ-data <https://proj.org
    COPY --from=proj-data /usr/local /usr/local
 
 
+uv
+---
+
+=========== ======
+Name        uv
+Env Var     ``UV_VERSION`` - Optional version of uv to install
+Output dir  ``/usr/local``
+=========== ======
+
+An extremely fast Python package and project manager, written in Rust.
+
+A script called ``/usr/local/bin/pip-fake`` is also added, useful for creating fake editable packages that will be mounted in at run time.
+
+.. rubric:: Example
+
+.. code-block:: Dockerfile
+
+   FROM vsiri/recipe:uv as uv
+   FROM redhat:ubi9
+
+   COPY --from=uv /usr/local /usr/local
+   ...
+   # Only needs to be run once for all recipes
+   RUN shopt -s nullglob; for patch in /usr/local/share/just/container_build_patch/*; do "${patch}"; done
+
+
 J.U.S.T.
 ========
 

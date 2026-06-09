@@ -62,3 +62,11 @@ services:
         <<: *common_args
         CUDA_VERSION: "12.8.1"
     image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_cuda-12.8.1
+  test_uv:
+    build:
+      context: .
+      dockerfile: test_uv.Dockerfile
+      args:
+        <<: *common_args
+        RECIPE_UV_VERSION: "0.11.18"
+    image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_uv
