@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+if [ -z "${VSI_COMMON_DIR+set}" ]; then
+  VSI_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.."; pwd)"
+fi
+
+source "${VSI_COMMON_DIR}/tests/testlib.bsh"
+
+: ${DOCKER=docker}
+
+if ! command -v "${DOCKER}" &> /dev/null; then
+  skip_next_test
+fi
+begin_test "Gosu"
+(
+  setup_test
+
+  RESULT="$("${DOCKER}" run --rm vsiri/test_recipe:test_gosu /usr/local/bin/gosu --version)"
+  [ "${RESULT}" = "1.19 (go1.26.5 on linux/amd64; gc)" ]
+
+)
+end_test

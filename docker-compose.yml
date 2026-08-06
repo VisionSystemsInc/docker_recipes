@@ -12,6 +12,7 @@ services:
       context: .
       dockerfile: recipe_gosu.Dockerfile
       # args:
+      #   GO_VERSION: "${GO_VERSION}"
       #   GOSU_VERSION: "${GOSU_VERSION}"
     image: ${VSI_RECIPE_REPO-vsiri/recipe}:gosu
 
