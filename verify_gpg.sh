@@ -19,14 +19,16 @@
 #**
 
 # GPG server list
-gpg_servers="ha.pool.sks-keyservers.net"
-gpg_servers="${gpg_servers} hkp://p80.pool.sks-keyservers.net:80"
-gpg_servers="${gpg_servers} keys.openpgp.org"
-gpg_servers="${gpg_servers} hkp://keys.openpgp.org:80"
-gpg_servers="${gpg_servers} keyserver.ubuntu.com"
-gpg_servers="${gpg_servers} hkp://keyserver.ubuntu.com:80"
-gpg_servers="${gpg_servers} pgp.mit.edu"
-gpg_servers="${gpg_servers} hkp://pgp.mit.edu:80"
+if [ -z "${GPG_SERVERS:+set}" ]; then
+  GPG_SERVERS="ha.pool.sks-keyservers.net"
+  GPG_SERVERS="${GPG_SERVERS} hkp://p80.pool.sks-keyservers.net:80"
+  GPG_SERVERS="${GPG_SERVERS} keys.openpgp.org"
+  GPG_SERVERS="${GPG_SERVERS} hkp://keys.openpgp.org:80"
+  GPG_SERVERS="${GPG_SERVERS} keyserver.ubuntu.com"
+  GPG_SERVERS="${GPG_SERVERS} hkp://keyserver.ubuntu.com:80"
+  GPG_SERVERS="${GPG_SERVERS} pgp.mit.edu"
+  GPG_SERVERS="${GPG_SERVERS} hkp://pgp.mit.edu:80"
+fi
 
 : ${GPG_SERVER_TIMEOUT=10}
 
@@ -45,8 +47,7 @@ function recv_key()
   #**
 
   local server
-
-  for server in $(shuf -e ${gpg_servers}); do
+  for server in $(shuf -e ${GPG_SERVERS}); do
     if timeout "${GPG_SERVER_TIMEOUT}" gpg --batch --keyserver "${server}" --recv-keys "${1}"; then
       return 0
     fi
@@ -72,7 +73,7 @@ function verify_gpg_signature()
 
   local file_name=${1}
   local checksum=${2}
-  local gpg_id=${3}
+  shift 2
 
   local GNUPGHOME=${GNUPGHOME-/dev/shm}
   export GNUPGHOME
@@ -82,8 +83,10 @@ function verify_gpg_signature()
       curl -fsSLo /dev/shm/checksum.asc "${checksum}"
       checksum=/dev/shm/checksum.asc
     fi
-
-    recv_key "${gpg_id}"
+    while (( ${#} )); do
+      recv_key "${1}"
+      shift 1
+    done
     gpg --batch --verify "${checksum}" "${file_name}"
   fi
 }

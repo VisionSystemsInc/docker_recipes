@@ -45,7 +45,7 @@ services:
       dockerfile: test_gosu.Dockerfile
       args:
         <<: *common_args
-        GO_VERSION: "1.26.5"
+        GOLANG_VERSION: "1.26.4"
         GOSU_VERSION: "1.19"
     image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_gosu
   test_rocky:

@@ -2,7 +2,8 @@ ARG VSI_RECIPE_REPO=vsiri/recipe
 
 FROM ${VSI_RECIPE_REPO}:gosu AS gosu
 
-FROM alpine:3.16.2
+FROM redhat/ubi9:latest
+# FROM alpine:3.24.1
 
 SHELL ["/usr/bin/env", "sh", "-euxvc"]
 

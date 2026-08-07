@@ -102,6 +102,7 @@ gosu
 
 ============ ====
 Name         gosu
+Build Args   ``GOLANG_VERSION`` - Version of go to compile with
 Build Args   ``GOSU_VERSION`` - Version of gosu to download
 Output dir   ``/usr/local``
 ============ ====
