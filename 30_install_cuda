@@ -55,6 +55,9 @@ function install_cuda_repo_and_packages()
   install_devel=0
 
   case "${CUDA_RECIPE_TARGET-runtime}" in
+    base)
+      install_base=1
+      ;;
     runtime)
       install_base=1
       install_runtime=1

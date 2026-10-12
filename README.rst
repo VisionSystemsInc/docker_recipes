@@ -391,6 +391,7 @@ The ``CUDA_VERSION``/``CUDNN_VERSION`` build args must be limited to the version
 
 ``CUDA_RECIPE_TARGET`` is used to specify how much of the CUDA stack to install (devel vs runtime):
 
+- ``base``: Only installs the base packages for CUDA
 - ``runtime``: Only installs the runtime packages for CUDA
 - ``devel``: Installs both the runtime and development packages for CUDA
 - ``devel-only``: Only installs the devel packages. This is intended to be used on an image that already has the CUDA runtime installed.
