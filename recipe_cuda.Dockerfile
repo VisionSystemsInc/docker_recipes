@@ -31,7 +31,7 @@ ADD --chmod=755 00_cuda_sanity_check /usr/local/share/just/root_run_patch/
 ADD --chmod=644 10_load_cuda_env /usr/local/share/just/user_run_patch/
 ADD --chmod=755 30_ldconfig 30_install_cuda /usr/local/share/just/container_build_patch/
 
-ONBUILD ARG CUDA_VERSION=11.7.0
+ONBUILD ARG CUDA_VERSION=12.9.2
 ONBUILD ARG CUDNN_VERSION=
 ONBUILD ARG CUDA_RECIPE_TARGET=runtime
 

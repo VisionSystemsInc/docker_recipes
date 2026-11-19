@@ -2,7 +2,8 @@ ARG VSI_RECIPE_REPO=vsiri/recipe
 
 FROM ${VSI_RECIPE_REPO}:cuda AS cuda
 
-FROM redhat/ubi8
+FROM redhat/ubi9:9.8-1794186345
+SHELL ["/usr/bin/env", "bash", "-euxvc"]
 
 # install CUDA
 ENV CUDA_RECIPE_TARGET="devel"
