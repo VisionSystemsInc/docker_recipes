@@ -46,22 +46,22 @@ services:
       args:
         <<: *common_args
     image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_rocky
-  test_cuda-12-6-3:
+  test_cuda-12-9-2:
     build:
       context: .
       dockerfile: test_cuda.Dockerfile
       args:
         <<: *common_args
-        CUDA_VERSION: "12.6.3"
-    image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_cuda-12.6.3
-  test_cuda-12-8-1:
+        CUDA_VERSION: "12.9.2"
+    image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_cuda-12.9.2
+  test_cuda-13-2-1:
     build:
       context: .
       dockerfile: test_cuda.Dockerfile
       args:
         <<: *common_args
-        CUDA_VERSION: "12.8.1"
-    image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_cuda-12.8.1
+        CUDA_VERSION: "13.2.1"
+    image: ${VSI_TEST_RECIPE_REPO-vsiri/test_recipe}:test_cuda-13.2.1
   test_uv:
     build:
       context: .

@@ -11,12 +11,12 @@ source "${VSI_COMMON_DIR}/tests/test_utils.bsh"
 
 # test CUDA with different versions
 CUDA_TEST_ID_ARRAY=(
-    "12.6.3"
-    "12.8.1"
+    "12.9.2"
+    "13.2.1"
 )
 CUDA_EXPECTED_ARRAY=(
-    "Cuda compilation tools, release 12.6"
-    "Cuda compilation tools, release 12.8"
+    "Cuda compilation tools, release 12.9"
+    "Cuda compilation tools, release 13.2"
 )
 
 for i in "${!CUDA_TEST_ID_ARRAY[@]}"; do

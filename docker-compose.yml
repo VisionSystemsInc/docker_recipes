@@ -133,10 +133,11 @@ services:
       context: .
       dockerfile: recipe_cuda.Dockerfile
       args:
-        CUDA_REPO_REF: "${DOCKER_RECIPE_CUDA_REPO_REF-d431a81b4e0dc7d43f2a66880edd16424550ca31}"
-      #   CUDA_VERSION: "${CUDA_VERSION}"
-      #   CUDNN_VERSION: "${CUDNN_VERSION}"
-      #   CUDA_RECIPE_TARGET: "${CUDA_RECIPE_TARGET}"
+        # defaults to commit on Nov 5, 2026 up to CUDA 13.5.0
+        CUDA_REPO_REF: "${DOCKER_RECIPE_CUDA_REPO_REF-d19d0501058d194c1d1da1a645dea48dbfaf0560}"
+        # CUDA_VERSION: "${CUDA_VERSION}"
+        # CUDNN_VERSION: "${CUDNN_VERSION}"
+        # CUDA_RECIPE_TARGET: "${CUDA_RECIPE_TARGET}"
     image: ${VSI_RECIPE_REPO-vsiri/recipe}:cuda
 
   cudagl:

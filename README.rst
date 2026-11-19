@@ -343,8 +343,8 @@ CUDA
 
 ============================ ============
 Name                         CUDA
-Special Args                 ``CUDA_REPO_REF`` - The ref of the CUDA container repo parsed. Set via exporting the environment variable ``DOCKER_RECIPE_CUDA_REPO_REF``. Default: ``81682547e12c8807ebc5fa61ff4576510925a324``
-Build Args                   ``CUDA_VERSION`` - Version of CUDA to install (e.g. ``10.2`` or ``11.0.7``)
+Special Args                 ``CUDA_REPO_REF`` - The ref of the CUDA container repo parsed. Set via exporting the environment variable ``DOCKER_RECIPE_CUDA_REPO_REF``. Default: ``d19d0501058d194c1d1da1a645dea48dbfaf0560``
+Build Args                   ``CUDA_VERSION`` - Version of CUDA to install (e.g. ``10.2`` or ``11.0.7``). Default: ``12.9.2``
 Build Args                   ``CUDNN_VERSION`` - Optional: Version of CUDNN to install. (e.g. ``7`` or ``8``)
 Build Args                   ``CUDA_RECIPE_TARGET`` - Optional: Specifies how much of the CUDA stack to install (explained below). Default: ``runtime``
 Environment Variable         ``NVIDIA_VISIBLE_DEVICES`` - Required: Sets which nvidia devices are visible in the container. Set to: ``all``
